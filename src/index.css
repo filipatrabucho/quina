@@ -769,3 +769,12 @@ button { font-family: inherit; }
   .tile { width: 48px; height: 48px; font-size: 1.4rem; }
   .key { height: 46px; }
 }
+.fiada-multi-boards {
+  display: flex;
+  gap: 20px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  justify-content: flex-start;
+  width: 100%;
+  padding-bottom: 6px;
+}

@@ -9,6 +9,7 @@ import {
   fiadaPickFaceUp,
   fiadaPlace,
   fiadaDiscard,
+  fiadaPassTurn,
   subscribeToFiadaRoom,
 } from '../lib/fiadaRooms.js'
 
@@ -69,6 +70,7 @@ export default function FiadaMultiplayer({ onExit }) {
   const isHost = room && user && room.host_id === user.id
   const myTurn = room?.status === 'a-jogar' && room.turn_index === myIndex
   const pending = room?.pending_value
+  const noDrawOptions = room && room.draw_index >= room.deck.length && room.face_up.length === 0
 
   const runAction = async (fn) => {
     setBusy(true)
@@ -89,6 +91,7 @@ export default function FiadaMultiplayer({ onExit }) {
   const handlePickFaceUp = (i) => runAction(() => fiadaPickFaceUp(room.id, i))
   const handlePlace = (i) => runAction(() => fiadaPlace(room.id, i))
   const handleDiscard = () => runAction(() => fiadaDiscard(room.id))
+  const handlePassTurn = () => runAction(() => fiadaPassTurn(room.id))
 
   const handleCopyInvite = async () => {
     const link = `${window.location.origin}${window.location.pathname}?fiadasala=${room.code}`
@@ -197,9 +200,12 @@ export default function FiadaMultiplayer({ onExit }) {
           <button className="share-btn" onClick={leaveRoom}>Novo jogo</button>
         </>
       ) : (
-        <p className="modal-note">
-          {myTurn ? 'É a tua vez!' : `Vez do Jogador ${room.turn_index + 1}…`}
-        </p>
+        <>
+          <p className="modal-note">
+            {myTurn ? 'É a tua vez!' : `Vez do Jogador ${room.turn_index + 1}…`}
+          </p>
+          <button className="mode-btn" onClick={leaveRoom}>Sair / Novo jogo</button>
+        </>
       )}
 
       <div className="fiada-multi-boards">
@@ -227,22 +233,24 @@ export default function FiadaMultiplayer({ onExit }) {
         ))}
       </div>
 
-      {room.status === 'a-jogar' && myTurn && (
+      {room.status === 'a-jogar' && (
         <>
           <div className="fiada-hand">
-            <span className="modal-note">Na mão:</span>
+            <span className="modal-note">
+              Na mão{myTurn ? '' : ` (Jogador ${room.turn_index + 1})`}:
+            </span>
             <div className={`fiada-tile fiada-tile--pending${pending == null ? ' fiada-tile--empty' : ''}`}>
               {pending ?? '—'}
             </div>
-            {pending != null && (
+            {pending != null && myTurn && (
               <button className="mode-btn" onClick={handleDiscard} disabled={busy}>
                 Descartar
               </button>
             )}
           </div>
-          {pending == null && (
+          {pending == null && !noDrawOptions && (
             <div className="fiada-drawpile">
-              <button className="share-btn" onClick={handleDrawBlind} disabled={busy}>
+              <button className="share-btn" onClick={handleDrawBlind} disabled={busy || !myTurn}>
                 Comprar às cegas
               </button>
               <div className="fiada-faceup">
@@ -251,12 +259,22 @@ export default function FiadaMultiplayer({ onExit }) {
                     key={i}
                     className="fiada-tile fiada-tile--faceup"
                     onClick={() => handlePickFaceUp(i)}
-                    disabled={busy}
+                    disabled={busy || !myTurn}
                   >
                     {v}
                   </button>
                 ))}
               </div>
+            </div>
+          )}
+          {pending == null && noDrawOptions && (
+            <div className="fiada-drawpile">
+              <p className="modal-note">Já não há azulejos disponíveis para comprar.</p>
+              {myTurn && (
+                <button className="share-btn" onClick={handlePassTurn} disabled={busy}>
+                  Passar a vez
+                </button>
+              )}
             </div>
           )}
         </>

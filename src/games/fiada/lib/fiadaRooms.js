@@ -89,3 +89,9 @@ export function subscribeToFiadaRoom(roomId, onChange) {
     .subscribe()
   return () => supabase.removeChannel(channel)
 }
+
+export async function fiadaPassTurn(roomId) {
+  const { data, error } = await supabase.rpc('fiada_pass_turn', { p_room_id: roomId })
+  if (error) throw error
+  return data
+}
