@@ -1,5 +1,4 @@
-import { supabase } from './supabaseClient.js'
-
+import { supabase } from '../../../lib/supabaseClient.js'
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789' // sem carateres ambíguos (0/O, 1/I)
 
 function randomCode() {

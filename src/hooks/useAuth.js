@@ -34,7 +34,7 @@ export function useAuth() {
   const signInWithDiscord = () => {
     supabase.auth.signInWithOAuth({
       provider: 'discord',
-      options: { redirectTo: window.location.href },
+      options: { redirectTo: window.location.origin },
     })
   }
 

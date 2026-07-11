@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import Board from './Board.jsx'
 import Keyboard from './Keyboard.jsx'
-import { useAuth } from '../hooks/useAuth.js'
+import { useAuth } from '../../../hooks/useAuth.js'
 import {
   createDuel,
   createOrJoinDuelForInstance,
@@ -40,13 +40,24 @@ export default function DuelMode({ onExit }) {
     if (duel?.id) localStorage.setItem('quina-duelo-atual', duel.id)
   }, [duel?.id])
 
+  // Guardar o convite assim que chega (mesmo antes do login) e limpar o
+  // URL logo de seguida — nunca deixar um URL grande ir para o login do
+  // Discord.
+  useEffect(() => {
+    const inviteCode = new URLSearchParams(window.location.search).get('duelo')
+    if (!inviteCode) return
+    localStorage.setItem('quina-convite-pendente', inviteCode)
+    const url = new URL(window.location.href)
+    url.searchParams.delete('duelo')
+    window.history.replaceState({}, '', url)
+  }, [])
+
   // Fora do Discord: se recarregares a página a meio de um jogo, volta a
   // entrar na mesma sala em vez de te devolver ao lobby (a não ser que
-  // tenhas chegado através de um link de convite — nesse caso o convite
-  // tem prioridade).
+  // tenhas um convite pendente — esse tem prioridade).
   useEffect(() => {
     if (!user || duel || discordActivity) return
-    if (new URLSearchParams(window.location.search).has('duelo')) return
+    if (localStorage.getItem('quina-convite-pendente')) return
     const saved = localStorage.getItem('quina-duelo-atual')
     if (!saved) return
     getDuel(saved)
@@ -57,20 +68,15 @@ export default function DuelMode({ onExit }) {
       .catch(() => localStorage.removeItem('quina-duelo-atual'))
   }, [user, duel, discordActivity])
 
-  // Entrar automaticamente na sala quando chegas através de um link de
-  // convite (?duelo=CODIGO). Funciona tanto para quem já tinha sessão
-  // iniciada como, após o login, para quem acabou de entrar.
+  // Entrar automaticamente na sala de um convite pendente, assim que
+  // tivermos sessão iniciada.
   useEffect(() => {
     if (!user || duel) return
-    const inviteCode = new URLSearchParams(window.location.search).get('duelo')
+    const inviteCode = localStorage.getItem('quina-convite-pendente')
     if (!inviteCode) return
+    localStorage.removeItem('quina-convite-pendente')
     joinDuel(inviteCode)
-      .then((d) => {
-        setDuel(d)
-        const url = new URL(window.location.href)
-        url.searchParams.delete('duelo')
-        window.history.replaceState({}, '', url)
-      })
+      .then(setDuel)
       .catch((e) => setError(e.message))
   }, [user, duel])
 

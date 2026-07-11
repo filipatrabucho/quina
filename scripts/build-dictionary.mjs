@@ -26,6 +26,6 @@ for (const rawLine of text.split('\n')) {
 }
 
 const sorted = [...words].sort()
-const outPath = fileURLToPath(new URL('../src/data/ptDictionary.json', import.meta.url))
+const outPath = fileURLToPath(new URL('../src/games/palavras/data/ptDictionary.json', import.meta.url))
 writeFileSync(outPath, JSON.stringify(sorted))
 console.log(`Guardadas ${sorted.length} palavras de 5 letras em src/data/ptDictionary.json`)
