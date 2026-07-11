@@ -19,11 +19,8 @@
 
 html, body, #root { height: 100%; }
 
-<<<<<<< HEAD
 html, body { overflow-x: hidden; }
 
-=======
->>>>>>> d1c75b1c1558be2dfc43f45fb0c1a1e7dc645fd5
 body {
   margin: 0;
   font-family: var(--font-body);
@@ -203,19 +200,10 @@ button { font-family: inherit; }
   display: grid;
   gap: 22px;
   justify-items: center;
-<<<<<<< HEAD
 }
 .boards-grid--1 { grid-template-columns: 1fr; }
 .boards-grid--2 { grid-template-columns: repeat(2, 1fr); overflow-x: auto; }
 .boards-grid--4 { grid-template-columns: repeat(4, 1fr); overflow-x: auto; }
-=======
-  overflow-x: auto;
-  padding: 4px;
-}
-.boards-grid--1 { grid-template-columns: 1fr; }
-.boards-grid--2 { grid-template-columns: repeat(2, 1fr); }
-.boards-grid--4 { grid-template-columns: repeat(4, 1fr); }
->>>>>>> d1c75b1c1558be2dfc43f45fb0c1a1e7dc645fd5
 
 @media (max-width: 700px) {
   .boards-grid--4 { grid-template-columns: repeat(2, 1fr); }
@@ -252,7 +240,6 @@ button { font-family: inherit; }
 @media (max-width: 900px) {
   .tile--compact { width: 46px; height: 46px; font-size: 1.4rem; }
 }
-<<<<<<< HEAD
 @media (max-width: 600px) {
   .boards-grid { gap: 8px; }
   .board--compact .row { gap: 3px; }
@@ -261,10 +248,6 @@ button { font-family: inherit; }
 }
 @media (max-width: 380px) {
   .tile--compact { width: 27px; height: 27px; font-size: 0.85rem; }
-=======
-@media (max-width: 480px) {
-  .tile--compact { width: 40px; height: 40px; font-size: 1.15rem; }
->>>>>>> d1c75b1c1558be2dfc43f45fb0c1a1e7dc645fd5
 }
 
 .mode-btn--duel {
@@ -466,20 +449,4 @@ button { font-family: inherit; }
 @media (max-width: 380px) {
   .tile { width: 48px; height: 48px; font-size: 1.4rem; }
   .key { height: 46px; }
-<<<<<<< HEAD
-=======
-}
-.boards-grid {
-  display: grid;
-  gap: 22px;
-  justify-items: center;
-  padding: 4px;
-}
-.boards-grid--1 { grid-template-columns: 1fr; }
-.boards-grid--2 { grid-template-columns: repeat(2, 1fr); overflow-x: auto; }
-.boards-grid--4 { grid-template-columns: repeat(4, 1fr); overflow-x: auto; }
-
-@media (max-width: 700px) {
-  .boards-grid--4 { grid-template-columns: repeat(2, 1fr); }
->>>>>>> d1c75b1c1558be2dfc43f45fb0c1a1e7dc645fd5
 }
