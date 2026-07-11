@@ -202,8 +202,8 @@ button { font-family: inherit; }
   justify-items: center;
 }
 .boards-grid--1 { grid-template-columns: 1fr; }
-.boards-grid--2 { grid-template-columns: repeat(2, 1fr); overflow-x: auto; }
-.boards-grid--4 { grid-template-columns: repeat(4, 1fr); overflow-x: auto; }
+.boards-grid--2 { grid-template-columns: repeat(2, 1fr) }
+.boards-grid--4 { grid-template-columns: repeat(4, 1fr) }
 
 @media (max-width: 700px) {
   .boards-grid--4 { grid-template-columns: repeat(2, 1fr); }
@@ -450,3 +450,16 @@ button { font-family: inherit; }
   .tile { width: 48px; height: 48px; font-size: 1.4rem; }
   .key { height: 46px; }
 }
+.tip-link {
+  display: inline-block;
+  color: var(--ochre);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+  border: 1.5px solid var(--ochre);
+  border-radius: 20px;
+  padding: 6px 14px;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.tip-link:hover { background: var(--ochre); color: var(--white); }
+.tip-link--footer { margin: 10px auto 4px; }

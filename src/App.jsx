@@ -333,6 +333,17 @@ export default function App() {
       )}
       </>
       )}
+
+      {import.meta.env.VITE_TIP_URL && (
+        <a
+          className="tip-link tip-link--footer"
+          href={import.meta.env.VITE_TIP_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          ☕ Oferece-me um café
+        </a>
+      )}
     </div>
   )
 }
