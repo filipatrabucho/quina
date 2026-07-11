@@ -507,13 +507,18 @@ button { font-family: inherit; }
 @media (max-width: 380px) {
   .fiada-cell { width: 52px; height: 52px; font-size: 1.15rem; }
 }
-
+.fiada-duel {
+  max-width: 100%;
+  width: 100%;
+  padding: 0 12px;
+}
 .fiada-duel-boards {
   display: flex;
   gap: 24px;
   justify-content: center;
   flex-wrap: wrap;
 }
+
 
 .fiada-grid--small { grid-template-columns: repeat(4, 1fr); gap: 4px; }
 .fiada-grid--small .fiada-cell { width: 46px; height: 46px; font-size: 1.1rem; }
@@ -527,6 +532,16 @@ button { font-family: inherit; }
 .fiada-grid--readonly .fiada-cell--filled,
 .fiada-grid--readonly div.fiada-cell--filled {
   background: var(--azulejo); color: var(--white); border-color: var(--azulejo-deep);
+}
+
+@media (max-width: 700px) {
+  .fiada-grid--small .fiada-cell { width: 38px; height: 38px; font-size: 0.95rem; }
+}
+@media (max-width: 480px) {
+  .fiada-multi-boards { gap: 10px; }
+  .fiada-player-board { padding: 6px; }
+  .fiada-grid--small { gap: 3px; }
+  .fiada-grid--small .fiada-cell { width: 32px; height: 32px; font-size: 0.85rem; border-width: 1.5px; }
 }
 
 .fiada-cell--c0 { background: var(--azulejo); border-color: var(--azulejo-deep); }
@@ -561,8 +576,11 @@ button { font-family: inherit; }
 .fiada-multi-boards {
   display: flex;
   gap: 20px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
   justify-content: center;
+  width: 100%;
+  padding: 4px 4px 10px;
 }
 
 .fiada-player-board {
@@ -768,13 +786,4 @@ button { font-family: inherit; }
 @media (max-width: 380px) {
   .tile { width: 48px; height: 48px; font-size: 1.4rem; }
   .key { height: 46px; }
-}
-.fiada-multi-boards {
-  display: flex;
-  gap: 20px;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  justify-content: flex-start;
-  width: 100%;
-  padding-bottom: 6px;
 }

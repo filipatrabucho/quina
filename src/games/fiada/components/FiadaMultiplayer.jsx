@@ -208,31 +208,6 @@ export default function FiadaMultiplayer({ onExit }) {
         </>
       )}
 
-      <div className="fiada-multi-boards">
-        {room.players.map((p, i) => (
-          <div
-            key={p.id}
-            className={`fiada-player-board${i === room.turn_index && room.status === 'a-jogar' ? ' fiada-player-board--turn' : ''}`}
-          >
-            <p className="modal-note">
-              {p.id === user.id ? 'O teu painel' : `Jogador ${i + 1}`} · {p.moves} jogadas
-            </p>
-            <div className="fiada-grid fiada-grid--small">
-              {p.cells.map((v, ci) => (
-                <button
-                  key={ci}
-                  className={`fiada-cell${v != null ? ' fiada-cell--filled' : ''}`}
-                  onClick={() => p.id === user.id && myTurn && pending != null && handlePlace(ci)}
-                  disabled={!(p.id === user.id && myTurn && pending != null) || busy}
-                >
-                  {v ?? ''}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-
       {room.status === 'a-jogar' && (
         <>
           <div className="fiada-hand">
@@ -279,6 +254,31 @@ export default function FiadaMultiplayer({ onExit }) {
           )}
         </>
       )}
+
+      <div className="fiada-multi-boards">
+        {room.players.map((p, i) => (
+          <div
+            key={p.id}
+            className={`fiada-player-board${i === room.turn_index && room.status === 'a-jogar' ? ' fiada-player-board--turn' : ''}`}
+          >
+            <p className="modal-note">
+              {p.id === user.id ? 'O teu painel' : `Jogador ${i + 1}`} · {p.moves} jogadas
+            </p>
+            <div className="fiada-grid fiada-grid--small">
+              {p.cells.map((v, ci) => (
+                <button
+                  key={ci}
+                  className={`fiada-cell${v != null ? ' fiada-cell--filled' : ''}`}
+                  onClick={() => p.id === user.id && myTurn && pending != null && handlePlace(ci)}
+                  disabled={!(p.id === user.id && myTurn && pending != null) || busy}
+                >
+                  {v ?? ''}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
 
       {error && <p className="duel-error">{error}</p>}
     </div>
