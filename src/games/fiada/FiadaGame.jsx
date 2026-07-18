@@ -135,7 +135,7 @@ export default function FiadaGame() {
         <FiadaMultiplayer onExit={() => setView('solo')} />
       ) : (
         <main className="fiada">
-          <div className="fiada-stats-row">
+          {/* <div className="fiada-stats-row">
             <div className="fiada-stat">
               <span className="fiada-stat__value">{moves}</span>
               <span className="fiada-stat__label">Jogadas</span>
@@ -148,7 +148,7 @@ export default function FiadaGame() {
               <span className="fiada-stat__value">{filledCount}/16</span>
               <span className="fiada-stat__label">Completo</span>
             </div>
-          </div>
+          </div> */}
 
           <div className="fiada-header-bar">
             <div className="fiada-header-bar__col">

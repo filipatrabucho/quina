@@ -216,59 +216,42 @@ export default function FiadaMultiplayer({ onExit }) {
   return (
     <div className="duel-panel fiada-duel">
       {room.status === 'a-jogar' && (
-        <div className="fiada-topbar">
-          <div className="fiada-topbar__row fiada-topbar__row--title">
-            <span className="fiada-topbar__title">Fiada</span>
+        <div className="fiada-header-bar">
+          <div className="fiada-header-bar__col">
+            <span className="fiada-header-bar__label">🎴 Baralho</span>
+            <span className="fiada-header-bar__value">
+              {room.draw_index >= room.deck.length ? 'esgotado' : `${room.deck.length - room.draw_index} restantes`}
+            </span>
+          </div>
+
+          <div className="fiada-header-bar__col">
+            <span className="fiada-header-bar__label">🎲 Mesa</span>
+            <div className="fiada-topbar__faceup-strip">
+              {room.face_up.length === 0 && <span className="fiada-topbar__empty-chip">vazia</span>}
+              {room.face_up.map((v, i) => (
+                <button
+                  key={i}
+                  className="fiada-tile fiada-tile--faceup"
+                  onClick={() => handlePickFaceUp(i)}
+                  disabled={busy || pending != null || !myTurn}
+                >
+                  {v}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="fiada-header-bar__col fiada-header-bar__col--right">
+            <span className="fiada-header-bar__logo">
+              <span className="logo__tile logo__tile--a fiada-header-bar__logo-tile">F</span>
+              <span className="logo__tile logo__tile--b fiada-header-bar__logo-tile">I</span>
+              <span className="logo__tile logo__tile--a fiada-header-bar__logo-tile">A</span>
+              <span className="logo__tile logo__tile--b fiada-header-bar__logo-tile">D</span>
+              <span className="logo__tile logo__tile--a fiada-header-bar__logo-tile">A</span>
+            </span>
             <span className={`fiada-turn-indicator${myTurn ? ' fiada-turn-indicator--you' : ''}`}>
               {myTurn ? 'É a tua vez!' : `Vez de ${playerName(room.players[room.turn_index], room.turn_index)}`}
             </span>
-          </div>
-
-          <div className="fiada-topbar__hand-row">
-            <span className="fiada-topbar__label">
-              🀄 Na mão{myTurn ? '' : ` (${playerName(room.players[room.turn_index], room.turn_index)})`}
-            </span>
-            <div className={`fiada-tile fiada-tile--pending${pending == null ? ' fiada-tile--empty' : ''}`}>
-              {pending ?? '—'}
-            </div>
-            {pending != null && myTurn && (
-              <button className="fiada-topbar__discard" onClick={handleDiscard} disabled={busy}>
-                Descartar
-              </button>
-            )}
-          </div>
-
-          <div className="fiada-topbar__mesa-row">
-            <span className="fiada-topbar__label">🎲 Mesa</span>
-            {!noDrawOptions ? (
-              <>
-                <button className="fiada-topbar__draw" onClick={handleDrawBlind} disabled={busy || pending != null || !myTurn}>
-                  Comprar às cegas
-                </button>
-                <div className="fiada-topbar__faceup-strip">
-                  {room.face_up.length === 0 && <span className="fiada-topbar__empty-chip">vazia</span>}
-                  {room.face_up.map((v, i) => (
-                    <button
-                      key={i}
-                      className="fiada-tile fiada-tile--faceup"
-                      onClick={() => handlePickFaceUp(i)}
-                      disabled={busy || pending != null || !myTurn}
-                    >
-                      {v}
-                    </button>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <>
-                <span className="fiada-topbar__empty-chip">sem azulejos</span>
-                {pending == null && myTurn && (
-                  <button className="fiada-topbar__draw" onClick={handlePassTurn} disabled={busy}>
-                    Passar a vez
-                  </button>
-                )}
-              </>
-            )}
           </div>
         </div>
       )}
@@ -289,28 +272,56 @@ export default function FiadaMultiplayer({ onExit }) {
       )}
 
       <div className="fiada-multi-boards">
-        {room.players.map((p, i) => (
-          <div
-            key={p.id}
-            className={`fiada-player-board fiada-player-board--c${i % 4}${i === room.turn_index && room.status === 'a-jogar' ? ' fiada-player-board--turn' : ''}`}
-          >
-            <p className="fiada-player-board__header">
-              <PlayerLabel player={p} index={i} you={p.id === user.id} /> · {p.moves} jogadas
-            </p>
-            <div className="fiada-grid fiada-grid--small">
-              {p.cells.map((v, ci) => (
-                <button
-                  key={ci}
-                  className={`fiada-cell${v != null ? ' fiada-cell--filled' + tileColorClass(v) : ''}`}
-                  onClick={() => p.id === user.id && myTurn && pending != null && handlePlace(ci)}
-                  disabled={!(p.id === user.id && myTurn && pending != null) || busy}
-                >
-                  {v ?? ''}
-                </button>
-              ))}
+        {room.players.map((p, i) => {
+          const isTurnBoard = i === room.turn_index && room.status === 'a-jogar'
+          return (
+            <div
+              key={p.id}
+              className={`fiada-player-board fiada-player-board--c${i % 4}${isTurnBoard ? ' fiada-player-board--turn' : ''}`}
+            >
+              <p className="fiada-player-board__header">
+                <PlayerLabel player={p} index={i} you={p.id === user.id} /> · {p.moves} jogadas
+              </p>
+              <div className="fiada-board-frame">
+                <div className="fiada-grid fiada-grid--small">
+                  {p.cells.map((v, ci) => (
+                    <button
+                      key={ci}
+                      className={`fiada-cell${v != null ? ' fiada-cell--filled' + tileColorClass(v) : ''}`}
+                      onClick={() => p.id === user.id && myTurn && pending != null && handlePlace(ci)}
+                      disabled={!(p.id === user.id && myTurn && pending != null) || busy}
+                    >
+                      {v ?? ''}
+                    </button>
+                  ))}
+                </div>
+
+                {isTurnBoard && (
+                  <div className="fiada-hand-tray fiada-hand-tray--small">
+                    <div className={`fiada-tile fiada-tile--pending${pending == null ? ' fiada-tile--empty' : ''}`}>
+                      {pending ?? '—'}
+                    </div>
+                    {myTurn && pending == null && !noDrawOptions && (
+                      <button className="fiada-topbar__draw" onClick={handleDrawBlind} disabled={busy}>
+                        Comprar
+                      </button>
+                    )}
+                    {myTurn && pending == null && noDrawOptions && (
+                      <button className="fiada-topbar__draw" onClick={handlePassTurn} disabled={busy}>
+                        Passar
+                      </button>
+                    )}
+                    {myTurn && pending != null && (
+                      <button className="fiada-topbar__discard fiada-topbar__discard--dark" onClick={handleDiscard} disabled={busy}>
+                        Descartar
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {error && <p className="duel-error">{error}</p>}
