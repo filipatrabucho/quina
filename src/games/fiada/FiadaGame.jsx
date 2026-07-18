@@ -1,14 +1,20 @@
 import { useEffect, useMemo, useState } from 'react'
-import { GRID_SIZE, getTodayDeck, getTodayKey, isValidPlacement } from './utils/fiadaLogic.js'
+import { GRID_SIZE, getTodayDeck, getTodayKey, isValidPlacement, buildInitialSetup } from './utils/fiadaLogic.js'
 import FiadaMultiplayer from './components/FiadaMultiplayer.jsx'
 
-const STORAGE_PREFIX = 'quina-fiada-estado-'
+const STORAGE_PREFIX = 'quina-fiada-estado-v2-'
+
+function tileColorClass(value) {
+  if (value == null) return ''
+  return ` fiada-cell--c${value % 4}`
+}
 
 function freshState(deck) {
+  const { cells, drawIndex } = buildInitialSetup(deck)
   return {
-    cells: Array(GRID_SIZE * GRID_SIZE).fill(null),
-    drawIndex: 3,
-    faceUp: deck.slice(0, 3),
+    cells,
+    drawIndex,
+    faceUp: [],
     pending: null,
     moves: 0,
     discards: 0,
@@ -38,6 +44,7 @@ export default function FiadaGame() {
   const [moves, setMoves] = useState(initial.moves)
   const [discards, setDiscards] = useState(initial.discards)
   const [error, setError] = useState('')
+  const [showHelp, setShowHelp] = useState(false)
 
   useEffect(() => {
     localStorage.setItem(
@@ -62,16 +69,7 @@ export default function FiadaGame() {
     if (pending != null || isComplete) return
     const value = faceUp[i]
     setPending(value)
-    setFaceUp((prev) => {
-      const next = [...prev]
-      if (drawIndex < deck.length) {
-        next[i] = deck[drawIndex]
-      } else {
-        next.splice(i, 1)
-      }
-      return next
-    })
-    if (drawIndex < deck.length) setDrawIndex((idx) => idx + 1)
+    setFaceUp((prev) => prev.filter((_, idx) => idx !== i))
   }
 
   function placeAt(index) {
@@ -94,6 +92,7 @@ export default function FiadaGame() {
   function discardPending() {
     if (pending == null) return
     setDiscards((d) => d + 1)
+    setFaceUp((prev) => [...prev, pending])
     setPending(null)
   }
 
@@ -111,6 +110,9 @@ export default function FiadaGame() {
   return (
     <>
       <header className="header header--game">
+        <button className="icon-btn" onClick={() => setShowHelp(true)} aria-label="Como jogar">
+          ?
+        </button>
         <h2 className="game-title">Fiada</h2>
         <button className="icon-btn" onClick={newGame} aria-label="Novo jogo" title="Novo jogo">
           🔄
@@ -133,28 +135,81 @@ export default function FiadaGame() {
         <FiadaMultiplayer onExit={() => setView('solo')} />
       ) : (
         <main className="fiada">
-          <p className="modal-note">
-            Coloca os azulejos por ordem crescente em cada linha e coluna. Podes trocar um azulejo
-            já colocado por outro melhor — o que sai vai para a mesa, à vista de todos.
-          </p>
-
-          <div className="fiada-status">
-            <span>Jogadas: {moves}</span>
-            <span>Descartes: {discards}</span>
-            <span>{filledCount}/16</span>
+          <div className="fiada-stats-row">
+            <div className="fiada-stat">
+              <span className="fiada-stat__value">{moves}</span>
+              <span className="fiada-stat__label">Jogadas</span>
+            </div>
+            <div className="fiada-stat">
+              <span className="fiada-stat__value">{discards}</span>
+              <span className="fiada-stat__label">Descartes</span>
+            </div>
+            <div className="fiada-stat">
+              <span className="fiada-stat__value">{filledCount}/16</span>
+              <span className="fiada-stat__label">Completo</span>
+            </div>
           </div>
 
-          <div className="fiada-grid">
-            {cells.map((value, i) => (
-              <button
-                key={i}
-                className={`fiada-cell${value != null ? ' fiada-cell--filled' : ''}`}
-                onClick={() => placeAt(i)}
-                disabled={pending == null || isComplete}
-              >
-                {value ?? ''}
-              </button>
-            ))}
+          <div className="fiada-header-bar">
+            <div className="fiada-header-bar__col">
+              <span className="fiada-header-bar__label">🎴 Baralho</span>
+              <span className="fiada-header-bar__value">
+                {deckExhausted ? 'esgotado' : `${deck.length - drawIndex} restantes`}
+              </span>
+            </div>
+
+            <div className="fiada-header-bar__col fiada-header-bar__col--center">
+              <span className="fiada-header-bar__label">🎲 Mesa</span>
+              <div className="fiada-topbar__faceup-strip">
+                {faceUp.length === 0 && <span className="fiada-topbar__empty-chip">vazia</span>}
+                {faceUp.map((value, i) => (
+                  <button
+                    key={i}
+                    className="fiada-tile fiada-tile--faceup"
+                    onClick={() => pickFaceUp(i)}
+                    disabled={pending != null || isComplete}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="fiada-header-bar__col fiada-header-bar__col--right">
+              <span className="fiada-header-bar__title">Fiada</span>
+            </div>
+          </div>
+
+          <div className="fiada-board-frame">
+            <div className="fiada-grid">
+              {cells.map((value, i) => (
+                <button
+                  key={i}
+                  className={`fiada-cell${value != null ? ' fiada-cell--filled' + tileColorClass(value) : ''}`}
+                  onClick={() => placeAt(i)}
+                  disabled={pending == null || isComplete}
+                >
+                  {value ?? ''}
+                </button>
+              ))}
+            </div>
+
+            {!isComplete && !isStuck && (
+              <div className="fiada-hand-tray">
+                <div className={`fiada-tile fiada-tile--pending${pending == null ? ' fiada-tile--empty' : ''}`}>
+                  {pending ?? '—'}
+                </div>
+                {pending == null ? (
+                  <button className="fiada-topbar__draw" onClick={drawBlind} disabled={deckExhausted}>
+                    Comprar às cegas
+                  </button>
+                ) : (
+                  <button className="fiada-topbar__discard fiada-topbar__discard--dark" onClick={discardPending}>
+                    Descartar
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           {error && <p className="duel-error">{error}</p>}
@@ -172,41 +227,35 @@ export default function FiadaGame() {
               <button className="share-btn" onClick={newGame}>Jogar outra vez</button>
             </>
           )}
-
-          {!isComplete && !isStuck && (
-            <>
-              <div className="fiada-hand">
-                <span className="modal-note">Na mão:</span>
-                <div className={`fiada-tile fiada-tile--pending${pending == null ? ' fiada-tile--empty' : ''}`}>
-                  {pending ?? '—'}
-                </div>
-                {pending != null && (
-                  <button className="mode-btn" onClick={discardPending}>
-                    Descartar
-                  </button>
-                )}
-              </div>
-
-              <div className="fiada-drawpile">
-                <button className="share-btn" onClick={drawBlind} disabled={pending != null || deckExhausted}>
-                  Comprar às cegas ({deck.length - drawIndex} restantes)
-                </button>
-                <div className="fiada-faceup">
-                  {faceUp.map((value, i) => (
-                    <button
-                      key={i}
-                      className="fiada-tile fiada-tile--faceup"
-                      onClick={() => pickFaceUp(i)}
-                      disabled={pending != null}
-                    >
-                      {value}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
         </main>
+      )}
+
+      {showHelp && (
+        <div className="modal-overlay" onClick={() => setShowHelp(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={() => setShowHelp(false)} aria-label="Fechar">×</button>
+            <h2>Como jogar Fiada</h2>
+            <p>
+              Começas com 4 azulejos já colocados na diagonal do teu painel, por ordem crescente.
+              O objetivo é preencher as 16 casas, mantendo cada linha e cada coluna sempre em
+              ordem crescente.
+            </p>
+            <p>
+              Em cada jogada, ou <strong>compras às cegas</strong> (não sabes o número antes de o
+              tirar) ou escolhes um azulejo já visível na <strong>mesa</strong>. Depois, com o
+              azulejo na mão, podes:
+            </p>
+            <p>
+              <strong>1.</strong> Colocá-lo numa casa vazia.<br />
+              <strong>2.</strong> Trocá-lo por um azulejo já colocado (o que sai vai para a mesa).<br />
+              <strong>3.</strong> Descartá-lo para a mesa, se não encaixar em lado nenhum.
+            </p>
+            <p>
+              Vence quem completar primeiro o painel. Se o baralho e a mesa esgotarem antes disso,
+              o jogo termina e vence quem tiver mais casas preenchidas.
+            </p>
+          </div>
+        </div>
       )}
     </>
   )

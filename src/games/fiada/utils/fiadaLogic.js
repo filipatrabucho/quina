@@ -1,6 +1,7 @@
 export const GRID_SIZE = 4
 export const MIN_VALUE = 1
-export const MAX_VALUE = 24 // mais valores do que casas (16), para haver escolha real
+export const MAX_VALUE = 20
+const DIAGONAL_INDICES = [0, 5, 10, 15] // topo-esquerda a baixo-direita, num tabuleiro 4x4
 
 // PRNG simples e determinístico (mulberry32) — mesmo dia = mesmo baralho
 // para toda a gente, sem precisar de servidor.
@@ -40,11 +41,13 @@ export function getTodayDeck(date = new Date()) {
   return values
 }
 
-// Baralho aleatório (não determinístico) — usado nas partidas 1vs1, que não
-// estão ligadas ao desafio do dia.
-export function generateRandomDeck() {
+// Baralho aleatório (não determinístico) — usado nas partidas multiplayer.
+// O tamanho é configurável porque, com vários jogadores, cada um precisa de
+// 16 azulejos para o seu próprio painel — o baralho tem de ter tiles
+// suficientes para todos, não só para um jogador.
+export function generateRandomDeck(size = MAX_VALUE) {
   const values = []
-  for (let v = MIN_VALUE; v <= MAX_VALUE; v++) values.push(v)
+  for (let v = MIN_VALUE; v <= size; v++) values.push(v)
   for (let i = values.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
     ;[values[i], values[j]] = [values[j], values[i]]
@@ -80,4 +83,16 @@ export function isValidPlacement(cells, index, value) {
 
 export function isBoardFull(cells) {
   return cells.every((c) => c != null)
+}
+
+// Configuração inicial oficial: cada jogador começa com 4 azulejos já
+// colocados na diagonal do seu painel, tirados ao acaso e ordenados de
+// forma crescente. `deck` já deve vir baralhado — usa os primeiros 4.
+export function buildInitialSetup(deck) {
+  const diagValues = deck.slice(0, 4).sort((a, b) => a - b)
+  const cells = Array(GRID_SIZE * GRID_SIZE).fill(null)
+  DIAGONAL_INDICES.forEach((idx, i) => {
+    cells[idx] = diagValues[i]
+  })
+  return { cells, drawIndex: 4 }
 }

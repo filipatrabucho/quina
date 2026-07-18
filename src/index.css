@@ -422,7 +422,7 @@ button { font-family: inherit; }
 
 .fiada {
   width: 100%;
-  max-width: 460px;
+  max-width: 600px;
   padding: 20px 18px 40px;
   display: flex;
   flex-direction: column;
@@ -442,27 +442,37 @@ button { font-family: inherit; }
 .fiada-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
+  gap: 8px;
+  background: linear-gradient(160deg, #EBE2CE, #DCCFAF);
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: inset 0 2px 8px rgba(34, 48, 60, 0.15), inset 0 -1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .fiada-cell {
   width: 64px;
   height: 64px;
-  border: 2px solid var(--stone-light);
-  border-radius: 8px;
+  border: none;
+  border-radius: 10px;
   background: var(--white);
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   color: var(--ink);
   cursor: pointer;
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.08), 0 2px 3px rgba(0, 0, 0, 0.12);
+  transition: transform 0.1s ease;
 }
+.fiada-cell:not(:disabled):hover { transform: translateY(-2px); }
 .fiada-cell:disabled { cursor: default; }
 .fiada-cell--filled {
-  background: var(--azulejo);
   color: var(--white);
-  border-color: var(--azulejo-deep);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3), inset 0 -3px 6px rgba(0, 0, 0, 0.25), 0 3px 6px rgba(0, 0, 0, 0.18);
 }
+.fiada-cell--c0 { background: linear-gradient(155deg, #3E7CAA, var(--azulejo-deep)); }
+.fiada-cell--c1 { background: linear-gradient(155deg, #E0964A, #A5631C); }
+.fiada-cell--c2 { background: linear-gradient(155deg, #A6A295, #706E67); }
+.fiada-cell--c3 { background: linear-gradient(155deg, #CC5D4C, #8E3A2F); }
 
 .fiada-hand {
   display: flex;
@@ -473,9 +483,9 @@ button { font-family: inherit; }
 .fiada-tile {
   width: 50px;
   height: 50px;
-  border-radius: 8px;
-  border: 2px solid var(--ochre);
-  background: var(--ochre);
+  border-radius: 9px;
+  border: none;
+  background: linear-gradient(155deg, #E0964A, #A5631C);
   color: var(--white);
   font-family: var(--font-display);
   font-weight: 700;
@@ -484,15 +494,16 @@ button { font-family: inherit; }
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3), inset 0 -3px 5px rgba(0, 0, 0, 0.22), 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 .fiada-tile--pending { cursor: default; }
 .fiada-tile--empty {
   background: var(--white);
-  color: var(--stone);
-  border-color: var(--stone-light);
+  color: var(--stone-light);
+  box-shadow: inset 0 0 0 2px var(--stone-light);
   font-size: 1.4rem;
 }
-.fiada-tile--faceup { background: var(--stone); border-color: #706E67; }
+.fiada-tile--faceup { background: linear-gradient(155deg, #A6A295, #706E67); }
 .fiada-tile:disabled { opacity: 0.5; cursor: default; }
 
 .fiada-drawpile {
@@ -507,18 +518,13 @@ button { font-family: inherit; }
 @media (max-width: 380px) {
   .fiada-cell { width: 52px; height: 52px; font-size: 1.15rem; }
 }
-.fiada-duel {
-  max-width: 100%;
-  width: 100%;
-  padding: 0 12px;
-}
+
 .fiada-duel-boards {
   display: flex;
   gap: 24px;
   justify-content: center;
   flex-wrap: wrap;
 }
-
 
 .fiada-grid--small { grid-template-columns: repeat(4, 1fr); gap: 4px; }
 .fiada-grid--small .fiada-cell { width: 46px; height: 46px; font-size: 1.1rem; }
@@ -544,12 +550,6 @@ button { font-family: inherit; }
   .fiada-grid--small .fiada-cell { width: 32px; height: 32px; font-size: 0.85rem; border-width: 1.5px; }
 }
 
-.fiada-cell--c0 { background: var(--azulejo); border-color: var(--azulejo-deep); }
-.fiada-cell--c1 { background: var(--ochre); border-color: #A5631C; }
-.fiada-cell--c2 { background: var(--stone); border-color: #706E67; }
-.fiada-cell--c3 { background: var(--danger); border-color: #8E3A2F; }
-.fiada-cell--c0, .fiada-cell--c1, .fiada-cell--c2, .fiada-cell--c3 { color: var(--white); }
-
 .fiada-maxplayers {
   display: flex;
   flex-direction: column;
@@ -573,6 +573,12 @@ button { font-family: inherit; }
   background: var(--white);
 }
 
+.fiada-duel {
+  max-width: 100%;
+  width: 100%;
+  padding: 0 12px;
+}
+
 .fiada-multi-boards {
   display: flex;
   gap: 20px;
@@ -583,14 +589,440 @@ button { font-family: inherit; }
   padding: 4px 4px 10px;
 }
 
-.fiada-player-board {
+.fiada-action-panel {
+  width: 100%;
+  max-width: 360px;
+  min-height: 168px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: var(--white);
+  border: 1.5px solid var(--stone-light);
+  box-shadow: 0 6px 16px rgba(34, 48, 60, 0.06);
+}
+
+.fiada-topbar {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--azulejo-deep);
+  color: var(--white);
+  border-radius: 14px;
+  padding: 14px 20px;
+  box-shadow: 0 8px 20px rgba(30, 69, 96, 0.25);
+}
+
+.fiada-topbar__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.fiada-topbar__row--action { align-items: flex-start; }
+.fiada-topbar__row--title {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 8px;
+}
+.fiada-topbar__row--action { flex-wrap: wrap; }
+
+.fiada-topbar__section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fiada-topbar__section--center { flex-wrap: wrap; }
+
+.fiada-topbar__label {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #F0C68A;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.fiada-topbar__title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.15rem;
+  letter-spacing: 0.03em;
+}
+
+.fiada-topbar__draw {
+  border: none;
+  border-radius: 8px;
+  background: var(--ochre);
+  color: var(--white);
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 7px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.fiada-topbar__draw:hover { background: #A5631C; }
+.fiada-topbar__draw:disabled { opacity: 0.4; cursor: default; }
+
+.fiada-topbar__block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.fiada-topbar__block--grow { flex: 1; min-width: 0; }
+
+.fiada-topbar__divider {
+  align-self: stretch;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.fiada-topbar__row-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.fiada-header-bar {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 20px;
+  background: var(--azulejo-deep);
+  color: var(--white);
+  border-radius: 14px;
+  padding: 14px 20px;
+  box-shadow: 0 8px 20px rgba(30, 69, 96, 0.25);
+}
+.fiada-header-bar__col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.fiada-header-bar__col--right { align-items: flex-end; }
+.fiada-header-bar__label {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #F0C68A;
+  white-space: nowrap;
+}
+.fiada-header-bar__value {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.75);
+  white-space: nowrap;
+}
+.fiada-header-bar__title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.3rem;
+  letter-spacing: 0.04em;
+}
+
+.fiada-header-bar__logo {
+  display: flex;
+  gap: 3px;
+}
+.fiada-header-bar__logo-tile {
+  width: 26px;
+  height: 26px;
+  font-size: 0.95rem;
+  border-radius: 5px;
+}
+
+.fiada-board-frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fiada-hand-tray {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--cream-deep);
+  padding: 8px 16px;
   border-radius: 12px;
-  padding: 10px;
-  border: 2px solid transparent;
+  margin-top: -10px;
+  border: 1px solid var(--stone-light);
+  box-shadow: 0 4px 10px rgba(34, 48, 60, 0.1);
+}
+
+.fiada-hand-tray--small {
+  padding: 5px 10px;
+  gap: 6px;
+  margin-top: -6px;
+}
+.fiada-hand-tray--small .fiada-tile { width: 34px; height: 34px; font-size: 0.95rem; }
+.fiada-hand-tray--small .fiada-topbar__draw,
+.fiada-hand-tray--small .fiada-topbar__discard {
+  font-size: 0.7rem;
+  padding: 5px 8px;
+}
+
+.fiada-topbar__discard--dark {
+  border: 1.5px solid var(--azulejo);
+  color: var(--azulejo-deep);
+}
+.fiada-topbar__discard--dark:hover { background: rgba(44, 92, 130, 0.1); }
+.fiada-header-bar {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 20px;
+  background: var(--azulejo-deep);
+  color: var(--white);
+  border-radius: 14px;
+  padding: 14px 20px;
+  box-shadow: 0 8px 20px rgba(30, 69, 96, 0.25);
+}
+.fiada-header-bar__col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.fiada-header-bar__col--right { align-items: flex-end; }
+.fiada-header-bar__label {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #F0C68A;
+  white-space: nowrap;
+}
+.fiada-header-bar__value {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.75);
+  white-space: nowrap;
+}
+.fiada-header-bar__title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.3rem;
+  letter-spacing: 0.04em;
+}
+
+.fiada-board-frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fiada-hand-tray {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--cream-deep);
+  padding: 8px 16px;
+  border-radius: 12px;
+  margin-top: -10px;
+  border: 1px solid var(--stone-light);
+  box-shadow: 0 4px 10px rgba(34, 48, 60, 0.1);
+}
+
+.fiada-hand-tray--small {
+  padding: 5px 10px;
+  gap: 6px;
+  margin-top: -6px;
+}
+.fiada-hand-tray--small .fiada-tile { width: 34px; height: 34px; font-size: 0.95rem; }
+.fiada-hand-tray--small .fiada-topbar__draw,
+.fiada-hand-tray--small .fiada-topbar__discard {
+  font-size: 0.7rem;
+  padding: 5px 8px;
+}
+
+.fiada-topbar__discard--dark {
+  border: 1.5px solid var(--azulejo);
+  color: var(--azulejo-deep);
+}
+.fiada-topbar__discard--dark:hover { background: rgba(44, 92, 130, 0.1); }
+.fiada-topbar__hand-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fiada-topbar__mesa-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.fiada-topbar__discard {
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
+  color: var(--white);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.fiada-topbar__discard:hover { background: rgba(255, 255, 255, 0.12); }
+.fiada-topbar__discard:disabled { opacity: 0.4; cursor: default; }
+
+.fiada-topbar__row-content--mesa { flex-wrap: nowrap; }
+
+.fiada-topbar__faceup-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 50px;
+  padding: 6px 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.3);
+  flex: 1;
+  min-width: 120px;
+  mask-image: linear-gradient(to right, black calc(100% - 20px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 20px), transparent 100%);
+}
+.fiada-topbar__faceup-strip::-webkit-scrollbar { height: 4px; }
+.fiada-topbar__faceup-strip::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+.fiada-topbar__faceup-strip .fiada-tile { flex-shrink: 0; }
+
+.fiada-topbar__empty-chip {
+  border: 1.5px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+}
+
+.fiada-card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--cream);
+  border-radius: 18px;
+  border: 1px solid var(--stone-light);
+  box-shadow: 0 10px 30px rgba(34, 48, 60, 0.1);
+  padding: 26px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+}
+
+.fiada-stats-row {
+  display: flex;
+  gap: 32px;
+}
+.fiada-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.fiada-stat__value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--azulejo-deep);
+}
+.fiada-stat__label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--stone);
+}
+
+.fiada-leave-btn { margin: 0 auto; }
+
+.fiada-player-board__header {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  color: var(--stone);
+  font-style: italic;
+}
+
+.fiada-player-board--c0 { border-top: 5px solid var(--azulejo); }
+.fiada-player-board--c1 { border-top: 5px solid var(--ochre); }
+.fiada-player-board--c2 { border-top: 5px solid var(--stone); }
+.fiada-player-board--c3 { border-top: 5px solid var(--danger); }
+
+.fiada-status-bar {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: var(--white);
+  border: 1.5px solid var(--stone-light);
+}
+.fiada-status-bar--won {
+  flex-direction: column;
+  gap: 10px;
+  background: linear-gradient(135deg, var(--azulejo), var(--azulejo-deep));
+  border-color: var(--azulejo-deep);
+}
+.fiada-status-bar--won .duel-result { color: var(--white); margin: 0; }
+.fiada-status-bar--won .share-btn { background: var(--white); color: var(--azulejo-deep); width: auto; padding: 8px 20px; }
+
+.fiada-turn-indicator {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--stone);
+}
+.fiada-turn-indicator--you {
+  color: var(--ochre);
+  font-weight: 700;
+}
+
+.fiada-player-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.fiada-player-label--you { font-weight: 700; color: var(--azulejo-deep); }
+.fiada-player-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid var(--stone-light);
+}
+.fiada-player-avatar--placeholder {
+  background: var(--stone-light);
+  display: inline-block;
+}
+
+.fiada-player-board {
+  border-radius: 14px;
+  padding: 14px;
+  border: 2px solid var(--stone-light);
+  background: var(--white);
+  box-shadow: 0 4px 12px rgba(34, 48, 60, 0.05);
 }
 .fiada-player-board--turn {
   border-color: var(--ochre);
-  background: rgba(201, 124, 46, 0.08);
+  background: linear-gradient(180deg, rgba(201, 124, 46, 0.08), var(--white) 40%);
+  box-shadow: 0 4px 16px rgba(201, 124, 46, 0.18);
 }
 
 .consent-banner {

@@ -1,5 +1,6 @@
 import { supabase } from '../../../lib/supabaseClient.js'
-import { generateRandomDeck, GRID_SIZE } from '../utils/fiadaLogic.js'
+import { GRID_SIZE } from '../utils/fiadaLogic.js'
+import { getDisplayName, getAvatarUrl } from '../../../lib/discordProfile.js'
 
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 
@@ -15,20 +16,28 @@ export async function createFiadaRoom(maxPlayers = 5) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('Precisas de iniciar sessão com o Discord primeiro.')
 
-  const deck = generateRandomDeck()
   const code = randomCode()
   const emptyCells = Array(GRID_SIZE * GRID_SIZE).fill(null)
 
+  // O baralho só é montado quando o jogo começa (fiada_start_room), porque
+  // só aí sabemos quantos jogadores vão mesmo jogar — as regras dizem um
+  // conjunto de 1-20 por jogador em jogo.
   const { data, error } = await supabase
     .from('fiada_rooms')
     .insert({
       host_id: user.id,
       code,
       max_players: maxPlayers,
-      players: [{ id: user.id, cells: emptyCells, moves: 0 }],
-      deck,
-      face_up: deck.slice(0, 3),
-      draw_index: 3,
+      players: [{
+        id: user.id,
+        name: getDisplayName(user),
+        avatar: getAvatarUrl(user),
+        cells: emptyCells,
+        moves: 0,
+      }],
+      deck: [],
+      face_up: [],
+      draw_index: 0,
     })
     .select()
     .single()
@@ -37,7 +46,12 @@ export async function createFiadaRoom(maxPlayers = 5) {
 }
 
 export async function joinFiadaRoom(code) {
-  const { data, error } = await supabase.rpc('fiada_join_room', { p_code: code.trim().toUpperCase() })
+  const { data: { user } } = await supabase.auth.getUser()
+  const { data, error } = await supabase.rpc('fiada_join_room', {
+    p_code: code.trim().toUpperCase(),
+    p_name: getDisplayName(user),
+    p_avatar: getAvatarUrl(user),
+  })
   if (error) throw error
   return data
 }
@@ -72,6 +86,12 @@ export async function fiadaPlace(roomId, index) {
   return data
 }
 
+export async function fiadaPassTurn(roomId) {
+  const { data, error } = await supabase.rpc('fiada_pass_turn', { p_room_id: roomId })
+  if (error) throw error
+  return data
+}
+
 export async function fiadaDiscard(roomId) {
   const { data, error } = await supabase.rpc('fiada_discard', { p_room_id: roomId })
   if (error) throw error
@@ -88,10 +108,4 @@ export function subscribeToFiadaRoom(roomId, onChange) {
     )
     .subscribe()
   return () => supabase.removeChannel(channel)
-}
-
-export async function fiadaPassTurn(roomId) {
-  const { data, error } = await supabase.rpc('fiada_pass_turn', { p_room_id: roomId })
-  if (error) throw error
-  return data
 }

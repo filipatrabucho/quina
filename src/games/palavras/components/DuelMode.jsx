@@ -244,6 +244,9 @@ export default function DuelMode({ onExit }) {
           <input
             value={joinCode}
             onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && joinCode.length === 6 && !busy) handleJoin()
+            }}
             placeholder="Código da sala"
             maxLength={6}
           />
