@@ -288,7 +288,7 @@ export default function FiadaMultiplayer({ onExit }) {
         <button className="mode-btn fiada-leave-btn" onClick={leaveRoom}>Sair / Novo jogo</button>
       )}
 
-    {/*   <div className="fiada-multi-boards">
+      <div className="fiada-multi-boards">
         {room.players.map((p, i) => (
           <div
             key={p.id}
@@ -311,7 +311,7 @@ export default function FiadaMultiplayer({ onExit }) {
             </div>
           </div>
         ))}
-      </div> */}
+      </div>
 
       {error && <p className="duel-error">{error}</p>}
     </div>
