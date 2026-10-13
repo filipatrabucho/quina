@@ -11,7 +11,7 @@ function randomCode() {
 
 export async function createDuel() {
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Precisas de iniciar sessão com o Discord primeiro.')
+  if (!user) throw new Error('Precisas de iniciar sessão primeiro.')
 
   const code = randomCode()
   const { data, error } = await supabase

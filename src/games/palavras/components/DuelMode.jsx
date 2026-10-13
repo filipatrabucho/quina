@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react'
 import Board from './Board.jsx'
 import Keyboard from './Keyboard.jsx'
 import { useAuth } from '../../../hooks/useAuth.js'
+import SignInPanel from '../../../components/SignInPanel.jsx'
 import {
   createDuel,
   createOrJoinDuelForInstance,
@@ -18,7 +19,7 @@ import { isRealWord, preloadDictionary } from '../utils/dictionary.js'
 const DUEL_MAX_GUESSES = 6
 
 export default function DuelMode({ onExit }) {
-  const { user, loading, signInWithDiscord, signOut, discordActivity } = useAuth()
+  const { user, loading, signInWithDiscord, signInAsGuest, signOut, discordActivity } = useAuth()
   const [duel, setDuel] = useState(null)
   const [joinCode, setJoinCode] = useState('')
   const [wordInput, setWordInput] = useState('')
@@ -226,11 +227,12 @@ export default function DuelMode({ onExit }) {
 
   if (!user) {
     return (
-      <div className="duel-panel">
-        <button className="icon-btn" onClick={onExit} aria-label="Voltar">←</button>
-        <h2>Entra com o Discord para jogar 1vs1</h2>
-        <button className="share-btn" onClick={signInWithDiscord}>Entrar com Discord</button>
-      </div>
+      <SignInPanel
+        title="Jogar 1vs1"
+        onExit={onExit}
+        signInAsGuest={signInAsGuest}
+        signInWithDiscord={signInWithDiscord}
+      />
     )
   }
 
@@ -238,7 +240,7 @@ export default function DuelMode({ onExit }) {
     return (
       <div className="duel-panel">
         <button className="icon-btn" onClick={onExit} aria-label="Voltar">←</button>
-        <p>Sessão iniciada como {user.user_metadata?.full_name || user.email}</p>
+        <p>Sessão iniciada como {user.user_metadata?.full_name || user.email || 'convidado'}</p>
         <button className="share-btn" onClick={handleCreate} disabled={busy}>Criar sala</button>
         <div className="duel-join">
           <input
@@ -256,7 +258,7 @@ export default function DuelMode({ onExit }) {
         </div>
         {error && <p className="duel-error">{error}</p>}
         <button className="modal-note" style={{ background: 'none', border: 'none', cursor: 'pointer' }} onClick={signOut}>
-          Sair da conta
+          {user.is_anonymous ? 'Mudar de nome' : 'Sair da conta'}
         </button>
       </div>
     )

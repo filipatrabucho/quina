@@ -1219,3 +1219,9 @@ button { font-family: inherit; }
   .tile { width: 48px; height: 48px; font-size: 1.4rem; }
   .key { height: 46px; }
 }
+.duel-panel input.duel-name-input {
+  text-transform: none;
+  letter-spacing: normal;
+  font-size: 1.1rem;
+  width: 240px;
+}

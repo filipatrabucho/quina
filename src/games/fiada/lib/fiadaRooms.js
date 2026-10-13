@@ -14,7 +14,7 @@ function randomCode() {
 
 export async function createFiadaRoom(maxPlayers = 5) {
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('Precisas de iniciar sessão com o Discord primeiro.')
+  if (!user) throw new Error('Precisas de iniciar sessão primeiro.')
 
   const code = randomCode()
   const emptyCells = Array(GRID_SIZE * GRID_SIZE).fill(null)

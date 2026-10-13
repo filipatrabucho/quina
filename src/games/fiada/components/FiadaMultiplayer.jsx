@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../../../hooks/useAuth.js'
+import SignInPanel from '../../../components/SignInPanel.jsx'
 import {
   createFiadaRoom,
   joinFiadaRoom,
@@ -38,7 +39,7 @@ function PlayerLabel({ player, index, you }) {
 }
 
 export default function FiadaMultiplayer({ onExit }) {
-  const { user, loading, signInWithDiscord } = useAuth()
+  const { user, loading, signInWithDiscord, signInAsGuest } = useAuth()
   const [room, setRoom] = useState(null)
   const [joinCode, setJoinCode] = useState('')
   const [maxPlayers, setMaxPlayers] = useState(5)
@@ -139,11 +140,12 @@ export default function FiadaMultiplayer({ onExit }) {
 
   if (!user) {
     return (
-      <div className="duel-panel">
-        <button className="icon-btn" onClick={onExit} aria-label="Voltar">←</button>
-        <h2>Entra com o Discord para jogar em multiplayer</h2>
-        <button className="share-btn" onClick={signInWithDiscord}>Entrar com Discord</button>
-      </div>
+      <SignInPanel
+        title="Jogar em multiplayer"
+        onExit={onExit}
+        signInAsGuest={signInAsGuest}
+        signInWithDiscord={signInWithDiscord}
+      />
     )
   }
 
