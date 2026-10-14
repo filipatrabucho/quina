@@ -153,6 +153,7 @@ const HELP = (
 export default function GaloGame() {
   return (
     <GameShell
+      game="galo"
       title="Jogo do Galo"
       help={HELP}
       modes={[

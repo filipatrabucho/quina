@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { GRID_SIZE, getTodayDeck, getTodayKey, isValidPlacement, buildInitialSetup } from './utils/fiadaLogic.js'
+import GameIcon from '../../components/GameIcon.jsx'
 import FiadaMultiplayer from './components/FiadaMultiplayer.jsx'
 
 const STORAGE_PREFIX = 'quina-fiada-estado-v2-'
@@ -113,7 +114,7 @@ export default function FiadaGame() {
         <button className="icon-btn" onClick={() => setShowHelp(true)} aria-label="Como jogar">
           ?
         </button>
-        <h2 className="game-title">Fiada</h2>
+        <h2 className="game-title"><GameIcon game="fiada" size={30} />Fiada</h2>
         <button className="icon-btn" onClick={newGame} aria-label="Novo jogo" title="Novo jogo">
           🔄
         </button>

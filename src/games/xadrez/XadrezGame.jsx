@@ -222,6 +222,7 @@ const HELP = (
 export default function XadrezGame() {
   return (
     <GameShell
+      game="xadrez"
       title="Xadrez"
       help={HELP}
       modes={[

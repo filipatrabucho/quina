@@ -306,7 +306,7 @@ export default function MemesGame() {
     ) : null
 
   return (
-    <GameShell title="Jogo dos Memes" help={HELP} modes={[{ key: 'online', label: 'Multiplayer' }]}>
+    <GameShell game="memes" title="Jogo dos Memes" help={HELP} modes={[{ key: 'online', label: 'Multiplayer' }]}>
       {() => (
         <OnlineGame
           game="memes"

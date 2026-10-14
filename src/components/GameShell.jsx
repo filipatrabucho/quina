@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import GameIcon from './GameIcon.jsx'
 
 // Cabeçalho comum aos jogos novos: título, ajuda e escolha de modo.
-export default function GameShell({ title, help, modes, children }) {
+export default function GameShell({ game, title, help, modes, children }) {
   const [params, setParams] = useSearchParams()
   const [showHelp, setShowHelp] = useState(false)
   const requested = params.get('sala') ? 'online' : params.get('modo')
@@ -18,7 +19,10 @@ export default function GameShell({ title, help, modes, children }) {
     <>
       <header className="header header--game">
         <button className="icon-btn" onClick={() => setShowHelp(true)} aria-label="Como jogar">?</button>
-        <h2 className="game-title">{title}</h2>
+        <h2 className="game-title">
+          {game && <GameIcon game={game} size={30} />}
+          {title}
+        </h2>
         <span className="icon-btn icon-btn--ghost" aria-hidden="true" />
       </header>
       {modes.length > 1 && (

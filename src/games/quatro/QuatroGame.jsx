@@ -166,6 +166,7 @@ const HELP = (
 export default function QuatroGame() {
   return (
     <GameShell
+      game="quatro"
       title="4 em Linha"
       help={HELP}
       modes={[
