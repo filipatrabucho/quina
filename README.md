@@ -39,6 +39,21 @@ netlify deploy --prod --dir=dist
 2. Em Netlify: "Add new site" → "Import an existing project" → escolhe o repositório.
 3. Build command: `npm run build` · Publish directory: `dist` (já configurado em `netlify.toml`).
 
+## Contas, avatares e jogos novos
+
+Para as contas (email + password + username) e os avatares funcionarem, corre
+`supabase/schema-contas.sql` no Supabase (SQL Editor → cola tudo → Run). Cria a
+tabela `profiles` (username único), o bucket público `avatars` e as regras de
+acesso. Pode ser corrido mais do que uma vez.
+
+Os jogos novos (4 em Linha, Galo, Xadrez e Memes) não precisam de tabelas: o
+multiplayer usa o Supabase Realtime (broadcast + presence). Quem cria a sala é o
+"anfitrião" e guarda o estado oficial da partida; se fechar a página, o jogo
+fica parado até voltar. Sem Supabase configurado, as salas funcionam entre
+separadores do mesmo browser (útil para desenvolver).
+
+Testes da lógica dos jogos: `npm test`.
+
 ## Estrutura
 
 ```

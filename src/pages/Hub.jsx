@@ -14,6 +14,30 @@ const GAMES = [
     accent: 'b',
     teste: 'Ainda em testes.',
   },
+  {
+    to: '/quatro-em-linha',
+    title: '4 em Linha',
+    description: 'Deixa cair as peças e junta quatro seguidas. Contra o bot ou online.',
+    accent: 'a',
+  },
+  {
+    to: '/galo',
+    title: 'Jogo do Galo',
+    description: 'O clássico três em linha. Contra o bot ou contra um amigo.',
+    accent: 'b',
+  },
+  {
+    to: '/xadrez',
+    title: 'Xadrez',
+    description: 'Partidas de xadrez contra o bot (3 níveis) ou online.',
+    accent: 'a',
+  },
+  {
+    to: '/memes',
+    title: 'Jogo dos Memes',
+    description: 'Cria o meme mais engraçado e vota nos dos amigos. Multiplayer, 2 a 8 jogadores.',
+    accent: 'b',
+  },
 ]
 
 export default function Hub() {
