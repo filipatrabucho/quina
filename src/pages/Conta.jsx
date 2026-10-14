@@ -30,7 +30,6 @@ function AuthForms() {
   const [info, setInfo] = useState('')
   const navigate = useNavigate()
   const returnTo = useReturnTo()
-  const previewSeed = username.trim() || 'quina'
 
   const run = async (fn) => {
     setBusy(true)
@@ -56,7 +55,7 @@ function AuthForms() {
       run(async () => {
         const { needsConfirmation } = await signUpWithEmail({ email, password, username })
         if (needsConfirmation) {
-          setInfo('Conta criada! Enviámos-te um email — confirma-o e depois entra aqui.')
+          setInfo('Conta criada. Enviámos-te um email de confirmação; depois de confirmares, já podes entrar.')
           setTab('entrar')
         } else if (returnTo) {
           navigate(returnTo)
@@ -100,10 +99,6 @@ function AuthForms() {
       <form className="account-form" onSubmit={handleSubmit}>
         {tab === 'criar' && (
           <>
-            <div className="account-preview">
-              <Avatar seed={previewSeed} name={previewSeed} size={72} />
-              <span className="modal-note">Recebes um boneco automático — podes trocá-lo depois.</span>
-            </div>
             <label className="account-field">
               <span>Username</span>
               <input
@@ -187,14 +182,14 @@ function Profile({ user, signOut }) {
         <Avatar src={getAvatarUrl(user)} seed={getAvatarSeed(user)} name={getDisplayName(user)} size={112} />
         <div className="account-profile__actions">
           <button className="mode-btn" onClick={() => fileRef.current?.click()} disabled={busy}>
-            📷 Carregar foto
+            Carregar foto
           </button>
           <button
             className="mode-btn"
-            onClick={() => run(() => regenerateAvatar(user), 'Novo boneco guardado!')}
+            onClick={() => run(() => regenerateAvatar(user), 'Avatar atualizado.')}
             disabled={busy}
           >
-            🎲 Gerar novo boneco
+            Gerar novo avatar
           </button>
           <input
             ref={fileRef}
@@ -205,7 +200,7 @@ function Profile({ user, signOut }) {
             onChange={(e) => {
               const file = e.target.files?.[0]
               e.target.value = ''
-              if (file) run(() => uploadAvatarFile(user, file), 'Foto atualizada!')
+              if (file) run(() => uploadAvatarFile(user, file), 'Foto atualizada.')
             }}
           />
         </div>
@@ -216,7 +211,7 @@ function Profile({ user, signOut }) {
           className="account-form"
           onSubmit={(e) => {
             e.preventDefault()
-            run(() => changeUsername(user, username), 'Username atualizado!')
+            run(() => changeUsername(user, username), 'Username atualizado.')
           }}
         >
           <label className="account-field">

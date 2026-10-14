@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 const CLIENT = import.meta.env.VITE_ADSENSE_CLIENT
 
@@ -14,27 +14,34 @@ function loadAdSenseScript(client) {
   document.head.appendChild(script)
 }
 
-export default function AdBanner({ slot }) {
+export const adsenseConfigured = Boolean(CLIENT)
+
+// Um bloco AdSense. "personalized" vem do consentimento do utilizador.
+export default function AdBanner({ slot, format = 'auto', personalized = false, style }) {
+  const pushed = useRef(false)
   useEffect(() => {
-    if (!CLIENT || !slot) return
+    if (!CLIENT || !slot || pushed.current) return
+    pushed.current = true
+    window.adsbygoogle = window.adsbygoogle || []
+    if (!personalized) window.adsbygoogle.requestNonPersonalizedAds = 1
     loadAdSenseScript(CLIENT)
     try {
-      ;(window.adsbygoogle = window.adsbygoogle || []).push({})
+      window.adsbygoogle.push({})
     } catch {
       // normal se o script ainda estiver a carregar na primeira renderização
     }
-  }, [slot])
+  }, [slot, personalized])
 
   if (!CLIENT || !slot) return null
 
   return (
     <ins
       className="adsbygoogle"
-      style={{ display: 'block' }}
+      style={{ display: 'block', ...style }}
       data-ad-client={CLIENT}
       data-ad-slot={slot}
-      data-ad-format="auto"
-      data-full-width-responsive="true"
+      data-ad-format={format}
+      data-full-width-responsive={format === 'auto' ? 'true' : 'false'}
     />
   )
 }

@@ -302,8 +302,8 @@ export default function DuelMode({ onExit }) {
   return (
     <div className="duel-panel">
       <div className="duel-scoreboard">
-        <div>Tu: {myGuesses.length}/{DUEL_MAX_GUESSES} {iWon && '🏆'}</div>
-        <div>Adversário: {oppGuesses.length}/{DUEL_MAX_GUESSES} {oppWon && '🏆'}</div>
+        <div>Tu: {myGuesses.length}/{DUEL_MAX_GUESSES} {iWon && '· acertou'}</div>
+        <div>Adversário: {oppGuesses.length}/{DUEL_MAX_GUESSES} {oppWon && '· acertou'}</div>
       </div>
       <Board
         guesses={myGuessWords}
@@ -315,7 +315,7 @@ export default function DuelMode({ onExit }) {
       {duel.status === 'terminado' && (
         <>
           <p className="duel-result">
-            {iWon && oppWon ? 'Empate!' : iWon ? 'Ganhaste! 🏆' : oppWon ? 'Perdeste.' : 'Ninguém acertou.'}
+            {iWon && oppWon ? 'Empate!' : iWon ? 'Ganhaste!' : oppWon ? 'Perdeste.' : 'Ninguém acertou.'}
           </p>
           <button
             className="share-btn"

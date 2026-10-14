@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { GRID_SIZE, getTodayDeck, getTodayKey, isValidPlacement, buildInitialSetup } from './utils/fiadaLogic.js'
 import GameIcon from '../../components/GameIcon.jsx'
+import { RefreshIcon } from '../../components/Icons.jsx'
 import FiadaMultiplayer from './components/FiadaMultiplayer.jsx'
 
 const STORAGE_PREFIX = 'quina-fiada-estado-v2-'
@@ -116,7 +117,7 @@ export default function FiadaGame() {
         </button>
         <h2 className="game-title"><GameIcon game="fiada" size={30} />Fiada</h2>
         <button className="icon-btn" onClick={newGame} aria-label="Novo jogo" title="Novo jogo">
-          🔄
+          <RefreshIcon />
         </button>
       </header>
 
@@ -153,20 +154,20 @@ export default function FiadaGame() {
 
           <div className="fiada-header-bar">
             <div className="fiada-header-bar__col">
-              <span className="fiada-header-bar__label">🎴 Baralho</span>
+              <span className="fiada-header-bar__label">Baralho</span>
               <span className="fiada-header-bar__value">
                 {deckExhausted ? 'esgotado' : `${deck.length - drawIndex} restantes`}
               </span>
             </div>
 
             <div className="fiada-header-bar__col fiada-header-bar__col--center">
-              <span className="fiada-header-bar__label">🎲 Mesa</span>
+              <span className="fiada-header-bar__label">Mesa</span>
               <div className="fiada-topbar__faceup-strip">
                 {faceUp.length === 0 && <span className="fiada-topbar__empty-chip">vazia</span>}
                 {faceUp.map((value, i) => (
                   <button
                     key={i}
-                    className="fiada-tile fiada-tile--faceup"
+                    className={`fiada-tile fiada-tile--faceup${tileColorClass(value)}`}
                     onClick={() => pickFaceUp(i)}
                     disabled={pending != null || isComplete}
                   >
@@ -197,7 +198,7 @@ export default function FiadaGame() {
 
             {!isComplete && !isStuck && (
               <div className="fiada-hand-tray">
-                <div className={`fiada-tile fiada-tile--pending${pending == null ? ' fiada-tile--empty' : ''}`}>
+                <div className={`fiada-tile fiada-tile--pending${pending == null ? ' fiada-tile--empty' : tileColorClass(pending)}`}>
                   {pending ?? '—'}
                 </div>
                 {pending == null ? (
@@ -217,7 +218,7 @@ export default function FiadaGame() {
 
           {isComplete && (
             <>
-              <p className="duel-result">Painel completo em {moves} jogadas! 🎉</p>
+              <p className="duel-result">Painel completo em {moves} jogadas!</p>
               <button className="share-btn" onClick={newGame}>Jogar outra vez</button>
             </>
           )}

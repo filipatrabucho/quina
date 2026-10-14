@@ -34,7 +34,7 @@ function useChessBot() {
 function describeResult(status, myColor) {
   if (!status.over) return null
   if (!status.winner) return `Empate (${status.reason}).`
-  return status.winner === myColor ? `Ganhaste por ${status.reason}! 🏆` : `Perdeste por ${status.reason}.`
+  return status.winner === myColor ? `Ganhaste por ${status.reason}!` : `Perdeste por ${status.reason}.`
 }
 
 function VsBot() {
@@ -173,7 +173,7 @@ function OnlineBoard({ state, game, me, dispatch, isOnline }) {
           ? result.winnerId == null
             ? `Empate (${result.reason}).`
             : result.winnerId === me.id
-              ? `Ganhaste por ${result.reason}! 🏆`
+              ? `Ganhaste por ${result.reason}!`
               : `Ganhou ${player(result.winnerId)?.name} por ${result.reason}.`
           : myTurn
             ? `É a tua vez${status.check ? ' — estás em xeque!' : '.'}`

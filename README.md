@@ -54,6 +54,27 @@ separadores do mesmo browser (útil para desenvolver).
 
 Testes da lógica dos jogos: `npm test`.
 
+## Anúncios (Google AdSense)
+
+O site tem espaços reservados para anúncios: duas colunas laterais (160×600,
+só em ecrãs largos), uma faixa no início e outra no fim de cada página
+(728×90 no computador, 320×100 no telemóvel). Para ativar:
+
+1. Cria uma conta no AdSense e adiciona o domínio do site.
+2. Cria três blocos de anúncios ("display"): coluna vertical, faixa horizontal
+   e retângulo.
+3. No Netlify (Site settings → Environment variables) define:
+   - `VITE_ADSENSE_CLIENT` — o teu ID, ex.: `ca-pub-1234567890123456`
+   - `VITE_AD_SLOT_RAIL` — ID do bloco vertical
+   - `VITE_AD_SLOT_BANNER` — ID do bloco horizontal
+   - `VITE_AD_SLOT_BOX` — ID do retângulo (opcional)
+4. Faz um novo deploy.
+
+Enquanto o AdSense não estiver configurado, aparecem os espaços vazios com a
+etiqueta "Publicidade". Para os esconder, define `VITE_ADS_PLACEHOLDER=off`.
+Com o AdSense ativo, aparece um aviso de consentimento; quem recusar vê
+anúncios não personalizados.
+
 ## Estrutura
 
 ```

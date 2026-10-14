@@ -1,21 +1,32 @@
 import { useEffect, useState } from 'react'
 
 const CONSENT_KEY = 'quina-consentimento-anuncios'
+const EVENT = 'quina-consentimento'
+
+function read() {
+  try {
+    return localStorage.getItem(CONSENT_KEY)
+  } catch {
+    return null
+  }
+}
 
 export function useAdConsent() {
-  const [consent, setConsentState] = useState(() => localStorage.getItem(CONSENT_KEY))
+  const [consent, setConsentState] = useState(read)
 
   useEffect(() => {
-    function onStorage(e) {
-      if (e.key === CONSENT_KEY) setConsentState(e.newValue)
+    const sync = () => setConsentState(read())
+    window.addEventListener('storage', sync)
+    window.addEventListener(EVENT, sync)
+    return () => {
+      window.removeEventListener('storage', sync)
+      window.removeEventListener(EVENT, sync)
     }
-    window.addEventListener('storage', onStorage)
-    return () => window.removeEventListener('storage', onStorage)
   }, [])
 
   const setConsent = (value) => {
     localStorage.setItem(CONSENT_KEY, value)
-    setConsentState(value)
+    window.dispatchEvent(new Event(EVENT))
   }
 
   return {

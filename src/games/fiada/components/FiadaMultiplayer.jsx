@@ -220,20 +220,20 @@ export default function FiadaMultiplayer({ onExit }) {
       {room.status === 'a-jogar' && (
         <div className="fiada-header-bar">
           <div className="fiada-header-bar__col">
-            <span className="fiada-header-bar__label">🎴 Baralho</span>
+            <span className="fiada-header-bar__label">Baralho</span>
             <span className="fiada-header-bar__value">
               {room.draw_index >= room.deck.length ? 'esgotado' : `${room.deck.length - room.draw_index} restantes`}
             </span>
           </div>
 
           <div className="fiada-header-bar__col">
-            <span className="fiada-header-bar__label">🎲 Mesa</span>
+            <span className="fiada-header-bar__label">Mesa</span>
             <div className="fiada-topbar__faceup-strip">
               {room.face_up.length === 0 && <span className="fiada-topbar__empty-chip">vazia</span>}
               {room.face_up.map((v, i) => (
                 <button
                   key={i}
-                  className="fiada-tile fiada-tile--faceup"
+                  className={`fiada-tile fiada-tile--faceup${tileColorClass(v)}`}
                   onClick={() => handlePickFaceUp(i)}
                   disabled={busy || pending != null || !myTurn}
                 >
@@ -262,7 +262,7 @@ export default function FiadaMultiplayer({ onExit }) {
         <div className="fiada-status-bar fiada-status-bar--won">
           <p className="duel-result">
             {room.winner_id === user.id
-              ? 'Ganhaste! 🏆'
+              ? 'Ganhaste!'
               : `Ganhou ${playerName(room.players[room.players.findIndex((p) => p.id === room.winner_id)], room.players.findIndex((p) => p.id === room.winner_id))}.`}
           </p>
           <button className="share-btn" onClick={leaveRoom}>Novo jogo</button>
@@ -300,7 +300,7 @@ export default function FiadaMultiplayer({ onExit }) {
 
                 {isTurnBoard && (
                   <div className="fiada-hand-tray fiada-hand-tray--small">
-                    <div className={`fiada-tile fiada-tile--pending${pending == null ? ' fiada-tile--empty' : ''}`}>
+                    <div className={`fiada-tile fiada-tile--pending${pending == null ? ' fiada-tile--empty' : tileColorClass(pending)}`}>
                       {pending ?? '—'}
                     </div>
                     {myTurn && pending == null && !noDrawOptions && (

@@ -17,7 +17,16 @@ function Board({ board, onPlay, canPlay, line }) {
           aria-label={`Casa ${i + 1}${cell ? `: ${cell}` : ''}`}
           data-testid={`galo-cell-${i}`}
         >
-          {cell}
+          {cell === 'X' && (
+            <svg viewBox="0 0 40 40" className="galo-mark" aria-hidden="true">
+              <path d="M10 10 L30 30 M30 10 L10 30" />
+            </svg>
+          )}
+          {cell === 'O' && (
+            <svg viewBox="0 0 40 40" className="galo-mark" aria-hidden="true">
+              <circle cx="20" cy="20" r="11" />
+            </svg>
+          )}
         </button>
       ))}
     </div>
@@ -83,7 +92,7 @@ function VsBot() {
           ? result.mark === 'empate'
             ? 'Empate!'
             : result.mark === humanMark
-              ? 'Ganhaste! 🏆'
+              ? 'Ganhaste!'
               : 'O bot ganhou.'
           : turn === humanMark
             ? 'É a tua vez.'
@@ -129,7 +138,7 @@ function OnlineBoard({ state, game, me, dispatch, isOnline }) {
           ? result.winnerId == null
             ? 'Empate!'
             : result.winnerId === me.id
-              ? 'Ganhaste! 🏆'
+              ? 'Ganhaste!'
               : `Ganhou ${state.players.find((p) => p.id === result.winnerId)?.name}.`
           : myMark === turn
             ? `É a tua vez (${myMark}).`

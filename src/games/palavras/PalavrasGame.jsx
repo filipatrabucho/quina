@@ -16,6 +16,7 @@ import DuelMode from './components/DuelMode.jsx'
 import ConsentBanner from '../../components/ConsentBanner.jsx'
 import AdBanner from '../../components/AdBanner.jsx'
 import GameIcon from '../../components/GameIcon.jsx'
+import { ChartIcon } from '../../components/Icons.jsx'
 import { useAdConsent } from '../../hooks/useAdConsent.js'
 
 function storageKeyGuesses(mode) {
@@ -236,7 +237,7 @@ export default function PalavrasGame() {
         </h1> */}
         <h2 className="game-title"><GameIcon game="palavras" size={30} />Palavras</h2>
         <button className="icon-btn" onClick={() => setShowStats(true)} aria-label="Estatísticas">
-          📊
+          <ChartIcon />
         </button>
       </header>
 

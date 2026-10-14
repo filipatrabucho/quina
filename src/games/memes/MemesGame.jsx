@@ -4,6 +4,7 @@ import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import Avatar from '../../components/Avatar.jsx'
 import MemeCanvas from './MemeCanvas.jsx'
 import { loadTemplates } from './templates.js'
+import { ClockIcon } from '../../components/Icons.jsx'
 import { memesOnline, defaultCaptions, MAX_CAPTION, DEFAULT_SETTINGS } from './memesLogic.js'
 
 function useCountdown(deadline, serverNow) {
@@ -23,7 +24,7 @@ function Timer({ deadline, serverNow }) {
   if (!deadline) return null
   return (
     <span className={`meme-timer${s <= 10 ? ' meme-timer--hurry' : ''}`} data-testid="meme-timer">
-      ⏱ {s}s
+      <ClockIcon /> {s}s
     </span>
   )
 }
@@ -105,7 +106,7 @@ function Writing({ state, game, me, dispatch, serverNow }) {
             </button>
           )}
           <button className="mode-btn" onClick={() => dispatch({ type: 'reroll' })} disabled={!!game.rerolled[me.id]}>
-            🔄 Trocar imagem{game.rerolled[me.id] ? ' (usado)' : ''}
+            Trocar imagem{game.rerolled[me.id] ? ' (usado)' : ''}
           </button>
         </div>
       )}
@@ -165,7 +166,7 @@ function Results({ state, game, me, amHost, dispatch }) {
   return (
     <div className="meme-results">
       <h3>Resultados da ronda {game.round}</h3>
-      {ranked.length === 0 && <p className="modal-note">Ninguém fez meme nesta ronda. 😴</p>}
+      {ranked.length === 0 && <p className="modal-note">Ninguém fez meme nesta ronda.</p>}
       <div className="meme-grid">
         {ranked.map((id, i) => (
           <div key={id} className={`meme-card meme-card--result${i === 0 && game.tally?.[id] ? ' meme-card--winner' : ''}`}>
@@ -209,7 +210,7 @@ function Final({ state, game, me, amHost, dispatch }) {
   const winners = state.players.filter((p) => game.playerIds.includes(p.id) && (game.scores[p.id] || 0) === top)
   return (
     <div className="meme-results">
-      <h3>🏆 {winners.map((w) => w.name).join(' e ')} {winners.length > 1 ? 'ganharam' : 'ganhou'}!</h3>
+      <h3>{winners.map((w) => w.name).join(' e ')} {winners.length > 1 ? 'ganharam' : 'ganhou'}!</h3>
       <Standings state={state} game={game} me={me} />
       {game.hall.length > 0 && (
         <>

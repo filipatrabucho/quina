@@ -97,7 +97,7 @@ function VsBot() {
           ? result.player === 0
             ? 'Empate!'
             : result.player === human
-              ? 'Ganhaste! 🏆'
+              ? 'Ganhaste!'
               : 'O bot ganhou.'
           : turn === human
             ? 'É a tua vez.'
@@ -142,7 +142,7 @@ function OnlineBoard({ state, game, me, dispatch, isOnline }) {
           ? result.winnerId == null
             ? 'Empate!'
             : result.winnerId === me.id
-              ? 'Ganhaste! 🏆'
+              ? 'Ganhaste!'
               : `Ganhou ${player(result.winnerId)?.name}.`
           : mySeat === game.turn
             ? 'É a tua vez.'
