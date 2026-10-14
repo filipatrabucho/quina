@@ -2109,13 +2109,18 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
 .duel-panel input:focus, .meme-input-row input:focus, .duel-join input:focus { outline: 2px solid var(--azulejo); border-color: transparent; }
 
 /* Palavras: certo = verde, lugar errado = amarelo, errado = cinzento */
-.tile--certo, .key--certo { background: var(--success); border-color: #24955A; }
-.tile--lugar-errado, .key--lugar-errado { background: #E5B323; border-color: #B98D12; }
-.tile--errado, .key--errado { background: #3A3A48; border-color: #2C2C38; }
+.tile--certo { background: var(--success); border-color: #24955A; }
+.tile--lugar-errado { background: #E5B323; border-color: #B98D12; }
+.tile--errado { background: #3A3A48; border-color: #2C2C38; }
 .tile--filled { border-color: #6E6E80; }
 .board__solved-badge { background: var(--success); }
-.key { background: #2A2A36; border-radius: 6px; }
-.key:hover { background: #343442; }
+/* Teclado: letras certas a verde, no sítio errado a amarelo e já usadas
+   (que não existem na palavra) apagadas. */
+.key { background: #2E2E3B; border-radius: 6px; }
+.key:hover { background: #3A3A4A; }
+.key.key--certo { background: var(--success); color: #fff; }
+.key.key--lugar-errado { background: #E5B323; color: #1A1400; }
+.key.key--errado { background: #121218; color: #55556A; }
 
 /* 4 em Linha */
 .quatro-board { background: #1F4FD1; box-shadow: inset 0 -4px 0 #173C9E; border-radius: 12px; }
@@ -2310,3 +2315,4 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
 
 .fiada-header-bar__col--right:has(.fiada-header-bar__title) { display: none; }
 .fiada-header-bar { grid-template-columns: auto 1fr; }
+.toast { top: 140px; }
