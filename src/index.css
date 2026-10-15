@@ -2319,5 +2319,13 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
 .fiada-grid--small { padding: 10px; gap: 5px; border-width: 5px; border-radius: 18px; }
 
 .fiada-header-bar__col--right:has(.fiada-header-bar__title) { display: none; }
-.fiada-header-bar { grid-template-columns: auto 1fr; }
+.fiada-header-bar:has(.fiada-header-bar__title) { grid-template-columns: auto 1fr; }
+.fiada-header-bar__logo { display: none; }
+.fiada-multi-boards { flex-wrap: wrap; overflow-x: visible; }
+@media (max-width: 600px) {
+  .fiada-header-bar { grid-template-columns: 1fr 1fr; }
+  .fiada-header-bar__col:nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
+}
 .toast { top: 140px; }
+.fiada-hand-hint { font-size: 0.8rem; color: var(--stone); }
+.fiada-hand-tray--small { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: center; padding: 8px 12px; }

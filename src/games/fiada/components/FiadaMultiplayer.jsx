@@ -93,7 +93,6 @@ export default function FiadaMultiplayer({ onExit }) {
   const isHost = room && user && room.host_id === user.id
   const myTurn = room?.status === 'a-jogar' && room.turn_index === myIndex
   const pending = room?.pending_value
-  const noDrawOptions = room && room.draw_index >= room.deck.length && room.face_up.length === 0
 
   const runAction = async (fn) => {
     setBusy(true)
@@ -303,20 +302,31 @@ export default function FiadaMultiplayer({ onExit }) {
                     <div className={`fiada-tile fiada-tile--pending${pending == null ? ' fiada-tile--empty' : tileColorClass(pending)}`}>
                       {pending ?? '—'}
                     </div>
-                    {myTurn && pending == null && !noDrawOptions && (
-                      <button className="fiada-topbar__draw" onClick={handleDrawBlind} disabled={busy}>
-                        Comprar
-                      </button>
-                    )}
-                    {myTurn && pending == null && noDrawOptions && (
-                      <button className="fiada-topbar__draw" onClick={handlePassTurn} disabled={busy}>
-                        Passar
-                      </button>
-                    )}
                     {myTurn && pending != null && (
-                      <button className="fiada-topbar__discard fiada-topbar__discard--dark" onClick={handleDiscard} disabled={busy}>
-                        Descartar
+                      <>
+                        <span className="fiada-hand-hint">Toca numa casa para colocar</span>
+                        <button className="fiada-topbar__discard" onClick={handleDiscard} disabled={busy}>
+                          Passar
+                        </button>
+                      </>
+                    )}
+                    {myTurn && pending == null && room.draw_index < room.deck.length && (
+                      <button className="fiada-topbar__draw" onClick={handleDrawBlind} disabled={busy}>
+                        Virar carta
                       </button>
+                    )}
+                    {myTurn && pending == null && room.draw_index >= room.deck.length && (
+                      <>
+                        {room.face_up.length > 0 && <span className="fiada-hand-hint">Escolhe uma carta da mesa</span>}
+                        <button className="fiada-topbar__discard" onClick={handlePassTurn} disabled={busy}>
+                          Passar
+                        </button>
+                      </>
+                    )}
+                    {!myTurn && (
+                      <span className="fiada-hand-hint">
+                        {pending != null ? `${playerName(p, i)} está a decidir` : `Vez de ${playerName(p, i)}`}
+                      </span>
                     )}
                   </div>
                 )}

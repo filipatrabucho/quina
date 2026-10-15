@@ -61,10 +61,15 @@ export default function FiadaGame() {
   const noMoreSources = deckExhausted && faceUp.length === 0
   const isStuck = !isComplete && pending == null && noMoreSources
 
+  // Tal como no multiplayer: há sempre uma carta virada para aceitar ou passar.
+  useEffect(() => {
+    if (pending == null && !isComplete && !deckExhausted) drawBlind()
+  }, [pending, isComplete, deckExhausted]) // eslint-disable-line react-hooks/exhaustive-deps
+
   function drawBlind() {
     if (pending != null || isComplete || deckExhausted) return
     setPending(deck[drawIndex])
-    setDrawIndex((i) => i + 1)
+    setDrawIndex(drawIndex + 1) // sem função: chamar duas vezes seguidas não salta cartas
   }
 
   function pickFaceUp(i) {
@@ -203,12 +208,15 @@ export default function FiadaGame() {
                 </div>
                 {pending == null ? (
                   <button className="fiada-topbar__draw" onClick={drawBlind} disabled={deckExhausted}>
-                    Comprar às cegas
+                    {deckExhausted ? 'Escolhe da mesa' : 'Virar carta'}
                   </button>
                 ) : (
-                  <button className="fiada-topbar__discard fiada-topbar__discard--dark" onClick={discardPending}>
-                    Descartar
-                  </button>
+                  <>
+                    <span className="fiada-hand-hint">Toca numa casa para colocar</span>
+                    <button className="fiada-topbar__discard fiada-topbar__discard--dark" onClick={discardPending}>
+                      Passar
+                    </button>
+                  </>
                 )}
               </div>
             )}
