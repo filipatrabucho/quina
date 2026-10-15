@@ -55,16 +55,16 @@ export default function Layout() {
       </header>
 
       <div className="site-body">
-        <aside className="ad-rail ad-rail--left">
+        <aside className="side-col side-col--left">
           <AdSlot variant="rail" />
         </aside>
         <div className="site-main">
           <Outlet />
-          <div className="ad-bottom">
+          <div className="page-foot-spot">
             <AdSlot variant="banner" />
           </div>
         </div>
-        <aside className="ad-rail ad-rail--right">
+        <aside className="side-col side-col--right">
           <AdSlot variant="rail" />
         </aside>
       </div>

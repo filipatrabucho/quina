@@ -1781,12 +1781,17 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
   grid-template-columns: minmax(0, 1fr);
   flex: 1;
 }
-.site-main { min-width: 0; display: flex; flex-direction: column; align-items: center; }
-.ad-rail { display: none; }
+/* Posições fixas na grelha: se um bloqueador de anúncios esconder as
+   colunas laterais, o conteúdo continua no centro com a largura certa. */
+.site-main { grid-column: 1; grid-row: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; }
+.side-col { display: none; }
 @media (min-width: 1360px) {
   .site-body { grid-template-columns: 160px minmax(0, 1fr) 160px; gap: 24px; padding: 0 24px; }
-  .ad-rail { display: block; }
-  .ad-rail .ad-slot { position: sticky; top: 76px; margin-top: 24px; }
+  .site-main { grid-column: 2; }
+  .side-col { display: block; grid-row: 1; }
+  .side-col--left { grid-column: 1; }
+  .side-col--right { grid-column: 3; }
+  .side-col .ad-slot { position: sticky; top: 76px; margin-top: 24px; }
 }
 
 .ad-slot {
@@ -1820,7 +1825,7 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
   .ad-slot--banner { max-width: 320px; }
   .ad-slot--banner .ad-slot__placeholder { height: 100px; }
 }
-.ad-bottom { width: 100%; padding: 28px 16px 8px; }
+.page-foot-spot { width: 100%; padding: 28px 16px 8px; }
 
 /* Rodapé */
 .site-footer { border-top: 1px solid var(--stone-light); margin-top: 24px; }
