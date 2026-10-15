@@ -1,9 +1,10 @@
 -- Corre isto no Supabase (SQL Editor → cola tudo → Run).
--- Fiada multiplayer (2 a 5 jogadores), versão 3:
+-- Fiada multiplayer (2 a 5 jogadores), versão 4:
 --  * ao começar, monta o baralho (um conjunto de 1 a 20 por jogador) e
 --    põe 4 trevos na diagonal de cada painel, por ordem crescente;
 --  * no início de cada vez, vira automaticamente uma carta do baralho:
---    o jogador coloca-a ("aceitar") ou descarta-a para a mesa ("passar");
+--    o jogador coloca-a ("aceitar"), descarta-a para a mesa ("passar") ou
+--    troca-a por uma carta à escolha da mesa (uma vez por vez);
 --  * quando o baralho acaba, joga-se com as cartas da mesa; se também a
 --    mesa acabar, ganha quem tiver o painel mais preenchido.
 -- Pode ser corrido mais do que uma vez (substitui as versões anteriores).
@@ -24,6 +25,8 @@ create table if not exists fiada_rooms (
   created_at timestamptz not null default now()
 );
 alter table fiada_rooms alter column deck set default '[]'::jsonb;
+-- De onde veio a carta na mão: 'baralho' ou 'mesa' (só se troca uma vez).
+alter table fiada_rooms add column if not exists pending_source text;
 
 alter table fiada_rooms enable row level security;
 
@@ -99,10 +102,11 @@ begin
     update fiada_rooms
       set turn_index = p_next,
           pending_value = (r.deck -> r.draw_index)::int,
+          pending_source = 'baralho',
           draw_index = r.draw_index + 1
       where id = p_room_id;
   elsif jsonb_array_length(r.face_up) > 0 then
-    update fiada_rooms set turn_index = p_next, pending_value = null where id = p_room_id;
+    update fiada_rooms set turn_index = p_next, pending_value = null, pending_source = null where id = p_room_id;
   else
     -- Sem cartas: ganha quem tiver mais casas preenchidas.
     select (p ->> 'id')::uuid into best_id
@@ -112,7 +116,7 @@ begin
                ord asc
       limit 1;
     update fiada_rooms
-      set turn_index = p_next, pending_value = null, status = 'terminado', winner_id = best_id
+      set turn_index = p_next, pending_value = null, pending_source = null, status = 'terminado', winner_id = best_id
       where id = p_room_id;
   end if;
 end;
@@ -204,6 +208,7 @@ begin
         draw_index = pos + 1,
         face_up = '[]'::jsonb,
         pending_value = (new_deck -> pos)::int,   -- a primeira carta já virada
+        pending_source = 'baralho',
         turn_index = 0,
         winner_id = null
     where id = p_room_id
@@ -231,14 +236,15 @@ begin
   if r.draw_index >= jsonb_array_length(r.deck) then raise exception 'Baralho esgotado'; end if;
 
   update fiada_rooms
-    set pending_value = (r.deck -> r.draw_index)::int, draw_index = r.draw_index + 1
+    set pending_value = (r.deck -> r.draw_index)::int, pending_source = 'baralho', draw_index = r.draw_index + 1
     where id = p_room_id
     returning * into r;
   return r;
 end;
 $$;
 
--- Com o baralho esgotado, escolhe uma carta da mesa.
+-- Escolhe uma carta da mesa. Se já tiver na mão a carta virada do
+-- baralho, as duas trocam (a do baralho vai para a mesa). Só uma troca por vez.
 create or replace function fiada_pick_faceup(p_room_id uuid, p_idx int)
 returns fiada_rooms
 language plpgsql
@@ -247,16 +253,24 @@ set search_path = public
 as $$
 declare
   r fiada_rooms;
+  new_face jsonb;
 begin
   select * into r from fiada_rooms where id = p_room_id for update;
   if r.id is null then raise exception 'Sala não encontrada'; end if;
   if r.status <> 'a-jogar' then raise exception 'O jogo não está em curso'; end if;
   if auth.uid() <> (r.players -> r.turn_index ->> 'id')::uuid then raise exception 'Não é a tua vez'; end if;
-  if r.pending_value is not null then raise exception 'Já tens uma carta na mão'; end if;
+  if r.pending_value is not null and r.pending_source = 'mesa' then
+    raise exception 'Já foste buscar uma carta à mesa nesta vez';
+  end if;
   if p_idx < 0 or p_idx >= jsonb_array_length(r.face_up) then raise exception 'Escolha inválida'; end if;
 
+  new_face := r.face_up - p_idx;
+  if r.pending_value is not null then
+    new_face := new_face || jsonb_build_array(r.pending_value);
+  end if;
+
   update fiada_rooms
-    set pending_value = (r.face_up -> p_idx)::int, face_up = r.face_up - p_idx
+    set pending_value = (r.face_up -> p_idx)::int, pending_source = 'mesa', face_up = new_face
     where id = p_room_id
     returning * into r;
   return r;
@@ -305,6 +319,7 @@ begin
     players = new_players,
     face_up = case when jsonb_typeof(occupant) <> 'null' then face_up || jsonb_build_array(occupant) else face_up end,
     pending_value = null,
+    pending_source = null,
     status = case when won then 'terminado' else status end,
     winner_id = case when won then auth.uid() else winner_id end
     where id = p_room_id;
@@ -334,7 +349,7 @@ begin
   if r.pending_value is null then raise exception 'Não tens nenhuma carta na mão'; end if;
 
   update fiada_rooms
-    set face_up = face_up || jsonb_build_array(r.pending_value), pending_value = null
+    set face_up = face_up || jsonb_build_array(r.pending_value), pending_value = null, pending_source = null
     where id = p_room_id;
   perform fiada_finish_turn(p_room_id, (r.turn_index + 1) % jsonb_array_length(r.players));
   select * into r from fiada_rooms where id = p_room_id;

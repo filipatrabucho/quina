@@ -52,6 +52,18 @@ export default function FiadaMultiplayer({ onExit }) {
     return subscribeToFiadaRoom(room.id, setRoom)
   }, [room?.id])
 
+  // Reserva: se alguma atualização em tempo real se perder, volta a ler a
+  // sala de poucos em poucos segundos (enquanto o jogo não acabou).
+  useEffect(() => {
+    if (!room?.id || room.status === 'terminado') return undefined
+    const t = setInterval(() => {
+      getFiadaRoom(room.id)
+        .then((fresh) => setRoom((cur) => (cur && cur.id === fresh.id && JSON.stringify(cur) !== JSON.stringify(fresh) ? fresh : cur)))
+        .catch(() => {})
+    }, 3000)
+    return () => clearInterval(t)
+  }, [room?.id, room?.status])
+
   useEffect(() => {
     if (room?.id) localStorage.setItem(STORAGE_KEY, room.id)
   }, [room?.id])
@@ -234,7 +246,8 @@ export default function FiadaMultiplayer({ onExit }) {
                   key={i}
                   className={`fiada-tile fiada-tile--faceup${tileColorClass(v)}`}
                   onClick={() => handlePickFaceUp(i)}
-                  disabled={busy || pending != null || !myTurn}
+                  disabled={busy || !myTurn || (pending != null && room.pending_source === 'mesa')}
+                  title={myTurn && pending != null && room.pending_source !== 'mesa' ? 'Trocar pela carta virada' : undefined}
                 >
                   {v}
                 </button>
@@ -304,7 +317,13 @@ export default function FiadaMultiplayer({ onExit }) {
                     </div>
                     {myTurn && pending != null && (
                       <>
-                        <span className="fiada-hand-hint">Toca numa casa para colocar</span>
+                        <span className="fiada-hand-hint">
+                          {room.pending_source === 'mesa'
+                            ? 'Toca numa casa para colocar'
+                            : room.face_up.length > 0
+                              ? 'Coloca numa casa ou troca por uma carta da mesa'
+                              : 'Toca numa casa para colocar'}
+                        </span>
                         <button className="fiada-topbar__discard" onClick={handleDiscard} disabled={busy}>
                           Passar
                         </button>

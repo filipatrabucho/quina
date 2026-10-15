@@ -18,6 +18,7 @@ function freshState(deck) {
     drawIndex,
     faceUp: [],
     pending: null,
+    pendingSource: null,
     moves: 0,
     discards: 0,
   }
@@ -43,6 +44,8 @@ export default function FiadaGame() {
   const [drawIndex, setDrawIndex] = useState(initial.drawIndex)
   const [faceUp, setFaceUp] = useState(initial.faceUp)
   const [pending, setPending] = useState(initial.pending)
+  // De onde veio a carta na mão ('baralho' ou 'mesa'): só se troca uma vez.
+  const [pendingSource, setPendingSource] = useState(initial.pendingSource ?? null)
   const [moves, setMoves] = useState(initial.moves)
   const [discards, setDiscards] = useState(initial.discards)
   const [error, setError] = useState('')
@@ -51,9 +54,9 @@ export default function FiadaGame() {
   useEffect(() => {
     localStorage.setItem(
       STORAGE_PREFIX + todayKey,
-      JSON.stringify({ cells, drawIndex, faceUp, pending, moves, discards })
+      JSON.stringify({ cells, drawIndex, faceUp, pending, pendingSource, moves, discards })
     )
-  }, [todayKey, cells, drawIndex, faceUp, pending, moves, discards])
+  }, [todayKey, cells, drawIndex, faceUp, pending, pendingSource, moves, discards])
 
   const filledCount = cells.filter((c) => c != null).length
   const isComplete = filledCount === GRID_SIZE * GRID_SIZE
@@ -69,14 +72,21 @@ export default function FiadaGame() {
   function drawBlind() {
     if (pending != null || isComplete || deckExhausted) return
     setPending(deck[drawIndex])
+    setPendingSource('baralho')
     setDrawIndex(drawIndex + 1) // sem função: chamar duas vezes seguidas não salta cartas
   }
 
+  // Ir buscar uma carta à mesa. Se já houver na mão a carta virada do
+  // baralho, as duas trocam (a do baralho vai para a mesa).
   function pickFaceUp(i) {
-    if (pending != null || isComplete) return
+    if (isComplete || (pending != null && pendingSource === 'mesa')) return
     const value = faceUp[i]
+    setFaceUp((prev) => {
+      const rest = prev.filter((_, idx) => idx !== i)
+      return pending != null ? [...rest, pending] : rest
+    })
     setPending(value)
-    setFaceUp((prev) => prev.filter((_, idx) => idx !== i))
+    setPendingSource('mesa')
   }
 
   function placeAt(index) {
@@ -94,6 +104,7 @@ export default function FiadaGame() {
     setMoves((m) => m + 1)
     if (occupant != null) setFaceUp((prev) => [...prev, occupant])
     setPending(null)
+    setPendingSource(null)
   }
 
   function discardPending() {
@@ -101,6 +112,7 @@ export default function FiadaGame() {
     setDiscards((d) => d + 1)
     setFaceUp((prev) => [...prev, pending])
     setPending(null)
+    setPendingSource(null)
   }
 
   function newGame() {
@@ -109,6 +121,7 @@ export default function FiadaGame() {
     setDrawIndex(fresh.drawIndex)
     setFaceUp(fresh.faceUp)
     setPending(fresh.pending)
+    setPendingSource(null)
     setMoves(fresh.moves)
     setDiscards(fresh.discards)
     setError('')
@@ -174,7 +187,8 @@ export default function FiadaGame() {
                     key={i}
                     className={`fiada-tile fiada-tile--faceup${tileColorClass(value)}`}
                     onClick={() => pickFaceUp(i)}
-                    disabled={pending != null || isComplete}
+                    disabled={isComplete || (pending != null && pendingSource === 'mesa')}
+                    title={pending != null && pendingSource !== 'mesa' ? 'Trocar pela carta virada' : undefined}
                   >
                     {value}
                   </button>
@@ -212,7 +226,11 @@ export default function FiadaGame() {
                   </button>
                 ) : (
                   <>
-                    <span className="fiada-hand-hint">Toca numa casa para colocar</span>
+                    <span className="fiada-hand-hint">
+                      {pendingSource !== 'mesa' && faceUp.length > 0
+                        ? 'Coloca numa casa ou troca por uma carta da mesa'
+                        : 'Toca numa casa para colocar'}
+                    </span>
                     <button className="fiada-topbar__discard fiada-topbar__discard--dark" onClick={discardPending}>
                       Passar
                     </button>

@@ -56,7 +56,7 @@ Testes da lógica dos jogos: `npm test`.
 
 ## Fiada multiplayer
 
-Corre `supabase/schema-fiada-v3.sql` no Supabase (SQL Editor). Substitui as
+Corre `supabase/schema-fiada-v4.sql` no Supabase (SQL Editor). Substitui as
 funções antigas: ao começar, cada jogador recebe 4 trevos na diagonal e o
 baralho fica com um conjunto de 1 a 20 por jogador; no início de cada vez,
 uma carta é virada automaticamente para o jogador aceitar (colocar) ou passar.
