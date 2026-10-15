@@ -21,6 +21,7 @@ export default function Keyboard({ statuses, onKey }) {
                   status ? `key--${status}` : '',
                 ].join(' ').trim()}
                 onClick={() => onKey(key)}
+                onMouseDown={(e) => e.preventDefault()} // não fica com o foco
                 aria-label={key === 'BACK' ? 'Apagar' : key === 'ENTER' ? 'Confirmar' : key}
               >
                 {key === 'BACK' ? '⌫' : key === 'ENTER' ? 'OK' : key}

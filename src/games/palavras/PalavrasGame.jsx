@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState, useCallback } from 'react'
 import Board from './components/Board.jsx'
 import Keyboard from './components/Keyboard.jsx'
 import {
-  WORD_LENGTH,
   MODES,
   getTodayWords,
   getTodayKey,
@@ -17,6 +16,7 @@ import ConsentBanner from '../../components/ConsentBanner.jsx'
 import AdBanner from '../../components/AdBanner.jsx'
 import GameIcon from '../../components/GameIcon.jsx'
 import { ChartIcon } from '../../components/Icons.jsx'
+import { useGuessInput, keyFromEvent } from './hooks/useGuessInput.js'
 import { useAdConsent } from '../../hooks/useAdConsent.js'
 
 function storageKeyGuesses(mode) {
@@ -71,7 +71,8 @@ export default function PalavrasGame() {
   // o bug de um "gameState" guardado à parte ficar dessincronizado
   // depois de um reload.
   const [guesses, setGuesses] = useState(() => loadGuesses(mode, todayKey))
-  const [currentGuess, setCurrentGuess] = useState('')
+  const guessInput = useGuessInput()
+  const currentGuess = guessInput.word
   const [toast, setToast] = useState('')
   const [shakeRow, setShakeRow] = useState(false)
   const [invalidRow, setInvalidRow] = useState(false)
@@ -145,7 +146,7 @@ export default function PalavrasGame() {
   }, [gameState, mode, todayKey, targets, showToast])
 
   const submitGuess = useCallback(async () => {
-    if (currentGuess.length !== WORD_LENGTH) {
+    if (!guessInput.full) {
       setShakeRow(true)
       showToast('Faltam letras')
       setTimeout(() => setShakeRow(false), 500)
@@ -163,30 +164,29 @@ export default function PalavrasGame() {
       return
     }
     setGuesses((prev) => [...prev, currentGuess])
-    setCurrentGuess('')
-  }, [currentGuess, dictionaryReady, showToast])
+    guessInput.reset()
+  }, [currentGuess, guessInput, dictionaryReady, showToast])
 
   const handleKey = useCallback(
     (key) => {
       if (gameState !== 'a-jogar') return
-      if (key === 'ENTER') {
-        submitGuess()
-      } else if (key === 'BACK') {
-        setCurrentGuess((g) => g.slice(0, -1))
-      } else if (/^[A-Z]$/.test(key) && currentGuess.length < WORD_LENGTH) {
-        setCurrentGuess((g) => g + key)
-      }
+      if (key === 'ENTER') submitGuess()
+      else if (key === 'BACK') guessInput.back()
+      else if (key === 'DEL') guessInput.del()
+      else if (key === 'LEFT') guessInput.move(-1)
+      else if (key === 'RIGHT') guessInput.move(1)
+      else if (/^[A-Z]$/.test(key)) guessInput.type(key)
     },
-    [gameState, currentGuess, submitGuess]
+    [gameState, guessInput, submitGuess]
   )
 
   useEffect(() => {
     function onKeyDown(e) {
-      if (e.metaKey || e.ctrlKey || e.altKey) return
-      const key = e.key.toUpperCase()
-      if (key === 'ENTER') handleKey('ENTER')
-      else if (key === 'BACKSPACE') handleKey('BACK')
-      else if (/^[A-Z]$/.test(key)) handleKey(key)
+      const key = keyFromEvent(e)
+      if (!key) return
+      // Evita que o Enter também "carregue" na última tecla do ecrã que ficou com o foco.
+      e.preventDefault()
+      handleKey(key)
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
@@ -216,10 +216,10 @@ export default function PalavrasGame() {
       localStorage.setItem('quina-modo', newMode)
       setGuesses(loadGuesses(newMode, todayKey))
       setStats(loadStats(newMode))
-      setCurrentGuess('')
+      guessInput.reset()
       setShowStats(false)
     },
-    [mode, todayKey]
+    [mode, todayKey, guessInput]
   )
 
   return (
@@ -274,7 +274,9 @@ export default function PalavrasGame() {
                 key={i}
                 guesses={boardGuesses}
                 statusesPerGuess={boardStatuses}
-                currentGuess={!solved && gameState === 'a-jogar' ? currentGuess : ''}
+                currentGuess={!solved && gameState === 'a-jogar' ? guessInput.input.slots : ''}
+                cursor={!solved && gameState === 'a-jogar' ? guessInput.input.cursor : null}
+                onSelectCell={!solved && gameState === 'a-jogar' ? guessInput.select : undefined}
                 maxGuesses={maxGuesses}
                 shakeRow={shakeRow}
                 invalidRow={invalidRow}

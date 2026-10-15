@@ -170,3 +170,28 @@ test('sala: lobby, lotação, início e espectadores', () => {
   s = reduceRoom(s, { type: 'move', index: 4 }, 'a', logic)
   assert.equal(s.game.board[4], 'X')
 })
+
+import { emptyInput, typeLetter, backspace, setCursor, moveCursor, isFull, toWord } from '../src/games/palavras/utils/guessInput.js'
+
+test('palavras: escrever letras em qualquer casa (_ _ A _ _)', () => {
+  let s = setCursor(emptyInput(), 2)
+  s = typeLetter(s, 'A')
+  assert.deepEqual(s.slots, ['', '', 'A', '', ''])
+  assert.equal(s.cursor, 3) // avança para a próxima vazia
+  s = typeLetter(s, 'T')
+  s = typeLetter(s, 'O')
+  assert.equal(s.cursor, 0) // volta à primeira vazia
+  s = typeLetter(s, 'P')
+  s = typeLetter(s, 'R')
+  assert.equal(toWord(s), 'PRATO')
+  assert.ok(isFull(s))
+  // apagar: limpa a casa do cursor; se estiver vazia, recua e limpa
+  s = setCursor(s, 2)
+  s = backspace(s)
+  assert.deepEqual(s.slots, ['P', 'R', '', 'T', 'O'])
+  s = backspace(s)
+  assert.deepEqual(s.slots, ['P', '', '', 'T', 'O'])
+  assert.equal(s.cursor, 1)
+  assert.equal(moveCursor(s, -5).cursor, 0)
+  assert.equal(moveCursor(s, 9).cursor, 4)
+})

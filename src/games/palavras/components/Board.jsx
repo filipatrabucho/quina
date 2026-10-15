@@ -4,6 +4,8 @@ export default function Board({
   guesses,
   statusesPerGuess,
   currentGuess = '',
+  cursor = null,
+  onSelectCell,
   maxGuesses,
   shakeRow,
   invalidRow,
@@ -28,8 +30,10 @@ export default function Board({
       rows.push(
         <Row
           key={i}
-          letters={currentGuess.split('')}
+          letters={Array.isArray(currentGuess) ? currentGuess : currentGuess.split('')}
           statuses={[]}
+          cursor={cursor}
+          onSelectCell={onSelectCell}
           shake={shakeRow}
           invalid={invalidRow}
           compact={compact}
@@ -51,7 +55,7 @@ export default function Board({
   )
 }
 
-function Row({ letters, statuses, revealed, delayReveal, shake, invalid, compact }) {
+function Row({ letters, statuses, revealed, delayReveal, shake, invalid, compact, cursor, onSelectCell }) {
   const cells = []
   for (let i = 0; i < WORD_LENGTH; i++) {
     const letter = letters[i] || ''
@@ -65,8 +69,14 @@ function Row({ letters, statuses, revealed, delayReveal, shake, invalid, compact
           letter && !status ? 'tile--filled' : '',
           status ? `tile--${status}` : '',
           invalid ? 'tile--invalid' : '',
+          cursor === i ? 'tile--cursor' : '',
+          onSelectCell ? 'tile--selectable' : '',
         ].join(' ').trim()}
         style={revealed && delayReveal ? { animationDelay: `${i * 120}ms` } : undefined}
+        onClick={onSelectCell ? () => onSelectCell(i) : undefined}
+        role={onSelectCell ? 'button' : undefined}
+        aria-label={onSelectCell ? `Casa ${i + 1}${letter ? `: ${letter}` : ''}` : undefined}
+        data-testid={onSelectCell ? `slot-${i}` : undefined}
       >
         <span>{letter}</span>
       </div>

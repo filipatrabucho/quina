@@ -14,6 +14,7 @@ import {
   hasSubmittedSecretWord,
 } from '../lib/duels.js'
 import { WORD_LENGTH, computeKeyboardStatuses } from '../utils/gameLogic.js'
+import { useGuessInput, keyFromEvent } from '../hooks/useGuessInput.js'
 import { isRealWord, preloadDictionary } from '../utils/dictionary.js'
 
 const DUEL_MAX_GUESSES = 6
@@ -24,7 +25,8 @@ export default function DuelMode({ onExit }) {
   const [joinCode, setJoinCode] = useState('')
   const [wordInput, setWordInput] = useState('')
   const [myWordSubmitted, setMyWordSubmitted] = useState(false)
-  const [currentGuess, setCurrentGuess] = useState('')
+  const guessInput = useGuessInput()
+  const currentGuess = guessInput.word
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -158,7 +160,7 @@ export default function DuelMode({ onExit }) {
   }
 
   const submitGuess = useCallback(async () => {
-    if (currentGuess.length !== WORD_LENGTH) {
+    if (!guessInput.full) {
       setError('Faltam letras')
       return
     }
@@ -171,36 +173,35 @@ export default function DuelMode({ onExit }) {
         return
       }
       await submitDuelGuess(duel.id, currentGuess)
-      setCurrentGuess('')
+      guessInput.reset()
       setDuel(await getDuel(duel.id))
     } catch (e) {
       setError(e.message)
     } finally {
       setBusy(false)
     }
-  }, [currentGuess, duel])
+  }, [currentGuess, guessInput, duel])
 
   const handleGuessKey = useCallback(
     (key) => {
       if (!duel || duel.status !== 'a-jogar' || iWon) return
-      if (key === 'ENTER') {
-        submitGuess()
-      } else if (key === 'BACK') {
-        setCurrentGuess((g) => g.slice(0, -1))
-      } else if (/^[A-Z]$/.test(key) && currentGuess.length < WORD_LENGTH) {
-        setCurrentGuess((g) => g + key)
-      }
+      if (key === 'ENTER') submitGuess()
+      else if (key === 'BACK') guessInput.back()
+      else if (key === 'DEL') guessInput.del()
+      else if (key === 'LEFT') guessInput.move(-1)
+      else if (key === 'RIGHT') guessInput.move(1)
+      else if (/^[A-Z]$/.test(key)) guessInput.type(key)
     },
-    [duel, currentGuess, iWon, submitGuess]
+    [duel, guessInput, iWon, submitGuess]
   )
 
   useEffect(() => {
     function onKeyDown(e) {
-      if (e.metaKey || e.ctrlKey || e.altKey) return
-      const key = e.key.toUpperCase()
-      if (key === 'ENTER') handleGuessKey('ENTER')
-      else if (key === 'BACKSPACE') handleGuessKey('BACK')
-      else if (/^[A-Z]$/.test(key)) handleGuessKey(key)
+      const key = keyFromEvent(e)
+      if (!key) return
+      // Evita que o Enter também "carregue" na última tecla do ecrã que ficou com o foco.
+      e.preventDefault()
+      handleGuessKey(key)
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
@@ -308,7 +309,9 @@ export default function DuelMode({ onExit }) {
       <Board
         guesses={myGuessWords}
         statusesPerGuess={myStatusesPerGuess}
-        currentGuess={duel.status === 'a-jogar' && !iWon ? currentGuess : ''}
+        currentGuess={duel.status === 'a-jogar' && !iWon ? guessInput.input.slots : ''}
+        cursor={duel.status === 'a-jogar' && !iWon ? guessInput.input.cursor : null}
+        onSelectCell={duel.status === 'a-jogar' && !iWon ? guessInput.select : undefined}
         maxGuesses={DUEL_MAX_GUESSES}
         solved={iWon}
       />
