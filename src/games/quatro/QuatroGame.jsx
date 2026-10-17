@@ -3,6 +3,7 @@ import GameShell from '../../components/GameShell.jsx'
 import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import BotLevelPicker from '../../components/BotLevelPicker.jsx'
 import Scoreboard from '../../components/Scoreboard.jsx'
+import { recordResultOnce } from '../../lib/social.js'
 import { ROWS, COLS, emptyBoard, play, winnerOf, botMove, quatroOnline } from './quatroLogic.js'
 
 const Disc = ({ player }) => <span className={`quatro-disc quatro-disc--p${player}`} />
@@ -63,6 +64,7 @@ function VsBot() {
 
   useEffect(() => {
     if (!result) return
+    recordResultOnce(`quatro-bot-${Date.now()}`, 'quatro', result.player === human)
     const key = result.player === 0 ? 'empates' : result.player === human ? 'tu' : 'bot'
     setScore((s) => ({ ...s, [key]: s[key] + 1 }))
   }, [result?.player, board]) // eslint-disable-line react-hooks/exhaustive-deps
@@ -110,6 +112,9 @@ function VsBot() {
 
 function OnlineBoard({ state, game, me, dispatch, isOnline }) {
   const mySeat = game.order.indexOf(me.id)
+  useEffect(() => {
+    if (game.result && mySeat >= 0) recordResultOnce(`quatro-${state.code}-${game.round}`, 'quatro', game.result.winnerId === me.id)
+  }, [game.result, game.round]) // eslint-disable-line react-hooks/exhaustive-deps
   const result = game.result
   const player = (id) => state.players.find((p) => p.id === id)
   const turnPlayer = player(game.order[game.turn])

@@ -54,6 +54,18 @@ separadores do mesmo browser (útil para desenvolver).
 
 Testes da lógica dos jogos: `npm test`.
 
+## Amigos, chat, perfis e medalhas
+
+Corre `supabase/schema-social.sql` no Supabase (depois do `schema-contas.sql`).
+Cria as amizades, as mensagens do chat (incluindo convites para salas), as
+estatísticas por jogo e as medalhas. Só utilizadores com conta (email +
+username) usam o chat; os convidados continuam a poder jogar.
+
+- Perfil público: `/u/<username>` (descrição, redes sociais, medalhas e
+  estatísticas). Edita-se em `/conta`.
+- As medalhas são atribuídas pela base de dados (ver `record_game_result`).
+  As regras/nomes estão em `src/data/medals.js` e no SQL.
+
 ## Fiada multiplayer
 
 Corre `supabase/schema-fiada-v4.sql` no Supabase (SQL Editor). Substitui as

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import { getDisplayName, getAvatarUrl, getAvatarSeed } from '../lib/discordProfile.js'
 import {
@@ -12,6 +12,7 @@ import {
   ensureStoredAvatar,
 } from '../lib/account.js'
 import Avatar from '../components/Avatar.jsx'
+import { getProfileById, updatePublicProfile, SOCIAL_NETWORKS, socialUrl } from '../lib/social.js'
 
 function useReturnTo() {
   const [params] = useSearchParams()
@@ -150,6 +151,78 @@ function AuthForms() {
   )
 }
 
+function PublicProfileForm({ user }) {
+  const [loaded, setLoaded] = useState(false)
+  const [exists, setExists] = useState(false)
+  const [bio, setBio] = useState('')
+  const [links, setLinks] = useState({})
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState({ error: '', info: '' })
+
+  useEffect(() => {
+    getProfileById(user.id)
+      .then((p) => {
+        setExists(!!p)
+        setBio(p?.bio || '')
+        setLinks(p?.links || {})
+      })
+      .catch(() => {})
+      .finally(() => setLoaded(true))
+  }, [user.id])
+
+  if (!loaded || !exists) return null
+
+  const save = async (e) => {
+    e.preventDefault()
+    const bad = SOCIAL_NETWORKS.find((n) => links[n.key]?.trim() && n.key !== 'discord' && !socialUrl(n.key, links[n.key]))
+    if (bad) {
+      setMsg({ error: `O link de ${bad.label} não é válido (usa o teu @ ou um endereço https://).`, info: '' })
+      return
+    }
+    setBusy(true)
+    setMsg({ error: '', info: '' })
+    try {
+      const clean = Object.fromEntries(Object.entries(links).map(([k, v]) => [k, String(v).trim().slice(0, 120)]).filter(([, v]) => v))
+      await updatePublicProfile(user.id, { bio: bio.trim().slice(0, 300), links: clean })
+      setMsg({ error: '', info: 'Perfil público guardado.' })
+    } catch (err) {
+      setMsg({ error: err.message, info: '' })
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form className="account-card account-form" onSubmit={save}>
+      <div className="account-card__title">
+        <h3>Perfil público</h3>
+        <Link to={`/u/${getDisplayName(user)}`} className="link-btn">Ver o meu perfil</Link>
+      </div>
+      <label className="account-field">
+        <span>Descrição</span>
+        <textarea value={bio} onChange={(e) => setBio(e.target.value)} maxLength={300} rows={3} placeholder="Fala um pouco sobre ti…" />
+        <small className="modal-note">{bio.length}/300</small>
+      </label>
+      <div className="account-links">
+        {SOCIAL_NETWORKS.map((n) => (
+          <label key={n.key} className="account-field">
+            <span>{n.label}</span>
+            <input
+              value={links[n.key] || ''}
+              onChange={(e) => setLinks((l) => ({ ...l, [n.key]: e.target.value }))}
+              placeholder={n.key === 'site' ? 'https://…' : n.key === 'discord' ? 'nome#0000 ou username' : '@utilizador'}
+              maxLength={120}
+            />
+          </label>
+        ))}
+      </div>
+      <button className="btn btn--primary btn--small" type="submit" disabled={busy}>Guardar perfil público</button>
+      {msg.error && <p className="duel-error">{msg.error}</p>}
+      {msg.info && <p className="account-info">{msg.info}</p>}
+    </form>
+  )
+}
+
 function Profile({ user, signOut }) {
   const [username, setUsername] = useState(getDisplayName(user))
   const [busy, setBusy] = useState(false)
@@ -241,7 +314,10 @@ export default function Conta() {
       {loading ? (
         <p>A carregar…</p>
       ) : user && !user.is_anonymous ? (
-        <Profile user={user} signOut={signOut} />
+        <>
+          <Profile user={user} signOut={signOut} />
+          <PublicProfileForm user={user} />
+        </>
       ) : (
         <>
           {user?.is_anonymous && (

@@ -5,6 +5,7 @@ import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import BotLevelPicker from '../../components/BotLevelPicker.jsx'
 import Scoreboard from '../../components/Scoreboard.jsx'
 import ChessBoard, { MoveList } from './ChessBoard.jsx'
+import { recordResultOnce } from '../../lib/social.js'
 import { gameStatus, replay, xadrezOnline } from './xadrezLogic.js'
 
 const COLOR_NAME = { w: 'brancas', b: 'pretas' }
@@ -50,6 +51,12 @@ function VsBot() {
   const botTurn = !status.over && chess.turn() !== humanColor
   const history = chess.history({ verbose: true })
   const last = history.at(-1)
+
+  useEffect(() => {
+    if (status.over && moves.length > 0) {
+      recordResultOnce(`xadrez-bot-${Date.now()}`, 'xadrez', status.winner === humanColor, level)
+    }
+  }, [status.over]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!botTurn) return undefined
@@ -145,6 +152,10 @@ function OnlineBoard({ state, game, me, dispatch, isOnline }) {
   const result = game.result
   const myTurn = !result && myColor && chess.turn() === myColor
   const opponentId = myColor === 'w' ? game.black : game.white
+
+  useEffect(() => {
+    if (result && myColor) recordResultOnce(`xadrez-${state.code}-${game.round}`, 'xadrez', result.winnerId === me.id)
+  }, [result, game.round]) // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="game-panel game-panel--wide">

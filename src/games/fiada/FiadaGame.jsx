@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { GRID_SIZE, getTodayDeck, getTodayKey, isValidPlacement, buildInitialSetup } from './utils/fiadaLogic.js'
 import GameIcon from '../../components/GameIcon.jsx'
 import { RefreshIcon } from '../../components/Icons.jsx'
+import { recordResultOnce } from '../../lib/social.js'
 import FiadaMultiplayer from './components/FiadaMultiplayer.jsx'
 
 const STORAGE_PREFIX = 'quina-fiada-estado-v2-'
@@ -63,6 +64,10 @@ export default function FiadaGame() {
   const deckExhausted = drawIndex >= deck.length
   const noMoreSources = deckExhausted && faceUp.length === 0
   const isStuck = !isComplete && pending == null && noMoreSources
+
+  useEffect(() => {
+    if (isComplete || isStuck) recordResultOnce(`fiada-solo-${todayKey}-${cells.join('.')}-${moves}`, 'fiada', isComplete)
+  }, [isComplete, isStuck]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Tal como no multiplayer: há sempre uma carta virada para aceitar ou passar.
   useEffect(() => {

@@ -17,6 +17,7 @@ import AdBanner from '../../components/AdBanner.jsx'
 import GameIcon from '../../components/GameIcon.jsx'
 import { ChartIcon } from '../../components/Icons.jsx'
 import { useGuessInput, keyFromEvent } from './hooks/useGuessInput.js'
+import { recordResultOnce } from '../../lib/social.js'
 import { useAdConsent } from '../../hooks/useAdConsent.js'
 
 function storageKeyGuesses(mode) {
@@ -125,6 +126,7 @@ export default function PalavrasGame() {
     if (!alreadyRecorded) {
       markRecorded(mode, todayKey)
       const won = gameState === 'ganhou'
+      recordResultOnce(`palavras-${mode}-${todayKey}`, 'palavras', won)
       setStats((prev) => {
         const next = {
           jogos: prev.jogos + 1,

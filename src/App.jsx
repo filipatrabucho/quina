@@ -7,6 +7,7 @@ import FiadaGame from './games/fiada/FiadaGame.jsx'
 
 // Os jogos novos só são descarregados quando se abrem.
 const Conta = lazy(() => import('./pages/Conta.jsx'))
+const Perfil = lazy(() => import('./pages/Perfil.jsx'))
 const QuatroGame = lazy(() => import('./games/quatro/QuatroGame.jsx'))
 const GaloGame = lazy(() => import('./games/galo/GaloGame.jsx'))
 const XadrezGame = lazy(() => import('./games/xadrez/XadrezGame.jsx'))
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="xadrez" element={page(<XadrezGame />)} />
         <Route path="memes" element={page(<MemesGame />)} />
         <Route path="conta" element={page(<Conta />)} />
+        <Route path="u/:username" element={page(<Perfil />)} />
       </Route>
     </Routes>
   )

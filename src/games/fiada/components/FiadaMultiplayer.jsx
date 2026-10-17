@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../../../hooks/useAuth.js'
 import SignInPanel from '../../../components/SignInPanel.jsx'
+import InviteFriends from '../../../social/InviteFriends.jsx'
+import { recordResultOnce } from '../../../lib/social.js'
 import {
   createFiadaRoom,
   joinFiadaRoom,
@@ -100,6 +102,12 @@ export default function FiadaMultiplayer({ onExit }) {
       .then(setRoom)
       .catch((e) => setError(e.message))
   }, [user, room])
+
+  useEffect(() => {
+    if (room?.status === 'terminado' && user && room.players.some((p) => p.id === user.id)) {
+      recordResultOnce(`fiada-sala-${room.id}`, 'fiada', room.winner_id === user.id)
+    }
+  }, [room?.status, room?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const myIndex = useMemo(() => room?.players?.findIndex((p) => p.id === user?.id) ?? -1, [room, user])
   const isHost = room && user && room.host_id === user.id
@@ -206,6 +214,7 @@ export default function FiadaMultiplayer({ onExit }) {
         <button className="share-btn" onClick={handleCopyInvite}>
           {copied ? 'Copiado! ✓' : 'Copiar link de convite'}
         </button>
+        <InviteFriends title={`Fiada — sala ${room.code}`} url={`${window.location.origin}${window.location.pathname}?fiadasala=${room.code}`} />
         <p className="modal-note">{room.players.length}/{room.max_players} jogadores na sala</p>
         <div className="fiada-players-list">
           {room.players.map((p, i) => (

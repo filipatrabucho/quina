@@ -9,6 +9,8 @@ import Logo from './Logo.jsx'
 import GameIcon from './GameIcon.jsx'
 import AdSlot from './AdSlot.jsx'
 import ConsentBanner from './ConsentBanner.jsx'
+import { SocialProvider } from '../social/SocialContext.jsx'
+import ChatDock, { HeaderChatButton } from '../social/ChatDock.jsx'
 
 function AccountChip() {
   const { user, loading } = useAuth()
@@ -32,6 +34,7 @@ function AccountChip() {
 export default function Layout() {
   const { consent, accept, decline } = useAdConsent()
   return (
+    <SocialProvider>
     <div className="site">
       <header className="site-header">
         <div className="site-header__inner">
@@ -50,7 +53,10 @@ export default function Layout() {
               </NavLink>
             ))}
           </nav>
-          <AccountChip />
+          <div className="site-header__actions">
+            <HeaderChatButton />
+            <AccountChip />
+          </div>
         </div>
       </header>
 
@@ -86,6 +92,8 @@ export default function Layout() {
       </footer>
 
       {adsenseConfigured && !consent && <ConsentBanner onAccept={accept} onDecline={decline} />}
+      <ChatDock />
     </div>
+    </SocialProvider>
   )
 }

@@ -3,6 +3,7 @@ import GameShell from '../../components/GameShell.jsx'
 import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import BotLevelPicker from '../../components/BotLevelPicker.jsx'
 import Scoreboard from '../../components/Scoreboard.jsx'
+import { recordResultOnce } from '../../lib/social.js'
 import { winnerOf, nextMark, botMove, galoOnline } from './galoLogic.js'
 
 function Board({ board, onPlay, canPlay, line }) {
@@ -58,6 +59,7 @@ function VsBot() {
 
   useEffect(() => {
     if (!result) return
+    recordResultOnce(`galo-bot-${Date.now()}`, 'galo', result.mark === humanMark)
     setScore((s) => {
       const key = result.mark === 'empate' ? 'empates' : result.mark === humanMark ? 'tu' : 'bot'
       return { ...s, [key]: s[key] + 1 }
@@ -107,6 +109,9 @@ function VsBot() {
 
 function OnlineBoard({ state, game, me, dispatch, isOnline }) {
   const myMark = game.marks[me.id]
+  useEffect(() => {
+    if (game.result && myMark) recordResultOnce(`galo-${state.code}-${game.round}`, 'galo', game.result.winnerId === me.id)
+  }, [game.result, game.round]) // eslint-disable-line react-hooks/exhaustive-deps
   const turn = nextMark(game.board)
   const byMark = (mark) => state.players.find((p) => game.marks[p.id] === mark)
   const turnPlayer = byMark(turn)

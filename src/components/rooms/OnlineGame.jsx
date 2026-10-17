@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { usePlayerIdentity } from '../../lib/rooms/usePlayerIdentity.js'
 import { useGameRoom, createRoomState, randomRoomCode, forgetRoom } from '../../lib/rooms/useGameRoom.js'
+import InviteFriends from '../../social/InviteFriends.jsx'
+import { gameByKey } from '../../data/games.js'
 import Avatar from '../Avatar.jsx'
 
 export function PlayerChip({ player, you, online, extra }) {
@@ -45,7 +47,7 @@ function NamePrompt({ onSubmit }) {
   )
 }
 
-function InviteBox({ code }) {
+function InviteBox({ code, gameTitle }) {
   const [copied, setCopied] = useState(false)
   const link = `${window.location.origin}${window.location.pathname}?sala=${code}`
   const copy = async () => {
@@ -72,6 +74,7 @@ function InviteBox({ code }) {
       <button className="share-btn" onClick={copy}>
         {copied ? 'Copiado! ✓' : 'Copiar link de convite'}
       </button>
+      <InviteFriends title={`${gameTitle} — sala ${code}`} url={link} />
     </>
   )
 }
@@ -116,7 +119,7 @@ function Room({ game, code, me, logic, renderGame, renderLobbyOptions, prepareSt
     const full = state.players.length >= state.maxPlayers
     return (
       <div className="duel-panel room-lobby">
-        <InviteBox code={code} />
+        <InviteBox code={code} gameTitle={gameByKey(game)?.title || 'Jogo'} />
         <p className="modal-note">
           {state.players.length}/{state.maxPlayers} jogadores · mínimo {logic.minPlayers}
         </p>

@@ -5,6 +5,7 @@ import Avatar from '../../components/Avatar.jsx'
 import MemeCanvas from './MemeCanvas.jsx'
 import { loadTemplates } from './templates.js'
 import { ClockIcon } from '../../components/Icons.jsx'
+import { recordResultOnce } from '../../lib/social.js'
 import { memesOnline, defaultCaptions, MAX_CAPTION, DEFAULT_SETTINGS } from './memesLogic.js'
 
 function useCountdown(deadline, serverNow) {
@@ -207,6 +208,12 @@ function Standings({ state, game, me }) {
 
 function Final({ state, game, me, amHost, dispatch }) {
   const top = Math.max(...game.playerIds.map((id) => game.scores[id] || 0))
+  useEffect(() => {
+    if (game.playerIds.includes(me.id)) {
+      const key = `memes-${state.code}-${game.playerIds.map((id) => game.scores[id] || 0).join('.')}-${game.hall.length}`
+      recordResultOnce(key, 'memes', top > 0 && (game.scores[me.id] || 0) === top)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
   const winners = state.players.filter((p) => game.playerIds.includes(p.id) && (game.scores[p.id] || 0) === top)
   return (
     <div className="meme-results">

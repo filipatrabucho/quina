@@ -15,6 +15,8 @@ import {
 } from '../lib/duels.js'
 import { WORD_LENGTH, computeKeyboardStatuses } from '../utils/gameLogic.js'
 import { useGuessInput, keyFromEvent } from '../hooks/useGuessInput.js'
+import InviteFriends from '../../../social/InviteFriends.jsx'
+import { recordResultOnce } from '../../../lib/social.js'
 import { isRealWord, preloadDictionary } from '../utils/dictionary.js'
 
 const DUEL_MAX_GUESSES = 6
@@ -97,6 +99,10 @@ export default function DuelMode({ onExit }) {
   const oppGuesses = duel ? (isHost ? duel.guest_guesses : duel.host_guesses) : []
   const iWon = duel ? (isHost ? duel.host_won : duel.guest_won) : false
   const oppWon = duel ? (isHost ? duel.guest_won : duel.host_won) : false
+
+  useEffect(() => {
+    if (duel?.status === 'terminado') recordResultOnce(`palavras-duelo-${duel.id}`, 'palavras', iWon && !oppWon)
+  }, [duel?.status, duel?.id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const myStatusesPerGuess = useMemo(() => myGuesses.map((g) => g.statuses), [myGuesses])
   const myGuessWords = useMemo(() => myGuesses.map((g) => g.guess), [myGuesses])
@@ -273,6 +279,7 @@ export default function DuelMode({ onExit }) {
         <button className="share-btn" onClick={handleCopyInvite}>
           {copied ? 'Copiado! ✓' : 'Copiar link de convite'}
         </button>
+        <InviteFriends title={`Palavras 1vs1 — sala ${duel.code}`} url={`${window.location.origin}${window.location.pathname}?duelo=${duel.code}`} />
         <p className="modal-note">À espera que o segundo jogador entre…</p>
       </div>
     )
