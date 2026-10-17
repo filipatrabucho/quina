@@ -36,7 +36,7 @@ end;
 $$;
 
 -- Estado do duelo. Ao contrário do jogo de Palavras, aqui não há nada
--- secreto — os dois painéis ficam sempre visíveis aos dois jogadores.
+-- secreto: os dois painéis ficam sempre visíveis aos dois jogadores.
 create table fiada_duels (
   id uuid primary key default gen_random_uuid(),
   code text unique not null,

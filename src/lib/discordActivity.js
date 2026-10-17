@@ -12,7 +12,7 @@ let sdkPromise = null
 
 // Arranca o SDK do Discord, autentica o utilizador, e devolve uma sessão
 // Supabase válida (anónima, com a identidade do Discord anexada como
-// metadata) — para o resto da app (duelos, RLS) funcionar sem alterações.
+// metadata), para o resto da app (duelos, RLS) funcionar sem alterações.
 export function initDiscordActivity() {
   if (!sdkPromise) {
     sdkPromise = setup()
@@ -56,7 +56,7 @@ async function setup() {
 
   await discordSdk.commands.authenticate({ access_token: accessToken })
 
-  // Perfil do Discord (id, username, avatar) através da API oficial —
+  // Perfil do Discord (id, username, avatar) através da API oficial -
   // permitida diretamente pela CSP das Activities, sem proxy extra.
   const profileRes = await fetch('https://discord.com/api/users/@me', {
     headers: { Authorization: `Bearer ${accessToken}` },

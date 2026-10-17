@@ -7,7 +7,7 @@ function translateAuthError(error) {
   const msg = error?.message || String(error)
   if (/already registered|already been registered|already exists/i.test(msg)) return 'Já existe uma conta com esse email.'
   if (/invalid login credentials/i.test(msg)) return 'Email ou password errados.'
-  if (/email not confirmed/i.test(msg)) return 'Ainda não confirmaste o email — vê a tua caixa de correio.'
+  if (/email not confirmed/i.test(msg)) return 'Ainda não confirmaste o email. Vê a tua caixa de correio.'
   if (/password should be at least/i.test(msg)) return 'A password tem de ter pelo menos 6 carateres.'
   if (/unable to validate email|invalid email|email address .* is invalid/i.test(msg)) return 'Esse email não é válido.'
   if (/database error saving new user/i.test(msg)) return 'Esse username já está a ser usado.'
@@ -21,7 +21,7 @@ function fail(error) {
 }
 
 // Devolve true/false, ou null se não deu para confirmar (ex.: o SQL das
-// contas ainda não foi corrido) — nesse caso deixamos seguir.
+// contas ainda não foi corrido), nesse caso deixamos seguir.
 export async function isUsernameAvailable(username) {
   const { data, error } = await supabase.rpc('username_available', { p_username: username })
   if (error) return null

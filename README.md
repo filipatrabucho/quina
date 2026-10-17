@@ -1,4 +1,4 @@
-# Quina — versão PT-PT
+# Quina, versão PT-PT
 
 Clone do Quina.oo / Wordle, em português de Portugal, feito em React + Vite.
 
@@ -21,20 +21,20 @@ Gera a pasta `dist/`.
 
 ## Deploy no Netlify (hoje)
 
-**Opção A — arrastar e largar (mais rápido):**
+**Opção A, arrastar e largar (mais rápido):**
 1. Corre `npm install && npm run build`.
 2. Vai a https://app.netlify.com/drop
 3. Arrasta a pasta `dist/` para lá.
-4. Pronto — fica online num URL `*.netlify.app`.
+4. Pronto, fica online num URL `*.netlify.app`.
 
-**Opção B — via Netlify CLI:**
+**Opção B, via Netlify CLI:**
 ```bash
 npm install -g netlify-cli
 npm run build
 netlify deploy --prod --dir=dist
 ```
 
-**Opção C — via GitHub (recomendado para atualizações contínuas):**
+**Opção C, via GitHub (recomendado para atualizações contínuas):**
 1. Cria um repositório no GitHub e faz push deste projeto.
 2. Em Netlify: "Add new site" → "Import an existing project" → escolhe o repositório.
 3. Build command: `npm run build` · Publish directory: `dist` (já configurado em `netlify.toml`).
@@ -83,10 +83,10 @@ só em ecrãs largos), uma faixa no início e outra no fim de cada página
 2. Cria três blocos de anúncios ("display"): coluna vertical, faixa horizontal
    e retângulo.
 3. No Netlify (Site settings → Environment variables) define:
-   - `VITE_ADSENSE_CLIENT` — o teu ID, ex.: `ca-pub-1234567890123456`
-   - `VITE_AD_SLOT_RAIL` — ID do bloco vertical
-   - `VITE_AD_SLOT_BANNER` — ID do bloco horizontal
-   - `VITE_AD_SLOT_BOX` — ID do retângulo (opcional)
+   - `VITE_ADSENSE_CLIENT`, o teu ID, ex.: `ca-pub-1234567890123456`
+   - `VITE_AD_SLOT_RAIL`, ID do bloco vertical
+   - `VITE_AD_SLOT_BANNER`, ID do bloco horizontal
+   - `VITE_AD_SLOT_BOX`, ID do retângulo (opcional)
 4. Faz um novo deploy.
 
 Enquanto o AdSense não estiver configurado, aparecem os espaços vazios com a
@@ -112,5 +112,5 @@ src/
 - Modo 1vs1: cada jogador escolhe uma palavra e o adversário tenta acertar
 
 Estas funcionalidades exigem um backend (para gerir sessões, pares de jogadores
-e a palavra secreta de cada um sem a expor no cliente) — faz sentido planeá-las
+e a palavra secreta de cada um sem a expor no cliente), faz sentido planeá-las
 como uma segunda fase, depois de validar este jogo base.

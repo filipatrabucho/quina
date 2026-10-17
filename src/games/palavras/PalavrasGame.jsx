@@ -200,7 +200,7 @@ export default function PalavrasGame() {
       const rows = solvedBoards[i] ? perBoardStatuses[i].slice(0, solvedIndex + 1) : perBoardStatuses[i]
       return buildShareGrid(rows)
     })
-    const text = `Quina — ${MODES[mode].label} ${todayKey} ${
+    const text = `Quina ${MODES[mode].label} ${todayKey} ${
       gameState === 'ganhou' ? guesses.length : 'X'
     }/${maxGuesses}\n\n${grids.join('\n\n')}`
     if (navigator.share) {
@@ -329,7 +329,7 @@ export default function PalavrasGame() {
       )}
 
       {showStats && (
-        <Modal onClose={() => setShowStats(false)} title={`Estatísticas — ${MODES[mode].label}`}>
+        <Modal onClose={() => setShowStats(false)} title={`Estatísticas: ${MODES[mode].label}`}>
           <div className="stats-grid">
             <Stat label="Jogos" value={stats.jogos} />
             <Stat label="% Vitórias" value={stats.jogos ? Math.round((stats.vitorias / stats.jogos) * 100) : 0} />

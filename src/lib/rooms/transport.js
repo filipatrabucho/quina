@@ -2,7 +2,7 @@ import { supabase, supabaseConfigured } from '../supabaseClient.js'
 
 // Canal de uma sala: mensagens (broadcast) + quem está ligado (presence).
 // Em produção usa o Supabase Realtime (não precisa de tabelas nem SQL).
-// Sem Supabase configurado, usa BroadcastChannel — só liga separadores do
+// Sem Supabase configurado, usa BroadcastChannel, só liga separadores do
 // mesmo browser, mas chega para desenvolver e testar localmente.
 export function openChannel(topic, me, { onMessage, onPresence, onStatus }) {
   const useLocal =

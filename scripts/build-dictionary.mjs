@@ -4,7 +4,7 @@
 // Descarrega um léxico português (fserb/pt-br, licença MIT), filtra só as
 // palavras de 5 letras e guarda-as em src/data/ptDictionary.json. A app
 // depois usa esse ficheiro localmente, sem precisar de rede nem de motores
-// de regras (Hunspell/nspell) — só um Set simples, instantâneo.
+// de regras (Hunspell/nspell), só um Set simples, instantâneo.
 import { writeFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 

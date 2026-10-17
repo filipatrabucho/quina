@@ -7,7 +7,7 @@ export const GAMES = [
     short: 'Memes',
     description: 'Cria o meme mais engraçado e vota nos dos amigos. Rondas rápidas, 2 a 8 jogadores.',
     tags: ['online'],
-    players: '2–8',
+    players: '2 a 8',
     badge: 'Novo',
   },
   {
@@ -17,7 +17,7 @@ export const GAMES = [
     short: 'Xadrez',
     description: 'Partidas clássicas contra o bot (3 níveis) ou contra amigos, online.',
     tags: ['online', 'bot'],
-    players: '1–2',
+    players: '1 a 2',
     badge: 'Novo',
   },
   {
@@ -27,7 +27,7 @@ export const GAMES = [
     short: '4 em Linha',
     description: 'Deixa cair as peças e junta quatro seguidas antes do adversário.',
     tags: ['online', 'bot'],
-    players: '1–2',
+    players: '1 a 2',
     badge: 'Novo',
   },
   {
@@ -37,7 +37,7 @@ export const GAMES = [
     short: 'Galo',
     description: 'O clássico três em linha. Contra o bot imbatível ou contra um amigo.',
     tags: ['online', 'bot'],
-    players: '1–2',
+    players: '1 a 2',
   },
   {
     key: 'palavras',
@@ -46,7 +46,7 @@ export const GAMES = [
     short: 'Palavras',
     description: 'Adivinha a palavra do dia em 6 tentativas. Também com Dueto, Quarteto e 1vs1.',
     tags: ['diario', 'online'],
-    players: '1–2',
+    players: '1 a 2',
   },
   {
     key: 'fiada',
@@ -55,7 +55,7 @@ export const GAMES = [
     short: 'Fiada',
     description: 'Organiza os azulejos numerados por ordem crescente antes dos adversários.',
     tags: ['diario', 'online'],
-    players: '1–5',
+    players: '1 a 5',
     badge: 'Beta',
   },
 ]

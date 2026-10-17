@@ -26,7 +26,7 @@ export default function SignInPanel({ title, onExit, signInAsGuest, signInWithDi
     <div className="duel-panel">
       <button className="icon-btn" onClick={onExit} aria-label="Voltar">←</button>
       <h2>{title}</h2>
-      <p className="modal-note">Escolhe um nome — não precisas de conta.</p>
+      <p className="modal-note">Escolhe um nome. Não precisas de conta.</p>
       <input
         className="duel-name-input"
         value={name}

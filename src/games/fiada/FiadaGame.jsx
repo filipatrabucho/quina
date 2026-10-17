@@ -223,7 +223,7 @@ export default function FiadaGame() {
             {!isComplete && !isStuck && (
               <div className="fiada-hand-tray">
                 <div className={`fiada-tile fiada-tile--pending${pending == null ? ' fiada-tile--empty' : tileColorClass(pending)}`}>
-                  {pending ?? '—'}
+                  {pending ?? ''}
                 </div>
                 {pending == null ? (
                   <button className="fiada-topbar__draw" onClick={drawBlind} disabled={deckExhausted}>
@@ -256,7 +256,7 @@ export default function FiadaGame() {
 
           {isStuck && !isComplete && (
             <>
-              <p className="duel-result">Sem mais azulejos para jogar — não deu para completar desta vez.</p>
+              <p className="duel-result">Sem mais azulejos para jogar. Não deu para completar desta vez.</p>
               <button className="share-btn" onClick={newGame}>Jogar outra vez</button>
             </>
           )}

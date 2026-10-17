@@ -28,7 +28,7 @@ function NamePrompt({ onSubmit }) {
       }}
     >
       <h2>Como te chamas?</h2>
-      <p className="modal-note">Escolhe um nome para jogares online — não precisas de conta.</p>
+      <p className="modal-note">Escolhe um nome para jogares online. Não precisas de conta.</p>
       <input
         className="duel-name-input"
         value={name}
@@ -56,7 +56,7 @@ function InviteBox({ code, gameTitle }) {
         await navigator.share({ title: 'Quina', text: 'Vem jogar comigo!', url: link })
         return
       } catch {
-        // cancelado — copia
+        // cancelado, copia
       }
     }
     try {
@@ -74,7 +74,7 @@ function InviteBox({ code, gameTitle }) {
       <button className="share-btn" onClick={copy}>
         {copied ? 'Copiado! ✓' : 'Copiar link de convite'}
       </button>
-      <InviteFriends title={`${gameTitle} — sala ${code}`} url={link} />
+      <InviteFriends title={`${gameTitle}, sala ${code}`} url={link} />
     </>
   )
 }
@@ -165,7 +165,7 @@ function Room({ game, code, me, logic, renderGame, renderLobbyOptions, prepareSt
   return (
     <div className="room-playing">
       {!hostOnline && (
-        <p className="room-banner">O anfitrião desligou-se — o jogo continua quando ele voltar.</p>
+        <p className="room-banner">O anfitrião desligou-se. O jogo continua quando ele voltar.</p>
       )}
       {!seated && <p className="room-banner room-banner--info">Estás a ver como espectador.</p>}
       {renderGame({ ...room, state, game: state.game, me, isOnline })}

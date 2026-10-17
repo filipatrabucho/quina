@@ -35,7 +35,7 @@ export async function createOrJoinDuelForInstance(instanceId) {
 
   if (!error) return data
 
-  // Já existe uma sala com este código — quer dizer que outro jogador no
+  // Já existe uma sala com este código, quer dizer que outro jogador no
   // mesmo canal de voz a criou primeiro. Junta-te a ela.
   return joinDuel(instanceId)
 }
@@ -72,7 +72,7 @@ export async function submitSecretWord(duelId, word) {
   if (error) throw error
 }
 
-// Devolve só os estados por letra ('certo' | 'lugar-errado' | 'errado') —
+// Devolve só os estados por letra ('certo' | 'lugar-errado' | 'errado') -
 // a palavra do adversário nunca passa pelo cliente, a não ser que a
 // tentativa seja exatamente igual (nesse caso já a sabes, ganhaste).
 export async function submitDuelGuess(duelId, guess) {

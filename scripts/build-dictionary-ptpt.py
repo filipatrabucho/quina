@@ -1,5 +1,5 @@
 # Acrescenta ao léxico do Palavras as palavras de 5 letras do dicionário
-# ortográfico de português europeu (Hunspell pt_PT, projeto Natura/UMinho —
+# ortográfico de português europeu (Hunspell pt_PT, projeto Natura/UMinho -
 # GPL-2.0 / LGPL-2.1 / MPL-1.1), expandindo plurais, femininos e conjugações.
 #
 #   npm pack dictionary-pt-pt && tar xzf dictionary-pt-pt-*.tgz

@@ -20,7 +20,7 @@ export async function createFiadaRoom(maxPlayers = 5) {
   const emptyCells = Array(GRID_SIZE * GRID_SIZE).fill(null)
 
   // O baralho só é montado quando o jogo começa (fiada_start_room), porque
-  // só aí sabemos quantos jogadores vão mesmo jogar — as regras dizem um
+  // só aí sabemos quantos jogadores vão mesmo jogar, as regras dizem um
   // conjunto de 1-20 por jogador em jogo.
   const { data, error } = await supabase
     .from('fiada_rooms')

@@ -2,7 +2,7 @@ import { WORDS } from '../data/words.js'
 
 // Validação de palavras contra um léxico português já expandido (gerado por
 // scripts/build-dictionary.mjs em src/data/ptDictionary.json), sempre unido
-// com a lista de palavras-alvo (words.js) — para garantir que a própria
+// com a lista de palavras-alvo (words.js), para garantir que a própria
 // palavra do dia nunca é rejeitada, mesmo que por acaso não esteja no
 // léxico externo.
 let wordsPromise = null

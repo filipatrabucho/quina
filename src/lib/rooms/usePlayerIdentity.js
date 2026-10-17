@@ -14,7 +14,7 @@ function localGuestId() {
 }
 
 // Quem sou eu nos jogos novos: a conta (email, Discord ou convidado do
-// Supabase) se houver sessão; senão um convidado local só com nome — as
+// Supabase) se houver sessão; senão um convidado local só com nome, as
 // salas destes jogos não precisam de login.
 export function usePlayerIdentity() {
   const { user, loading } = useAuth()

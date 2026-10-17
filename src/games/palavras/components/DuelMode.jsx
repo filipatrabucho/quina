@@ -46,7 +46,7 @@ export default function DuelMode({ onExit }) {
   }, [duel?.id])
 
   // Guardar o convite assim que chega (mesmo antes do login) e limpar o
-  // URL logo de seguida — nunca deixar um URL grande ir para o login do
+  // URL logo de seguida, nunca deixar um URL grande ir para o login do
   // Discord.
   useEffect(() => {
     const inviteCode = new URLSearchParams(window.location.search).get('duelo')
@@ -59,7 +59,7 @@ export default function DuelMode({ onExit }) {
 
   // Fora do Discord: se recarregares a página a meio de um jogo, volta a
   // entrar na mesma sala em vez de te devolver ao lobby (a não ser que
-  // tenhas um convite pendente — esse tem prioridade).
+  // tenhas um convite pendente, esse tem prioridade).
   useEffect(() => {
     if (!user || duel || discordActivity) return
     if (localStorage.getItem('quina-convite-pendente')) return
@@ -219,7 +219,7 @@ export default function DuelMode({ onExit }) {
     const link = `${window.location.origin}${window.location.pathname}?duelo=${duel.code}`
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Quina — 1vs1', text: 'Vem jogar comigo!', url: link })
+        await navigator.share({ title: 'Quina 1vs1', text: 'Vem jogar comigo!', url: link })
         return
       } catch {
         // utilizador cancelou a partilha nativa, cai para copiar
@@ -279,7 +279,7 @@ export default function DuelMode({ onExit }) {
         <button className="share-btn" onClick={handleCopyInvite}>
           {copied ? 'Copiado! ✓' : 'Copiar link de convite'}
         </button>
-        <InviteFriends title={`Palavras 1vs1 — sala ${duel.code}`} url={`${window.location.origin}${window.location.pathname}?duelo=${duel.code}`} />
+        <InviteFriends title={`Palavras 1vs1, sala ${duel.code}`} url={`${window.location.origin}${window.location.pathname}?duelo=${duel.code}`} />
         <p className="modal-note">À espera que o segundo jogador entre…</p>
       </div>
     )

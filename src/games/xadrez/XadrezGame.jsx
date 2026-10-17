@@ -86,7 +86,7 @@ function VsBot() {
       const done = c.move(mv)
       setMoves([...moves, done.san])
     } catch {
-      // lance inválido — ignora
+      // lance inválido, ignora
     }
   }
 
@@ -123,7 +123,7 @@ function VsBot() {
             ? thinking
               ? 'O bot está a pensar…'
               : 'Vez do bot…'
-            : `É a tua vez (${COLOR_NAME[humanColor]})${status.check ? ' — estás em xeque!' : '.'}`}
+            : `É a tua vez (${COLOR_NAME[humanColor]})${status.check ? '. Estás em xeque!' : '.'}`}
       </p>
       <div className="game-actions">
         {status.over ? (
@@ -187,7 +187,7 @@ function OnlineBoard({ state, game, me, dispatch, isOnline }) {
               ? `Ganhaste por ${result.reason}!`
               : `Ganhou ${player(result.winnerId)?.name} por ${result.reason}.`
           : myTurn
-            ? `É a tua vez${status.check ? ' — estás em xeque!' : '.'}`
+            ? `É a tua vez${status.check ? '. Estás em xeque!' : '.'}`
             : `Vez de ${player(chess.turn() === 'w' ? game.white : game.black)?.name}…${status.check ? ' (xeque)' : ''}`}
       </p>
       {myColor && (

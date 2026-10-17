@@ -1,5 +1,5 @@
 // Marca do Quina: a "quina" de um dado (5 pintas) em que a pinta do meio
-// ganha um anel e uma perna — vira um Q.
+// ganha um anel e uma perna, vira um Q.
 export function LogoMark({ size = 40, className = '' }) {
   return (
     <svg width={size} height={size} viewBox="0 0 64 64" className={`logo-mark ${className}`} role="img" aria-label="Quina">

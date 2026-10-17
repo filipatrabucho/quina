@@ -162,7 +162,7 @@ function OnlineBoard({ state, game, me, dispatch, isOnline }) {
 
 const HELP = (
   <>
-    <p>Escolhe uma coluna para deixar cair a tua peça — ela cai até ao fundo.</p>
+    <p>Escolhe uma coluna para deixar cair a tua peça. Ela cai até ao fundo.</p>
     <p>Ganha quem juntar primeiro <strong>4 peças seguidas</strong>: na horizontal, vertical ou diagonal.</p>
     <p className="modal-note">Na desforra, quem começa troca.</p>
   </>

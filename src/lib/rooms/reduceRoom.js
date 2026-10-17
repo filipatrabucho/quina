@@ -3,7 +3,7 @@ export function seatOf(p) {
 }
 
 // Reducer genérico da sala: trata do lobby e passa o resto à lógica do jogo.
-// Corre só no anfitrião — é ele que tem o estado "oficial".
+// Corre só no anfitrião, é ele que tem o estado "oficial".
 export function reduceRoom(state, action, fromId, logic, now = Date.now()) {
   const isHost = fromId === state.hostId
   switch (action.type) {

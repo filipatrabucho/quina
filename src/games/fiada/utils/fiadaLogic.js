@@ -3,7 +3,7 @@ export const MIN_VALUE = 1
 export const MAX_VALUE = 20
 const DIAGONAL_INDICES = [0, 5, 10, 15] // topo-esquerda a baixo-direita, num tabuleiro 4x4
 
-// PRNG simples e determinístico (mulberry32) — mesmo dia = mesmo baralho
+// PRNG simples e determinístico (mulberry32), mesmo dia = mesmo baralho
 // para toda a gente, sem precisar de servidor.
 function mulberry32(seed) {
   return function () {
@@ -41,9 +41,9 @@ export function getTodayDeck(date = new Date()) {
   return values
 }
 
-// Baralho aleatório (não determinístico) — usado nas partidas multiplayer.
+// Baralho aleatório (não determinístico), usado nas partidas multiplayer.
 // O tamanho é configurável porque, com vários jogadores, cada um precisa de
-// 16 azulejos para o seu próprio painel — o baralho tem de ter tiles
+// 16 azulejos para o seu próprio painel, o baralho tem de ter tiles
 // suficientes para todos, não só para um jogador.
 export function generateRandomDeck(size = MAX_VALUE) {
   const values = []
@@ -87,7 +87,7 @@ export function isBoardFull(cells) {
 
 // Configuração inicial oficial: cada jogador começa com 4 azulejos já
 // colocados na diagonal do seu painel, tirados ao acaso e ordenados de
-// forma crescente. `deck` já deve vir baralhado — usa os primeiros 4.
+// forma crescente. `deck` já deve vir baralhado, usa os primeiros 4.
 export function buildInitialSetup(deck) {
   const diagValues = deck.slice(0, 4).sort((a, b) => a - b)
   const cells = Array(GRID_SIZE * GRID_SIZE).fill(null)

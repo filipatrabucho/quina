@@ -59,8 +59,8 @@ export function getTodayWords(modeKey, count, date = new Date()) {
 }
 
 // Nota: a lista WORDS serve apenas para escolher a palavra secreta do dia.
-// A validação das tentativas usa o dicionário Hunspell PT-PT — ver
-// utils/dictionary.js (isRealWord) — para aceitar qualquer palavra real,
+// A validação das tentativas usa o dicionário Hunspell PT-PT, ver
+// utils/dictionary.js (isRealWord), para aceitar qualquer palavra real,
 // não só as ~180 desta lista.
 
 // Avalia uma tentativa contra a palavra-alvo, devolvendo um array de estados:
@@ -112,7 +112,7 @@ export function computeKeyboardStatuses(guesses, statusesPerGuess) {
 }
 
 // Igual, mas combinando os resultados de vários tabuleiros em simultâneo
-// (Dueto/Quarteto) — cada letra mostra o melhor estado já visto em qualquer
+// (Dueto/Quarteto), cada letra mostra o melhor estado já visto em qualquer
 // um dos tabuleiros.
 export function computeKeyboardStatusesMulti(guesses, perBoardStatuses) {
   const statuses = {}

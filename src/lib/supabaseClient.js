@@ -11,7 +11,7 @@ export const supabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
 if (!supabaseConfigured) {
   // eslint-disable-next-line no-console
   console.warn(
-    'Faltam VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY no .env — o login e o multiplayer online não vão funcionar.'
+    'Faltam VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY no .env: o login e o multiplayer online não vão funcionar.'
   )
 }
 

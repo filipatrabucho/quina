@@ -139,7 +139,7 @@ export default function FiadaMultiplayer({ onExit }) {
     const link = `${window.location.origin}${window.location.pathname}?fiadasala=${room.code}`
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Fiada — Multiplayer', text: 'Vem jogar comigo!', url: link })
+        await navigator.share({ title: 'Fiada multiplayer', text: 'Vem jogar comigo!', url: link })
         return
       } catch {
         // cancelado, cai para copiar
@@ -214,7 +214,7 @@ export default function FiadaMultiplayer({ onExit }) {
         <button className="share-btn" onClick={handleCopyInvite}>
           {copied ? 'Copiado! ✓' : 'Copiar link de convite'}
         </button>
-        <InviteFriends title={`Fiada — sala ${room.code}`} url={`${window.location.origin}${window.location.pathname}?fiadasala=${room.code}`} />
+        <InviteFriends title={`Fiada, sala ${room.code}`} url={`${window.location.origin}${window.location.pathname}?fiadasala=${room.code}`} />
         <p className="modal-note">{room.players.length}/{room.max_players} jogadores na sala</p>
         <div className="fiada-players-list">
           {room.players.map((p, i) => (
@@ -322,7 +322,7 @@ export default function FiadaMultiplayer({ onExit }) {
                 {isTurnBoard && (
                   <div className="fiada-hand-tray fiada-hand-tray--small">
                     <div className={`fiada-tile fiada-tile--pending${pending == null ? ' fiada-tile--empty' : tileColorClass(pending)}`}>
-                      {pending ?? '—'}
+                      {pending ?? ''}
                     </div>
                     {myTurn && pending != null && (
                       <>

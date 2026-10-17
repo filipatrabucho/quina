@@ -159,7 +159,7 @@ function OnlineBoard({ state, game, me, dispatch, isOnline }) {
 const HELP = (
   <>
     <p>Joga à vez com o adversário: um é o <strong>X</strong>, o outro o <strong>O</strong>. O X começa.</p>
-    <p>Ganha quem fizer primeiro três em linha — na horizontal, vertical ou diagonal.</p>
+    <p>Ganha quem fizer primeiro três em linha, na horizontal, vertical ou diagonal.</p>
     <p className="modal-note">Online: cria uma sala e envia o link a um amigo.</p>
   </>
 )
