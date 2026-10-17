@@ -2719,3 +2719,26 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
 .memes--gallery .meme__img { max-height: 62vh; }
 .memes--gallery .meme-card__label { font-size: 0.92rem; padding: 4px 0 2px; }
 .meme-voting { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+
+/* Janela "Convidar amigos" */
+.invite-modal { max-width: 440px; display: flex; flex-direction: column; gap: 10px; max-height: min(640px, calc(100vh - 32px)); }
+.invite-modal h2 { margin: 0; }
+.invite-modal .modal-note { margin: 0; }
+.invite-modal__tools { display: flex; gap: 12px; align-items: center; }
+.invite-modal__tools .chat-search { flex: 1; min-width: 0; margin: 0; }
+.invite-modal__toggle { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--stone); white-space: nowrap; cursor: pointer; }
+.invite-modal__list {
+  flex: 1;
+  min-height: 120px;
+  max-height: 380px;
+  overflow-y: auto;
+  border: 1px solid var(--stone-light);
+  border-radius: 8px;
+  padding: 4px;
+}
+.chat-person__name small { display: block; font-weight: 400; font-size: 0.72rem; }
+.invite-status { color: #6E6E80; }
+.invite-status--on { color: var(--success); }
+.invite-modal { text-align: left; }
+.invite-modal h2, .invite-modal > .modal-note { text-align: center; }
+.invite-modal__toggle input { width: 16px; height: 16px; accent-color: var(--azulejo); margin: 0; }
