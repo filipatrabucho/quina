@@ -64,7 +64,9 @@ function Writing({ state, game, me, dispatch, serverNow }) {
     if (done || !template) return undefined
     const t = setTimeout(() => dispatch({ type: 'submit', captions, done: false }), 500)
     return () => clearTimeout(t)
-  }, [captions]) // eslint-disable-line react-hooks/exhaustive-deps
+    // "done" nas dependências: ao carregar em Pronto, o gravamento pendente é
+    // cancelado (senão chegava depois e anulava o "Pronto").
+  }, [captions, done]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!template) return <p className="game-status">Estás a ver como espectador.</p>
 
@@ -246,7 +248,7 @@ function MemesBoard(props) {
   const players = state.players.filter((p) => game.playerIds.includes(p.id))
   const phaseLabel = { writing: 'Escreve o teu meme', voting: 'Votação', results: 'Resultados', final: 'Fim do jogo' }[game.phase]
   return (
-    <div className="game-panel game-panel--wide memes">
+    <div className={`game-panel game-panel--wide memes${game.phase === 'writing' ? '' : ' memes--gallery'}`}>
       <div className="meme-topbar">
         <span className="meme-round">
           {game.phase === 'final' ? phaseLabel : `Ronda ${game.round}/${game.settings.rounds} · ${phaseLabel}`}

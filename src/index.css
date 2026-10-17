@@ -2694,3 +2694,28 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
   .social-toasts:has(+ .chat-panel) { bottom: auto; }
 }
 .chat-error-detail { font-family: var(--font-mono); font-size: 0.75rem; color: var(--danger); word-break: break-word; }
+
+/* Conta: formulário do perfil público alinhado e sem sair da caixa */
+.account-page { max-width: 760px; }
+.account-page > .account-card { width: 100%; }
+.account-card.account-form { align-items: stretch; gap: 16px; padding: 24px; }
+.account-card .account-field { width: 100%; min-width: 0; }
+.account-field input, .account-field textarea { width: 100%; min-width: 0; box-sizing: border-box; font-family: inherit; }
+.account-field textarea { min-height: 96px; }
+.account-field small { text-align: right; }
+.account-links { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; }
+.account-card.account-form > .btn { align-self: flex-end; }
+.account-card__title { padding-bottom: 12px; border-bottom: 1px solid var(--stone-light); }
+@media (max-width: 520px) {
+  .account-links { grid-template-columns: minmax(0, 1fr); }
+  .account-card.account-form { padding: 18px; }
+  .account-card.account-form > .btn { align-self: stretch; }
+}
+
+/* Memes: votação e resultados com imagens grandes no computador */
+.memes--gallery { max-width: 1180px; }
+.memes--gallery .meme-grid { grid-template-columns: repeat(auto-fill, minmax(min(440px, 100%), 1fr)); gap: 18px; }
+.memes--gallery .meme--small .meme__caption { font-size: clamp(14px, 6.5cqw, 40px); }
+.memes--gallery .meme__img { max-height: 62vh; }
+.memes--gallery .meme-card__label { font-size: 0.92rem; padding: 4px 0 2px; }
+.meme-voting { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; }
