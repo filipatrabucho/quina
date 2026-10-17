@@ -58,6 +58,34 @@ function Table({ game, meId, people, onMove, isOnline }) {
   const usable = (c) => myTurn && canPlay(c, top, game.color) && (game.drawnThisTurn == null || c.id === game.drawnThisTurn)
   const last = game.lastAction
 
+  // Lugares à volta da mesa, por ordem de jogo a partir de mim:
+  // esquerda (de baixo para cima), topo (da esquerda para a direita), direita.
+  const myPos = game.order.indexOf(meId)
+  const rotated = myPos >= 0 ? [...game.order.slice(myPos + 1), ...game.order.slice(0, myPos)] : others
+  const side = rotated.length >= 5 ? 2 : rotated.length >= 2 ? 1 : 0
+  const seats = {
+    left: rotated.slice(0, side).reverse(),
+    top: rotated.slice(side, rotated.length - side),
+    right: rotated.slice(rotated.length - side),
+  }
+  const renderSeat = (id) => {
+    const p = people(id)
+    const n = game.hands[id]?.length || 0
+    const turn = currentPlayer(game) === id && !game.winner
+    return (
+      <div key={id} className={`cards-seat${turn ? ' cards-seat--turn' : ''}${game.winner === id ? ' cards-seat--winner' : ''}`} data-testid={`seat-${id}`}>
+        {turn && <span className="cards-seat__badge">A jogar</span>}
+        <Avatar src={p?.avatar} seed={p?.seed || id} name={p?.name} size={44} />
+        <span className="cards-seat__name">{p?.name || 'Jogador'}{isOnline && !isOnline(id) ? ' · offline' : ''}</span>
+        <span className="cards-seat__fan" aria-hidden="true">
+          {Array.from({ length: Math.min(n, 7) }, (_, k) => <i key={k} style={{ '--k': k - (Math.min(n, 7) - 1) / 2 }} />)}
+        </span>
+        <span className="cards-opp__count" data-testid={`count-${id}`}>{n} {n === 1 ? 'carta' : 'cartas'}</span>
+        {n === 1 && !game.winner && <span className="cards-last">Última!</span>}
+      </div>
+    )
+  }
+
   const play = (card) => {
     if (!usable(card)) return
     if (card.color === null) setPicking(card)
@@ -66,31 +94,22 @@ function Table({ game, meId, people, onMove, isOnline }) {
 
   return (
     <div className="cards-table">
-      <div className="cards-opponents">
-        {others.map((id) => {
-          const p = people(id)
-          const n = game.hands[id]?.length || 0
-          return (
-            <div key={id} className={`cards-opp${currentPlayer(game) === id && !game.winner ? ' cards-opp--turn' : ''}`}>
-              <Avatar src={p?.avatar} seed={p?.seed || id} name={p?.name} size={34} />
-              <span className="cards-opp__name">{p?.name || 'Jogador'}{isOnline && !isOnline(id) ? ' · offline' : ''}</span>
-              <span className="cards-opp__count" data-testid={`count-${id}`}>{n} {n === 1 ? 'carta' : 'cartas'}</span>
-              {n === 1 && !game.winner && <span className="cards-last">Última!</span>}
-            </div>
-          )
-        })}
-      </div>
+      <div className="cards-arena">
+        <div className="cards-seats cards-seats--top">{seats.top.map(renderSeat)}</div>
+        <div className="cards-seats cards-seats--left">{seats.left.map(renderSeat)}</div>
+        <div className="cards-center">
+          <div className="cards-pile">
+            <Card back onClick={myTurn && game.drawnThisTurn == null ? () => onMove({ type: 'draw' }) : undefined} testid="cards-draw" />
+            <span className="cards-pile__label">{game.drawPile.length}</span>
+          </div>
+          <div className="cards-pile">
+            <Card card={top} testid="cards-top" />
+            <span className={`cards-color cards-color--${game.color}`}>{COLOR_NAMES[game.color]}</span>
+          </div>
+          <span className="cards-direction" title="Sentido do jogo">{game.direction === 1 ? '↻' : '↺'}</span>
+        </div>
 
-      <div className="cards-center">
-        <div className="cards-pile">
-          <Card back onClick={myTurn && game.drawnThisTurn == null ? () => onMove({ type: 'draw' }) : undefined} testid="cards-draw" />
-          <span className="cards-pile__label">{game.drawPile.length}</span>
-        </div>
-        <div className="cards-pile">
-          <Card card={top} testid="cards-top" />
-          <span className={`cards-color cards-color--${game.color}`}>{COLOR_NAMES[game.color]}</span>
-        </div>
-        <span className="cards-direction" title="Sentido do jogo">{game.direction === 1 ? '↻' : '↺'}</span>
+        <div className="cards-seats cards-seats--right">{seats.right.map(renderSeat)}</div>
       </div>
 
       <p className="game-status" data-testid="cards-status">
@@ -106,7 +125,8 @@ function Table({ game, meId, people, onMove, isOnline }) {
         </p>
       )}
 
-      <div className="cards-hand" data-testid="cards-hand">
+      <div className={`cards-hand${myTurn ? ' cards-hand--turn' : ''}`} data-testid="cards-hand">
+        {myTurn && <span className="cards-seat__badge cards-hand__badge">A tua vez</span>}
         {hand.map((c) => (
           <Card key={c.id} card={c} playable={usable(c)} onClick={usable(c) ? () => play(c) : undefined} testid={`card-${c.id}`} />
         ))}
