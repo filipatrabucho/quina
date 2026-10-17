@@ -22,6 +22,7 @@ export function SocialProvider({ children }) {
   const { user } = useAuth()
   const myId = user && !user.is_anonymous ? user.id : null
   const [me, setMe] = useState(null)
+  const [profileError, setProfileError] = useState('')
   const [friendships, setFriendships] = useState([])
   const [people, setPeople] = useState({}) // id -> perfil
   const [unread, setUnread] = useState({})
@@ -61,7 +62,14 @@ export function SocialProvider({ children }) {
     setConversations({})
     if (!myId) return
     let alive = true
-    getOrCreateMyProfile(myId).then((p) => alive && setMe(p)).catch(() => {})
+    setProfileError('')
+    getOrCreateMyProfile(myId)
+      .then((p) => {
+        if (!alive) return
+        setMe(p)
+        if (!p) setProfileError('O teu perfil ainda não existe na base de dados.')
+      })
+      .catch((e) => alive && setProfileError(e.message))
     refreshFriendships().catch(() => {})
     listUnread(myId).then((u) => alive && setUnread(u)).catch(() => {})
     return () => {
@@ -149,6 +157,7 @@ export function SocialProvider({ children }) {
   const value = {
     enabled: !!myId,
     me,
+    profileError,
     myId,
     people,
     friends,

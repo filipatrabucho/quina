@@ -45,9 +45,6 @@ begin
   insert into profiles (id, username, avatar_url)
   values (p_uid, candidate, u.raw_user_meta_data ->> 'avatar_url')
   on conflict (id) do nothing;
-  update auth.users
-    set raw_user_meta_data = coalesce(raw_user_meta_data, '{}'::jsonb) || jsonb_build_object('username', candidate)
-    where id = p_uid;
 end;
 $$;
 revoke execute on function public.create_profile_for(uuid) from public, anon, authenticated;
@@ -68,14 +65,25 @@ $$;
 grant execute on function public.ensure_profile() to authenticated;
 
 -- Cria já o perfil de todas as contas que ainda não o têm.
+-- Cada conta é tratada à parte: se uma falhar, as outras continuam.
 do $$
 declare r record;
 begin
-  for r in select id from auth.users where not coalesce(is_anonymous, false)
+  for r in select id, email from auth.users where not coalesce(is_anonymous, false)
            and id not in (select id from public.profiles) loop
-    perform public.create_profile_for(r.id);
+    begin
+      perform public.create_profile_for(r.id);
+    exception when others then
+      raise warning 'Não foi possível criar o perfil de %: %', r.email, sqlerrm;
+    end;
   end loop;
 end $$;
+
+-- Para confirmar: contas com sessão possível que continuam sem perfil
+-- (deve dar 0 linhas).
+select u.email, u.raw_user_meta_data ->> 'username' as username
+from auth.users u
+where not coalesce(u.is_anonymous, false) and u.id not in (select id from public.profiles);
 
 -- ---------- Amizades ----------
 create table if not exists public.friendships (

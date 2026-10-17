@@ -328,7 +328,19 @@ export default function ChatDock() {
               ×
             </button>
           </div>
-          {!s.enabled || !s.me ? (
+          {s.enabled && !s.me ? (
+            <div className="chat-empty">
+              {s.profileError ? (
+                <>
+                  <p>Não foi possível preparar o teu perfil para o chat.</p>
+                  <p className="chat-error-detail">{s.profileError}</p>
+                  <p className="modal-note">Confirma que correste o supabase/schema-social.sql no Supabase e faz refresh.</p>
+                </>
+              ) : (
+                <p>A preparar o teu perfil…</p>
+              )}
+            </div>
+          ) : !s.enabled ? (
             <div className="chat-empty">
               <p>Entra com a tua conta para falares com amigos, receberes convites e ganhares medalhas.</p>
               <Link className="btn btn--primary btn--small" to="/conta" onClick={() => setPanel({ ...panel, open: false })}>
