@@ -2,7 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { supabase } from '../lib/supabaseClient.js'
 import { useAuth } from '../hooks/useAuth.js'
 import {
-  getProfileById,
+  getOrCreateMyProfile,
   getProfilesByIds,
   listFriendships,
   listUnread,
@@ -61,7 +61,7 @@ export function SocialProvider({ children }) {
     setConversations({})
     if (!myId) return
     let alive = true
-    getProfileById(myId).then((p) => alive && setMe(p)).catch(() => {})
+    getOrCreateMyProfile(myId).then((p) => alive && setMe(p)).catch(() => {})
     refreshFriendships().catch(() => {})
     listUnread(myId).then((u) => alive && setUnread(u)).catch(() => {})
     return () => {

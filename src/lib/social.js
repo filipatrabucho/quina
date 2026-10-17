@@ -12,6 +12,16 @@ export async function getProfileById(id) {
   return data
 }
 
+// Devolve o perfil do utilizador com sessão; se a conta ainda não tiver
+// perfil (contas antigas), cria-o.
+export async function getOrCreateMyProfile(id) {
+  const existing = await getProfileById(id)
+  if (existing) return existing
+  const { error } = await supabase.rpc('ensure_profile')
+  fail(error)
+  return getProfileById(id)
+}
+
 export async function getProfileByUsername(username) {
   const { data, error } = await supabase.from('profiles').select(PROFILE_FIELDS).ilike('username', username).maybeSingle()
   fail(error)

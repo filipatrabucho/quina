@@ -9,6 +9,74 @@ alter table public.profiles add column if not exists links jsonb not null defaul
 alter table public.profiles drop constraint if exists profiles_bio_tamanho;
 alter table public.profiles add constraint profiles_bio_tamanho check (char_length(bio) <= 300);
 
+-- Contas criadas antes do schema-contas.sql (ou com o Discord) não têm
+-- perfil. Esta função cria-o a partir dos dados da conta, com um username
+-- válido e único.
+create or replace function public.create_profile_for(p_uid uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  u auth.users;
+  base text;
+  candidate text;
+begin
+  if exists (select 1 from profiles where id = p_uid) then return; end if;
+  select * into u from auth.users where id = p_uid;
+  if u.id is null or coalesce(u.is_anonymous, false) then return; end if;
+
+  base := coalesce(
+    nullif(u.raw_user_meta_data ->> 'username', ''),
+    nullif(u.raw_user_meta_data ->> 'full_name', ''),
+    nullif(u.raw_user_meta_data ->> 'name', ''),
+    split_part(coalesce(u.email, ''), '@', 1),
+    'jogador'
+  );
+  base := regexp_replace(translate(base, 'ÁÀÂÃÉÊÍÓÔÕÚÜÇáàâãéêíóôõúüç ', 'AAAAEEIOOOUUCaaaaeeiooouuc_'), '[^A-Za-z0-9_.]', '', 'g');
+  if char_length(base) < 3 then base := base || 'jogador'; end if;
+  base := left(base, 16);
+  candidate := base;
+  while exists (select 1 from profiles where lower(username) = lower(candidate)) loop
+    candidate := base || (floor(random() * 9000) + 1000)::int;
+  end loop;
+
+  insert into profiles (id, username, avatar_url)
+  values (p_uid, candidate, u.raw_user_meta_data ->> 'avatar_url')
+  on conflict (id) do nothing;
+  update auth.users
+    set raw_user_meta_data = coalesce(raw_user_meta_data, '{}'::jsonb) || jsonb_build_object('username', candidate)
+    where id = p_uid;
+end;
+$$;
+revoke execute on function public.create_profile_for(uuid) from public, anon, authenticated;
+
+-- Chamada pelo site quando um utilizador com sessão não tem perfil.
+create or replace function public.ensure_profile()
+returns setof public.profiles
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then return; end if;
+  perform create_profile_for(auth.uid());
+  return query select * from profiles where id = auth.uid();
+end;
+$$;
+grant execute on function public.ensure_profile() to authenticated;
+
+-- Cria já o perfil de todas as contas que ainda não o têm.
+do $$
+declare r record;
+begin
+  for r in select id from auth.users where not coalesce(is_anonymous, false)
+           and id not in (select id from public.profiles) loop
+    perform public.create_profile_for(r.id);
+  end loop;
+end $$;
+
 -- ---------- Amizades ----------
 create table if not exists public.friendships (
   id bigint generated always as identity primary key,

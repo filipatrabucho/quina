@@ -12,7 +12,7 @@ import {
   ensureStoredAvatar,
 } from '../lib/account.js'
 import Avatar from '../components/Avatar.jsx'
-import { getProfileById, updatePublicProfile, SOCIAL_NETWORKS, socialUrl } from '../lib/social.js'
+import { getOrCreateMyProfile, updatePublicProfile, SOCIAL_NETWORKS, socialUrl } from '../lib/social.js'
 
 function useReturnTo() {
   const [params] = useSearchParams()
@@ -154,15 +154,17 @@ function AuthForms() {
 function PublicProfileForm({ user }) {
   const [loaded, setLoaded] = useState(false)
   const [exists, setExists] = useState(false)
+  const [username, setUsername] = useState('')
   const [bio, setBio] = useState('')
   const [links, setLinks] = useState({})
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState({ error: '', info: '' })
 
   useEffect(() => {
-    getProfileById(user.id)
+    getOrCreateMyProfile(user.id)
       .then((p) => {
         setExists(!!p)
+        setUsername(p?.username || '')
         setBio(p?.bio || '')
         setLinks(p?.links || {})
       })
@@ -196,7 +198,7 @@ function PublicProfileForm({ user }) {
     <form className="account-card account-form" onSubmit={save}>
       <div className="account-card__title">
         <h3>Perfil público</h3>
-        <Link to={`/u/${getDisplayName(user)}`} className="link-btn">Ver o meu perfil</Link>
+        <Link to={`/u/${username}`} className="link-btn">Ver o meu perfil</Link>
       </div>
       <label className="account-field">
         <span>Descrição</span>
