@@ -1,6 +1,66 @@
 // Catálogo dos jogos (usado no início, no menu e nos cabeçalhos).
 export const GAMES = [
   {
+    key: 'emojis',
+    to: '/emoji-battle',
+    title: 'Emoji Battle',
+    short: 'Emojis',
+    description: 'Descobre o filme, série, jogo ou personagem escondido nos emojis antes dos outros.',
+    tags: ['online', 'solo'],
+    players: '1 a 10',
+    badge: 'Novo',
+  },
+  {
+    key: 'noventa',
+    to: '/99',
+    title: '99',
+    short: '99',
+    description: 'Soma cartas à mesa sem passar dos 99. Usa o K, o 9 e o 10 para te safares e elimina os outros.',
+    tags: ['online', 'bot'],
+    players: '1 a 8',
+    badge: 'Novo',
+  },
+  {
+    key: 'frase',
+    to: '/continua-a-frase',
+    title: 'Continua a Frase',
+    short: 'Frase',
+    description: 'Sai o início de uma frase, toda a gente escreve o final e vota no mais engraçado.',
+    tags: ['online'],
+    players: '2 a 10',
+    badge: 'Novo',
+  },
+  {
+    key: 'verdades',
+    to: '/2-verdades-1-mentira',
+    title: '2 Verdades 1 Mentira',
+    short: 'Verdades',
+    description: 'Escreve três frases sobre ti, uma delas falsa. Descobre as mentiras dos amigos e engana-os.',
+    tags: ['online'],
+    players: '2 a 10',
+    badge: 'Novo',
+  },
+  {
+    key: 'memoria',
+    to: '/memoria',
+    title: 'Memória',
+    short: 'Memória',
+    description: 'Vira as cartas e encontra os pares. Sozinho contra o relógio ou à vez com amigos.',
+    tags: ['online', 'solo'],
+    players: '1 a 6',
+    badge: 'Novo',
+  },
+  {
+    key: 'snake',
+    to: '/snake',
+    title: 'Snake',
+    short: 'Snake',
+    description: 'O clássico da cobra: come, cresce e não batas em ti própria. Bate o teu recorde.',
+    tags: ['solo'],
+    players: '1',
+    badge: 'Novo',
+  },
+  {
     key: 'memes',
     to: '/memes',
     title: 'Jogo dos Memes',
@@ -8,7 +68,6 @@ export const GAMES = [
     description: 'Cria o meme mais engraçado e vota nos dos amigos. Rondas rápidas, 2 a 8 jogadores.',
     tags: ['online'],
     players: '2 a 8',
-    badge: 'Novo',
   },
   {
     key: 'naval',
@@ -18,7 +77,6 @@ export const GAMES = [
     description: 'Posiciona a tua frota e afunda os navios do adversário com ataques alternados.',
     tags: ['online', 'bot'],
     players: '1 a 2',
-    badge: 'Novo',
   },
   {
     key: 'stop',
@@ -28,7 +86,6 @@ export const GAMES = [
     description: 'Sai uma letra e todos preenchem Nome, País, Animal e mais. Quem acabar primeiro grita STOP!',
     tags: ['online'],
     players: '2 a 10',
-    badge: 'Novo',
   },
   {
     key: 'cartas',
@@ -38,7 +95,6 @@ export const GAMES = [
     description: 'Combina cores e números e usa as cartas especiais para saltar, inverter ou fazer comprar.',
     tags: ['online', 'bot'],
     players: '1 a 8',
-    badge: 'Novo',
   },
   {
     key: 'xadrez',
@@ -88,6 +144,6 @@ export const GAMES = [
   },
 ]
 
-export const TAG_LABELS = { online: 'Multiplayer', bot: 'vs Bot', diario: 'Diário' }
+export const TAG_LABELS = { online: 'Multiplayer', bot: 'vs Bot', solo: 'Solo', diario: 'Diário' }
 
 export const gameByKey = (key) => GAMES.find((g) => g.key === key)

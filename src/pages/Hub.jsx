@@ -9,6 +9,7 @@ const FILTERS = [
   { key: 'todos', label: 'Todos' },
   { key: 'online', label: 'Multiplayer' },
   { key: 'bot', label: 'vs Bot' },
+  { key: 'solo', label: 'Solo' },
   { key: 'diario', label: 'Diários' },
 ]
 
