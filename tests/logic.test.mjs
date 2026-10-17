@@ -195,3 +195,130 @@ test('palavras: escrever letras em qualquer casa (_ _ A _ _)', () => {
   assert.equal(moveCursor(s, -5).cursor, 0)
   assert.equal(moveCursor(s, 9).cursor, 4)
 })
+
+import * as naval from '../src/games/naval/navalLogic.js'
+import { stopOnline, scoreRound, normalize } from '../src/games/stop/stopLogic.js'
+import * as cartas from '../src/games/cartas/cartasLogic.js'
+
+test('batalha naval: frota válida, tiros, afundar e bot', () => {
+  const fleet = naval.randomFleet()
+  assert.ok(naval.validateFleet(fleet))
+  const bad = fleet.map((s) => ({ ...s, cells: [...s.cells] }))
+  bad[0].cells = bad[1].cells.slice(0, 5).concat([0, 1, 2, 3, 4]).slice(0, 5)
+  assert.equal(naval.validateFleet(bad), false)
+  // navios não se tocam
+  const a = naval.canPlace([{ key: 'x', cells: [0, 1] }], 2, 11, true)
+  assert.equal(a, null)
+  let g = naval.navalOnline.start([{ id: 'a' }, { id: 'b' }])
+  g = naval.navalOnline.reduce(g, { type: 'fleet', fleet }, 'a')
+  assert.equal(g.phase, 'colocar')
+  g = naval.navalOnline.reduce(g, { type: 'fleet', fleet: naval.randomFleet() }, 'b')
+  assert.equal(g.phase, 'jogar')
+  assert.throws(() => naval.navalOnline.reduce(g, { type: 'shoot', cell: 0 }, 'b'), /vez/)
+  // a afunda todos os navios de b (b falha sempre num canto já usado pelo bot)
+  const targets = g.fleets.b.flatMap((s) => s.cells)
+  const bShots = []
+  for (let k = 0; k < targets.length; k++) {
+    g = naval.navalOnline.reduce(g, { type: 'shoot', cell: targets[k] }, 'a')
+    if (g.phase === 'fim') break
+    const miss = naval.botShot(g.shots.b)
+    bShots.push(miss)
+    g = naval.navalOnline.reduce(g, { type: 'shoot', cell: miss }, 'b')
+    if (g.phase === 'fim') break
+  }
+  assert.equal(g.winner, 'a')
+  assert.ok(g.shots.a.some((s) => s.sunk))
+  assert.throws(() => naval.applyShot(g.shots.a, g.fleets.b, targets[0]), /Já disparaste/)
+  // o bot persegue um navio depois de acertar
+  const f2 = [{ key: 'porta-avioes', cells: [44, 45, 46, 47, 48] }]
+  const shots = [{ i: 45, hit: true }]
+  const nextShot = naval.botShot(shots)
+  assert.ok([35, 55, 44, 46].includes(nextShot))
+  assert.ok(f2)
+})
+
+test('stop: rondas, STOP, contestar e pontuação', () => {
+  const A = { id: 'a' }, B = { id: 'b' }, C = { id: 'c' }
+  let g = stopOnline.start([A, B, C], { settings: { rounds: 1, seconds: 60 } }, 0)
+  assert.equal(g.phase, 'escrever')
+  const L = g.letter
+  const word = (w) => L + w
+  const full = (suffix) => Object.fromEntries([0, 1, 2, 3, 4, 5].map((i) => [i, word(suffix + i)]))
+  assert.throws(() => stopOnline.reduce(g, { type: 'stop', answers: { 0: word('x') } }, 'a', { now: 1 }), /Preenche/)
+  g = stopOnline.reduce(g, { type: 'answers', answers: { ...full('comum'), 5: '' } }, 'b', { now: 1 })
+  g = stopOnline.reduce(g, { type: 'answers', answers: { 0: 'Zzz' } }, 'c', { now: 1 })
+  g = stopOnline.reduce(g, { type: 'stop', answers: full('comum') }, 'a', { now: 2 })
+  assert.equal(g.phase, 'rever')
+  assert.equal(g.stoppedBy, 'a')
+  // respostas ainda entram durante a tolerância
+  g = stopOnline.reduce(g, { type: 'answers', answers: { ...full('comum'), 1: word('unico'), 5: '' } }, 'b', { now: 3 })
+  // depois da tolerância já não
+  const late = stopOnline.reduce(g, { type: 'answers', answers: full('tarde') }, 'c', { now: 99999 })
+  assert.equal(late.answers.c[0], 'Zzz')
+  // b e c contestam a resposta 0 de a
+  g = stopOnline.reduce(g, { type: 'contest', target: 'a', cat: 0 }, 'b', { now: 4 })
+  assert.throws(() => stopOnline.reduce(g, { type: 'next' }, 'b', { now: 5, isHost: false }), /anfitrião/)
+  g = stopOnline.reduce(g, { type: 'next' }, 'a', { now: 5, isHost: true })
+  assert.equal(g.phase, 'resultados')
+  // a: cat0 contestada (0), cat1 igual a... b mudou cat1 => a única válida em 1? b tem unico, a tem comum1 -> diferentes => 10 cada
+  // cat 2..4 iguais a b => 5 ; cat5: b vazio => a única => 20
+  assert.equal(g.roundDetail.a[0], 0)
+  assert.equal(g.roundDetail.a[1], 10)
+  assert.equal(g.roundDetail.a[2], 5)
+  assert.equal(g.roundDetail.a[5], 20)
+  assert.equal(g.roundDetail.c[0], 0) // não começa pela letra
+  assert.equal(normalize('  Ção  Évora '), 'cao evora')
+  g = stopOnline.reduce(g, { type: 'next' }, 'a', { now: 6, isHost: true })
+  assert.equal(g.phase, 'final')
+  assert.ok(scoreRound)
+})
+
+test('cartas coloridas: baralho, jogar, +2, inverter, comprar e ganhar', () => {
+  assert.equal(cartas.buildDeck().length, 108)
+  let g = cartas.startGame(['a', 'b', 'c'])
+  assert.equal(g.hands.a.length, 7)
+  assert.ok(/^\d$/.test(g.discard[0].value))
+  // Força uma situação conhecida
+  const top = { id: 900, color: 'r', value: '5' }
+  g = { ...g, discard: [top], color: 'r', turn: 0, direction: 1, hands: {
+    a: [{ id: 901, color: 'r', value: '+2' }, { id: 902, color: 'b', value: '7' }, { id: 903, color: null, value: 'cor' }],
+    b: [{ id: 904, color: 'r', value: 'inverter' }, { id: 905, color: 'g', value: '1' }],
+    c: [{ id: 906, color: 'y', value: '2' }],
+  } }
+  assert.throws(() => cartas.playCard(g, 'a', 902), /não serve/)
+  assert.throws(() => cartas.playCard(g, 'b', 904), /vez/)
+  g = cartas.playCard(g, 'a', 901) // +2 em b: b compra 2 e perde a vez
+  assert.equal(g.hands.b.length, 4)
+  assert.equal(cartas.currentPlayer(g), 'c')
+  assert.throws(() => cartas.playCard(g, 'c', 906), /não serve/)
+  const beforeLen = g.hands.c.length
+  g = cartas.drawCard(g, 'c')
+  assert.equal(g.hands.c.length, beforeLen + 1)
+  if (g.drawnThisTurn != null) g = cartas.passTurn(g, 'c')
+  assert.equal(cartas.currentPlayer(g), 'a')
+  assert.throws(() => cartas.playCard(g, 'a', 903), /Escolhe uma cor/)
+  g = cartas.playCard(g, 'a', 903, 'g')
+  assert.equal(g.color, 'g')
+  // b inverte (com 3 jogadores muda o sentido)
+  const inv = g.hands.b.find((c) => c.value === 'inverter')
+  g = { ...g, color: 'r' }
+  g = cartas.playCard(g, 'b', inv.id)
+  assert.equal(g.direction, -1)
+  assert.equal(cartas.currentPlayer(g), 'a')
+  // ganhar
+  g = { ...g, hands: { ...g.hands, a: [{ id: 950, color: null, value: 'cor' }] } }
+  g = cartas.playCard(g, 'a', 950, 'b')
+  assert.equal(g.winner, 'a')
+  assert.equal(g.score.a, 1)
+  // bots conseguem jogar uma partida inteira até ao fim
+  for (let n = 0; n < 20; n++) {
+    let s = cartas.startGame(['x', 'y', 'z', 'w'])
+    for (let k = 0; k < 2000 && !s.winner; k++) {
+      const p = cartas.currentPlayer(s)
+      s = cartas.applyMove(s, p, cartas.botMove(s, p))
+    }
+    assert.ok(s.winner, 'partida de bots chega ao fim')
+    const total = s.drawPile.length + s.discard.length + Object.values(s.hands).reduce((a, h) => a + h.length, 0)
+    assert.equal(total, 108, 'nenhuma carta se perde')
+  }
+})

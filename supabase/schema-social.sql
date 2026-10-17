@@ -170,7 +170,7 @@ grant execute on function public.mark_messages_read(uuid) to authenticated;
 -- ---------- Estatísticas e medalhas ----------
 create table if not exists public.player_stats (
   user_id uuid not null references public.profiles(id) on delete cascade,
-  game text not null check (game in ('palavras', 'fiada', 'quatro', 'galo', 'xadrez', 'memes')),
+  game text not null,
   plays int not null default 0,
   wins int not null default 0,
   streak int not null default 0,
@@ -178,6 +178,10 @@ create table if not exists public.player_stats (
   updated_at timestamptz not null default now(),
   primary key (user_id, game)
 );
+-- Lista de jogos (atualizada sempre que há jogos novos).
+alter table public.player_stats drop constraint if exists player_stats_game_check;
+alter table public.player_stats add constraint player_stats_game_check
+  check (game in ('palavras', 'fiada', 'quatro', 'galo', 'xadrez', 'memes', 'naval', 'stop', 'cartas'));
 alter table public.player_stats enable row level security;
 drop policy if exists "estatisticas: publicas" on public.player_stats;
 create policy "estatisticas: publicas" on public.player_stats for select using (true);
@@ -251,6 +255,9 @@ begin
   if p_game = 'quatro' and s.wins >= 10 and award_medal(uid, 'quatro-10') then earned := array_append(earned, 'quatro-10'); end if;
   if p_game = 'xadrez' and s.wins >= 5 and award_medal(uid, 'xadrez-5') then earned := array_append(earned, 'xadrez-5'); end if;
   if p_game = 'xadrez' and p_won and p_detail = 'dificil' and award_medal(uid, 'xadrez-mestre') then earned := array_append(earned, 'xadrez-mestre'); end if;
+  if p_game = 'naval' and s.wins >= 5 and award_medal(uid, 'naval-5') then earned := array_append(earned, 'naval-5'); end if;
+  if p_game = 'stop' and s.wins >= 5 and award_medal(uid, 'stop-5') then earned := array_append(earned, 'stop-5'); end if;
+  if p_game = 'cartas' and s.wins >= 5 and award_medal(uid, 'cartas-5') then earned := array_append(earned, 'cartas-5'); end if;
   if p_game = 'memes' and s.wins >= 3 and award_medal(uid, 'memes-3') then earned := array_append(earned, 'memes-3'); end if;
 
   return earned;

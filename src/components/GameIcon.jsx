@@ -6,6 +6,9 @@ const THEMES = {
   galo: '#F2994A',
   xadrez: '#3A3F58',
   memes: '#E84393',
+  naval: '#1E6FA8',
+  stop: '#E2A400',
+  cartas: '#D93644',
 }
 
 function Art({ game }) {
@@ -87,6 +90,33 @@ function Art({ game }) {
           <path d="M16.5 21.5q2.5-3 5 0M26.5 21.5q2.5-3 5 0" stroke="#3B2400" strokeWidth="2.2" fill="none" strokeLinecap="round" />
           <path d="M16 26.5h16q-1 8-8 8t-8-8z" fill="#3B2400" />
           <path d="M19 30.5q5 3 10 0" stroke="#FF5470" strokeWidth="2.4" fill="none" strokeLinecap="round" />
+        </g>
+      )
+    case 'naval':
+      return (
+        <g>
+          <path d="M8 34q4 3 8 0t8 0 8 0 8 0" stroke="#fff" strokeOpacity="0.55" strokeWidth="2" fill="none" strokeLinecap="round" />
+          <path d="M10 26h28l-4 6H14z" fill="#fff" />
+          <path d="M18 26v-6h10v6M22 20v-5h3v5" fill="#fff" />
+          <circle cx="36" cy="13" r="3.2" fill="#FF4655" />
+          <path d="M33 10l6 6M39 10l-6 6" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" />
+        </g>
+      )
+    case 'stop':
+      return (
+        <g>
+          <path d="M18 8h12l8 8v12l-8 8H18l-8-8V16z" fill="#fff" />
+          <text x="24" y="28.5" textAnchor="middle" fontSize="13" fontWeight="700" fill="#E2A400" fontFamily="'Barlow Condensed', Inter, sans-serif">A</text>
+        </g>
+      )
+    case 'cartas':
+      return (
+        <g>
+          <rect x="9" y="12" width="15" height="22" rx="3" fill="#2E80F0" transform="rotate(-14 16 23)" />
+          <rect x="17" y="11" width="15" height="22" rx="3" fill="#FFC542" />
+          <rect x="25" y="12" width="15" height="22" rx="3" fill="#2FBF71" transform="rotate(14 32 23)" />
+          <ellipse cx="24.5" cy="22" rx="5" ry="7" fill="#fff" transform="rotate(18 24.5 22)" />
+          <text x="24.5" y="25.5" textAnchor="middle" fontSize="9" fontWeight="700" fill="#D93644" fontFamily="'Barlow Condensed', Inter, sans-serif">7</text>
         </g>
       )
     default:

@@ -12,6 +12,9 @@ const QuatroGame = lazy(() => import('./games/quatro/QuatroGame.jsx'))
 const GaloGame = lazy(() => import('./games/galo/GaloGame.jsx'))
 const XadrezGame = lazy(() => import('./games/xadrez/XadrezGame.jsx'))
 const MemesGame = lazy(() => import('./games/memes/MemesGame.jsx'))
+const NavalGame = lazy(() => import('./games/naval/NavalGame.jsx'))
+const StopGame = lazy(() => import('./games/stop/StopGame.jsx'))
+const CartasGame = lazy(() => import('./games/cartas/CartasGame.jsx'))
 
 const page = (el) => <Suspense fallback={<p className="page-loading">A carregar…</p>}>{el}</Suspense>
 
@@ -26,6 +29,9 @@ export default function App() {
         <Route path="galo" element={page(<GaloGame />)} />
         <Route path="xadrez" element={page(<XadrezGame />)} />
         <Route path="memes" element={page(<MemesGame />)} />
+        <Route path="batalha-naval" element={page(<NavalGame />)} />
+        <Route path="stop" element={page(<StopGame />)} />
+        <Route path="cartas" element={page(<CartasGame />)} />
         <Route path="conta" element={page(<Conta />)} />
         <Route path="u/:username" element={page(<Perfil />)} />
       </Route>
