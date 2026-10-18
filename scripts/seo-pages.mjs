@@ -12,6 +12,23 @@ import { render } from '../dist-ssr/entry-server.js'
 const dist = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
 let base = readFileSync(join(dist, 'index.html'), 'utf8')
 
+// Google Analytics 4 (com o modo de consentimento: até a pessoa aceitar na
+// mensagem de cookies da Google, só são enviadas contagens sem cookies).
+// O script carrega depois de a página aparecer, para não atrasar nada.
+const gaId = (process.env.VITE_GA_ID || 'G-W28QZ5ZBHF').trim()
+if (/^G-[A-Z0-9]+$/.test(gaId)) {
+  const ga =
+    `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}window.gtag=gtag;` +
+    `gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});` +
+    `gtag('js',new Date());gtag('config','${gaId}',{send_page_view:false});` +
+    `(function(){var d=false;function l(){if(d)return;d=true;var s=document.createElement('script');s.async=true;` +
+    `s.src='https://www.googletagmanager.com/gtag/js?id=${gaId}';document.head.appendChild(s)}` +
+    `if(document.readyState==='complete')setTimeout(l,800);else addEventListener('load',function(){setTimeout(l,800)});` +
+    `['pointerdown','keydown','scroll','touchstart'].forEach(function(e){addEventListener(e,l,{once:true,passive:true})})})();`
+  base = base.replace('</head>', `  <script>${ga}</script>\n  </head>`)
+  console.log(`analytics: Google Analytics ${gaId}`)
+}
+
 // AdSense: o código de verificação vai no <head> de todas as páginas e cria-se
 // o ads.txt (o ID pode ser trocado com VITE_ADSENSE_CLIENT no Netlify).
 const adsClient = (process.env.VITE_ADSENSE_CLIENT || 'ca-pub-5462942064593521').trim()

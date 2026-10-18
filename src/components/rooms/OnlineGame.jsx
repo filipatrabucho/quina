@@ -6,6 +6,7 @@ import InviteFriends from '../../social/InviteFriends.jsx'
 import { gameByKey } from '../../data/games.js'
 import Avatar from '../Avatar.jsx'
 import DiscordButton from '../DiscordButton.jsx'
+import { track } from '../../lib/analytics.js'
 
 export function PlayerChip({ player, you, online, extra }) {
   return (
@@ -222,6 +223,7 @@ export default function OnlineGame({ game, logic, renderGame, renderLobbyOptions
     const c = randomRoomCode()
     forgetRoom(game, c)
     createRoomState(game, c, me, logic)
+    track('create_room', { game_name: game })
     goTo(c)
   }
 

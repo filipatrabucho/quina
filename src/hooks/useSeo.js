@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import { seoFor, SITE_URL } from '../data/seo.js'
+import { trackPageView } from '../lib/analytics.js'
 
 function setMeta(selector, attr, value) {
   let el = document.head.querySelector(selector)
@@ -25,5 +26,6 @@ export function useSeo() {
     setMeta('meta[property="og:description"]', 'content', s.description)
     setMeta('meta[property="og:url"]', 'content', SITE_URL + s.path)
     setMeta('meta[name="robots"]', 'content', s.noindex ? 'noindex, follow' : 'index, follow')
+    trackPageView(pathname + window.location.search, s.title)
   }, [pathname])
 }

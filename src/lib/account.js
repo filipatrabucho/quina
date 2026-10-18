@@ -1,3 +1,4 @@
+import { track } from './analytics.js'
 import { supabase } from './supabaseClient.js'
 import { randomSeed, uploadGeneratedAvatar, uploadAvatar, resizeImageFile } from './avatar.js'
 
@@ -50,6 +51,7 @@ export async function signUpWithEmail({ email, password, username }) {
   // Com "Confirm email" ligado, o Supabase não devolve sessão e, se o email
   // já existir, devolve um utilizador sem identidades.
   if (data.user && data.user.identities?.length === 0) throw new Error('Já existe uma conta com esse email.')
+  track('sign_up', { method: 'email' })
   if (data.session) await ensureStoredAvatar(data.session.user)
   return { needsConfirmation: !data.session }
 }
@@ -57,6 +59,7 @@ export async function signUpWithEmail({ email, password, username }) {
 export async function signInWithEmail({ email, password }) {
   const { data, error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
   if (error) fail(error)
+  track('login', { method: 'email' })
   await ensureStoredAvatar(data.user)
   return data.user
 }

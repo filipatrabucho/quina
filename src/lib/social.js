@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient.js'
+import { track } from './analytics.js'
 
 const PROFILE_FIELDS = 'id, username, avatar_url, bio, links, created_at'
 
@@ -187,6 +188,7 @@ export async function recordResultOnce(key, game, won, detail = null) {
     done = []
   }
   if (done.includes(key)) return
+  track('game_end', { game_name: game, result: won ? 'vitoria' : 'derrota' })
   const save = (list) => localStorage.setItem(RECORDED_KEY, JSON.stringify(list.slice(-300)))
   save([...done, key])
   const { data: s } = await supabase.auth.getSession()
