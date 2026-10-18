@@ -1,7 +1,8 @@
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import { getDisplayName, getAvatarUrl, getAvatarSeed } from '../lib/discordProfile.js'
-import { visibleGames } from '../data/games.js'
+import { visibleGames, GAMES } from '../data/games.js'
+import GameGuide from './GameGuide.jsx'
 import { adsConfigured, showPrivacyOptions } from '../lib/ads.js'
 import Avatar from './Avatar.jsx'
 import Logo from './Logo.jsx'
@@ -30,6 +31,15 @@ function AccountChip() {
       <span className="account-chip__name">{getDisplayName(user)}</span>
     </Link>
   )
+}
+
+// O guia do jogo aparece por baixo de cada jogo (não nos jogos em beta para quem não os vê).
+function PageGuide() {
+  const { pathname } = useLocation()
+  const s = useSocial()
+  const game = GAMES.find((g) => g.to === pathname.replace(/\/+$/, ''))
+  if (!game || (game.beta && !s?.canSeeBeta)) return null
+  return <GameGuide game={game} />
 }
 
 function SiteNav() {
@@ -75,6 +85,7 @@ export default function Layout() {
         </aside>
         <div className="site-main">
           <Outlet />
+          <PageGuide />
           <div className="page-foot-spot">
             <AdSlot variant="banner" />
           </div>
@@ -88,6 +99,8 @@ export default function Layout() {
         <div className="site-footer__inner">
           <Logo size={24} />
           <nav className="site-footer__links">
+            <Link to="/sobre">Sobre</Link>
+            <Link to="/contacto">Contacto</Link>
             <Link to="/conta">Conta</Link>
             <a href="/privacidade.html">Privacidade</a>
             <a href="/termos.html">Termos</a>

@@ -6,6 +6,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { GAMES } from '../src/data/games.js'
 import { seoFor, SITE_URL, SITE_NAME, PUBLIC_PATHS } from '../src/data/seo.js'
+import { GUIDES } from '../src/data/gameGuides.js'
 
 const dist = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
 let base = readFileSync(join(dist, 'index.html'), 'utf8')
@@ -37,7 +38,8 @@ function jsonLd(s) {
   }
   if (!s.game) return null
   const g = s.game
-  return {
+  const faq = GUIDES[g.key]?.faq || []
+  const game = {
     '@context': 'https://schema.org',
     '@type': 'VideoGame',
     name: g.title,
@@ -53,6 +55,15 @@ function jsonLd(s) {
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
     publisher: { '@id': `${SITE_URL}/#org` },
   }
+  if (!faq.length) return game
+  return [
+    game,
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+    },
+  ]
 }
 
 function fallback(s) {
@@ -60,7 +71,12 @@ function fallback(s) {
     .map((g) => `<li><a href="${g.to}">${esc(g.title)}</a>: ${esc(g.description)}</li>`)
     .join('')
   const h1 = s.game ? `${esc(s.game.title)} online grátis` : 'Jogos online grátis em português'
-  return `<noscript><h1>${h1}</h1><p>${esc(s.description)}</p><ul>${links}</ul></noscript>`
+  const g = s.game && GUIDES[s.game.key]
+  const guide = g
+    ? `<h2>Como jogar ${esc(s.game.title)}</h2><p>${esc(g.intro)}</p><h3>Regras</h3><ul>${g.rules.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>` +
+      (g.tips?.length ? `<h3>Dicas</h3><ul>${g.tips.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>` : '')
+    : ''
+  return `<noscript><h1>${h1}</h1><p>${esc(s.description)}</p>${guide}<ul>${links}</ul><p><a href="/sobre">Sobre</a> · <a href="/contacto">Contacto</a></p></noscript>`
 }
 
 function page(path) {
@@ -82,7 +98,7 @@ function page(path) {
 }
 
 writeFileSync(join(dist, 'index.html'), page('/'))
-const paths = [...GAMES.map((g) => g.to), '/conta']
+const paths = [...GAMES.map((g) => g.to), '/conta', '/sobre', '/contacto']
 for (const p of paths) {
   const dir = join(dist, p)
   mkdirSync(dir, { recursive: true })

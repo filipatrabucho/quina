@@ -9,6 +9,8 @@ export const DEFAULT_DESCRIPTION =
   'Jogos online grátis em português de Portugal: Palavras, Xadrez, 4 em Linha, Jogo do Galo, Batalha Naval, Stop, Jogo dos Memes e muito mais. Sozinho, contra o bot ou com amigos, sem instalar nada.'
 
 const EXTRA = {
+  '/sobre': { title: `Sobre nós | ${SITE_NAME}`, description: 'O Tuga Games PT é um site de mini-jogos online grátis feito em Portugal: jogos de tabuleiro, palavras, cartas e jogos de festa para jogar sozinho ou com amigos, sem instalar nada.' },
+  '/contacto': { title: `Contacto | ${SITE_NAME}`, description: 'Fala com a equipa do Tuga Games PT: sugestões de jogos, erros, pedidos sobre a tua conta e parcerias. Email tuga.games.staff@gmail.com.' },
   '/conta': { title: `Entrar ou criar conta | ${SITE_NAME}`, description: 'Cria a tua conta no Tuga Games PT para guardares o teu nome, avatar, amigos, medalhas e estatísticas.', noindex: true },
 }
 
@@ -32,4 +34,4 @@ export function seoFor(pathname) {
   return { path, ...(EXTRA[path] || { title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION }) }
 }
 
-export const PUBLIC_PATHS = ['/', ...GAMES.filter((g) => !g.beta).map((g) => g.to)]
+export const PUBLIC_PATHS = ['/', ...GAMES.filter((g) => !g.beta).map((g) => g.to), '/sobre', '/contacto']

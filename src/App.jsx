@@ -10,6 +10,8 @@ import BetaGate from './components/BetaGate.jsx'
 const Conta = lazy(() => import('./pages/Conta.jsx'))
 const Perfil = lazy(() => import('./pages/Perfil.jsx'))
 const Admin = lazy(() => import('./pages/Admin.jsx'))
+const Sobre = lazy(() => import('./pages/Sobre.jsx'))
+const Contacto = lazy(() => import('./pages/Contacto.jsx'))
 const QuatroGame = lazy(() => import('./games/quatro/QuatroGame.jsx'))
 const GaloGame = lazy(() => import('./games/galo/GaloGame.jsx'))
 const XadrezGame = lazy(() => import('./games/xadrez/XadrezGame.jsx'))
@@ -51,6 +53,8 @@ export default function App() {
         <Route path="conta" element={page(<Conta />)} />
         <Route path="u/:username" element={page(<Perfil />)} />
         <Route path="admin" element={page(<Admin />)} />
+        <Route path="sobre" element={page(<Sobre />)} />
+        <Route path="contacto" element={page(<Contacto />)} />
       </Route>
     </Routes>
   )

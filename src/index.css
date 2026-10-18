@@ -3478,3 +3478,28 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
 }
 .site-footer__link-btn { padding: 0; border: 0; background: none; color: var(--stone); font: inherit; cursor: pointer; }
 .site-footer__link-btn:hover { color: #fff; }
+
+/* ---------- Guia dos jogos e páginas Sobre/Contacto ---------- */
+.game-guide { width: 100%; max-width: 980px; margin: 8px auto 24px; padding: 24px 20px; border-top: 1px solid var(--stone-light); color: var(--stone); line-height: 1.6; }
+.game-guide h2 { margin: 0 0 10px; color: var(--ink); font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; font-size: 1.5rem; }
+.game-guide h3 { margin: 0 0 8px; color: var(--ink); font-size: 1rem; }
+.game-guide__intro { margin: 0 0 18px; font-size: 1.02rem; color: #C9C9D3; }
+.game-guide__cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px 32px; }
+.game-guide ul { margin: 0 0 12px; padding-left: 20px; }
+.game-guide li { margin-bottom: 4px; }
+.game-guide__faq { margin-top: 8px; }
+.game-guide details { border: 1px solid var(--stone-light); border-radius: 10px; padding: 10px 14px; margin-bottom: 8px; background: var(--white); }
+.game-guide summary { cursor: pointer; color: var(--ink); font-weight: 600; }
+.game-guide details p { margin: 8px 0 0; }
+.info-page { width: 100%; max-width: 760px; padding: 32px 20px 40px; color: #C9C9D3; line-height: 1.65; }
+.info-page h1 { margin: 6px 0 14px; color: var(--ink); font-family: var(--font-display); text-transform: uppercase; font-size: clamp(2rem, 6vw, 3rem); line-height: 1; }
+.info-page h2 { margin: 28px 0 8px; color: var(--ink); font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; font-size: 1.45rem; }
+.info-page p { margin: 0 0 12px; }
+.info-page a:not(.btn):not(.info-game) { color: var(--azulejo); }
+.info-page__lead { font-size: 1.1rem; color: var(--ink); }
+.info-games { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; margin: 12px 0; }
+.info-game { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--white); border: 1px solid var(--stone-light); color: var(--ink); text-decoration: none; font-weight: 600; }
+.info-game:hover { border-color: #fff; }
+.info-form { margin: 20px 0; text-align: left; }
+.info-form h2 { margin: 0; }
+.info-form select, .info-form textarea { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--stone-light); background: var(--cream-deep); color: var(--ink); font: inherit; }
