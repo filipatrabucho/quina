@@ -8,7 +8,7 @@ import AdBanner, { adsenseConfigured } from './AdBanner.jsx'
 // VITE_AD_SLOT_*). Enquanto o AdSense não estiver configurado, mostra o espaço reservado.
 const SLOTS = {
   rail: import.meta.env.VITE_AD_SLOT_RAIL || '8628167075', // "Lateral", fixo 160×600
-  banner: import.meta.env.VITE_AD_SLOT_BANNER,
+  banner: import.meta.env.VITE_AD_SLOT_BANNER || '7079940827', // "horizontal", adaptável
   box: import.meta.env.VITE_AD_SLOT_BOX,
 }
 
