@@ -8,6 +8,9 @@ export const gameAdsOn = adsConfigured && import.meta.env.VITE_ADSENSE_GAMES ===
 
 export function ensureAdsScript() {
   if (!adsConfigured || typeof document === 'undefined') return
+  // Em produção quem carrega o script é o código no <head> (só depois de a
+  // pessoa mexer na página ou de alguns segundos).
+  if (window.__tgLoadAds) return
   if (document.querySelector('script[src*="adsbygoogle.js"]')) return
   const s = document.createElement('script')
   s.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADS_CLIENT}`

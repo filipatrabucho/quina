@@ -16,10 +16,19 @@ let base = readFileSync(join(dist, 'index.html'), 'utf8')
 // o ads.txt (o ID pode ser trocado com VITE_ADSENSE_CLIENT no Netlify).
 const adsClient = (process.env.VITE_ADSENSE_CLIENT || 'ca-pub-5462942064593521').trim()
 if (/^ca-pub-\d+$/.test(adsClient)) {
-  const hint = process.env.VITE_ADSENSE_GAMES === 'on' ? ' data-ad-frequency-hint="60s"' : ''
+  const hint = process.env.VITE_ADSENSE_GAMES === 'on' ? "s.dataset.adFrequencyHint='60s';" : ''
+  // O script do AdSense só carrega quando a pessoa mexe na página (scroll,
+  // toque, tecla) ou 4 s depois de a página acabar de carregar: assim não
+  // atrasa a primeira pintura. Os anúncios pedidos antes ficam em fila.
+  const loader =
+    `(function(){var d=false;function l(){if(d)return;d=true;var s=document.createElement('script');` +
+    `s.async=true;s.crossOrigin='anonymous';${hint}s.src='https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsClient}';` +
+    `document.head.appendChild(s)}window.__tgLoadAds=l;window.adsbygoogle=window.adsbygoogle||[];` +
+    `['scroll','pointerdown','keydown','touchstart'].forEach(function(e){addEventListener(e,l,{once:true,passive:true})});` +
+    `addEventListener('load',function(){setTimeout(l,4000)})})();`
   base = base.replace(
     '</head>',
-    `  <meta name="google-adsense-account" content="${adsClient}" />\n    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsClient}" crossorigin="anonymous"${hint}></script>\n  </head>`
+    `  <meta name="google-adsense-account" content="${adsClient}" />\n    <script>${loader}</script>\n  </head>`
   )
   writeFileSync(join(dist, 'ads.txt'), `google.com, ${adsClient.replace('ca-', '')}, DIRECT, f08c47fec0942fa0\n`)
   console.log(`ads: AdSense ${adsClient} e ads.txt`)
