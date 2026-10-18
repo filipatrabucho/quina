@@ -154,8 +154,11 @@ export default function ColonosBoard({ game, colorOf, targets, onVertex, onEdge,
         if (!targets?.edges?.includes(i)) return null
         return (
           <g key={i} className="colonos-target" onClick={() => onEdge(i)} data-testid={`edge-${i}`}>
-            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="transparent" strokeWidth="0.4" />
-            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#FFD23F" strokeWidth="0.11" strokeLinecap="round" strokeDasharray="0.12 0.1" className="colonos-pulse" />
+            <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="transparent" strokeWidth="0.45" />
+            <g className="colonos-pulse">
+              <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="rgba(20,14,0,0.75)" strokeWidth="0.2" strokeLinecap="round" />
+              <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="#FFD23F" strokeWidth="0.11" strokeLinecap="round" />
+            </g>
           </g>
         )
       })}
@@ -169,7 +172,7 @@ export default function ColonosBoard({ game, colorOf, targets, onVertex, onEdge,
             {target && (
               <g className="colonos-target" onClick={() => onVertex(i)} data-testid={`vertex-${i}`}>
                 <circle cx={v.x} cy={v.y} r="0.42" fill="transparent" />
-                <circle cx={v.x} cy={v.y} r="0.15" fill="rgba(255,210,63,0.85)" stroke="#fff" strokeWidth="0.04" className="colonos-pulse" />
+                <circle cx={v.x} cy={v.y} r="0.16" fill="#FFD23F" stroke="#140E00" strokeWidth="0.05" className="colonos-pulse" />
               </g>
             )}
           </g>

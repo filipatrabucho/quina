@@ -78,7 +78,7 @@ function AuthForms() {
   }
 
   return (
-    <div className="account-card">
+    <div className="account-card account-card--auth">
       <div className="account-tabs" role="tablist">
         <button
           role="tab"

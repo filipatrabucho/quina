@@ -7,6 +7,7 @@ import { adsenseConfigured } from './AdBanner.jsx'
 import Avatar from './Avatar.jsx'
 import Logo from './Logo.jsx'
 import GameIcon from './GameIcon.jsx'
+import GamesMenu from './GamesMenu.jsx'
 import AdSlot from './AdSlot.jsx'
 import ConsentBanner from './ConsentBanner.jsx'
 import { SocialProvider } from '../social/SocialContext.jsx'
@@ -54,6 +55,7 @@ export default function Layout() {
             ))}
           </nav>
           <div className="site-header__actions">
+            <GamesMenu />
             <HeaderChatButton />
             <AccountChip />
           </div>
