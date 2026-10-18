@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { trackPageView } from '../lib/analytics.js'
 
 const KEY = 'tg-cookies'
 const OPEN_EVENT = 'tg-cookies-abrir'
@@ -34,6 +35,9 @@ export default function CookieBar() {
     } catch {}
     if (typeof window.gtag === 'function') {
       window.gtag('consent', 'update', { analytics_storage: accepted ? 'granted' : 'denied' })
+      // A visita a esta página foi enviada antes de aceitar (sem cookies e
+      // fora dos relatórios): volta a enviá-la para contar logo.
+      if (accepted) trackPageView(window.location.pathname + window.location.search, document.title)
     }
     setOpen(false)
   }
