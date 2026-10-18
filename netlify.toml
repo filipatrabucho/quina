@@ -4,17 +4,13 @@
 
 # Endereços antigos e www: tudo para https://tugagames.pt (301 = permanente,
 # o Google passa a reputação para o domínio novo).
-[[redirects]]
-  from = "https://quinaoo.netlify.app/*"
-  to = "https://tugagames.pt/:splat"
-  status = 301
-  force = true
-
-[[redirects]]
-  from = "http://quinaoo.netlify.app/*"
-  to = "https://tugagames.pt/:splat"
-  status = 301
-  force = true
+# Desligado até o DNS do tugagames.pt estar ativo (senão o site antigo
+# manda as pessoas para um domínio que ainda não responde).
+# [[redirects]]
+#   from = "https://quinaoo.netlify.app/*"
+#   to = "https://tugagames.pt/:splat"
+#   status = 301
+#   force = true
 
 [[redirects]]
   from = "https://www.tugagames.pt/*"
