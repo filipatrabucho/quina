@@ -10,9 +10,9 @@ import { seoFor, SITE_URL, SITE_NAME, PUBLIC_PATHS } from '../src/data/seo.js'
 const dist = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
 let base = readFileSync(join(dist, 'index.html'), 'utf8')
 
-// AdSense: com VITE_ADSENSE_CLIENT (ca-pub-...) nas variáveis do Netlify, o
-// código de verificação vai no <head> de todas as páginas e cria-se o ads.txt.
-const adsClient = (process.env.VITE_ADSENSE_CLIENT || '').trim()
+// AdSense: o código de verificação vai no <head> de todas as páginas e cria-se
+// o ads.txt (o ID pode ser trocado com VITE_ADSENSE_CLIENT no Netlify).
+const adsClient = (process.env.VITE_ADSENSE_CLIENT || 'ca-pub-5462942064593521').trim()
 if (/^ca-pub-\d+$/.test(adsClient)) {
   const hint = process.env.VITE_ADSENSE_GAMES === 'on' ? ' data-ad-frequency-hint="60s"' : ''
   base = base.replace(

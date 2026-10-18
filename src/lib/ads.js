@@ -1,6 +1,7 @@
-// Publicidade (Google AdSense). Tudo fica desligado enquanto não houver
-// VITE_ADSENSE_CLIENT (ca-pub-...) nas variáveis do Netlify.
-export const ADS_CLIENT = import.meta.env.VITE_ADSENSE_CLIENT || ''
+// Publicidade (Google AdSense). O ID de editor pode ser trocado com a
+// variável VITE_ADSENSE_CLIENT no Netlify; em desenvolvimento fica desligado.
+export const ADSENSE_PUBLISHER = 'ca-pub-5462942064593521'
+export const ADS_CLIENT = import.meta.env.VITE_ADSENSE_CLIENT || (import.meta.env.PROD ? ADSENSE_PUBLISHER : '')
 export const adsConfigured = Boolean(ADS_CLIENT)
 // Anúncios entre partidas (AdSense para jogos H5). Só depois de a Google aprovar.
 export const gameAdsOn = adsConfigured && import.meta.env.VITE_ADSENSE_GAMES === 'on'
