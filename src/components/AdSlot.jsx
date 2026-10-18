@@ -1,5 +1,4 @@
 import AdBanner, { adsenseConfigured } from './AdBanner.jsx'
-import { useAdConsent } from '../hooks/useAdConsent.js'
 
 // Espaços de publicidade do site:
 //  - "rail": colunas laterais (160×600), só em ecrãs largos
@@ -16,11 +15,10 @@ const SLOTS = {
 const HIDE_PLACEHOLDERS = import.meta.env.VITE_ADS_PLACEHOLDER === 'off'
 
 export default function AdSlot({ variant = 'banner', className = '' }) {
-  const { consent } = useAdConsent()
   const slot = SLOTS[variant]
-  const live = adsenseConfigured && slot && consent
-
-  if (!live && (HIDE_PLACEHOLDERS || (adsenseConfigured && slot))) return null
+  const live = adsenseConfigured && slot
+  // Com o AdSense ligado, um tipo sem bloco configurado não ocupa espaço.
+  if (!live && (HIDE_PLACEHOLDERS || adsenseConfigured)) return null
 
   return (
     <div className={`ad-slot ad-slot--${variant} ${className}`} data-testid={`ad-${variant}`}>
@@ -28,7 +26,6 @@ export default function AdSlot({ variant = 'banner', className = '' }) {
       {live ? (
         <AdBanner
           slot={slot}
-          personalized={consent === 'aceite'}
           format={variant === 'rail' ? 'vertical' : variant === 'box' ? 'rectangle' : 'auto'}
         />
       ) : (

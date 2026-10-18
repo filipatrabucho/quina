@@ -12,13 +12,10 @@ import {
 import { preloadDictionary, isRealWord } from './utils/dictionary.js'
 import DuelMode from './components/DuelMode.jsx'
 
-import ConsentBanner from '../../components/ConsentBanner.jsx'
-import AdBanner from '../../components/AdBanner.jsx'
 import GameIcon from '../../components/GameIcon.jsx'
 import { ChartIcon } from '../../components/Icons.jsx'
 import { useGuessInput, keyFromEvent } from './hooks/useGuessInput.js'
 import { recordResultOnce } from '../../lib/social.js'
-import { useAdConsent } from '../../hooks/useAdConsent.js'
 
 function storageKeyGuesses(mode) {
   return `quina-estado-${mode}`

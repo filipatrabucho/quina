@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { gameBreak } from '../../lib/ads.js'
 import GameShell from '../../components/GameShell.jsx'
 import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import Avatar from '../../components/Avatar.jsx'
@@ -202,7 +203,7 @@ function VsBots() {
       {error && <p className="duel-error">{error}</p>}
       {game.winner && (
         <div className="game-actions">
-          <button className="share-btn" onClick={() => setGame(rematch(game))}>Jogar outra vez</button>
+          <button className="share-btn" onClick={() => gameBreak('cartas', () => setGame(rematch(game)))}>Jogar outra vez</button>
           <button className="mode-btn" onClick={() => setGame(null)}>Mudar nº de bots</button>
         </div>
       )}

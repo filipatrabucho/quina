@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { gameBreak } from '../../lib/ads.js'
 import GameShell from '../../components/GameShell.jsx'
 import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import BotLevelPicker from '../../components/BotLevelPicker.jsx'
@@ -237,7 +238,7 @@ function VsBot() {
           </p>
           {game.last && <p className="naval-log">{shotText(game.last, game.last.by === 'tu' ? 'Tu' : 'O bot')}</p>}
           <Battle myFleet={game.myFleet} myShots={game.myShots} enemyShots={game.botShots} canShoot={!game.winner && game.turn === 'tu'} onShoot={shoot} lastShot={game.last} />
-          {game.winner && <button className="share-btn" onClick={() => setGame(null)}>Jogar outra vez</button>}
+          {game.winner && <button className="share-btn" onClick={() => gameBreak('naval', () => setGame(null))}>Jogar outra vez</button>}
         </>
       )}
     </div>

@@ -8,7 +8,22 @@ import { GAMES } from '../src/data/games.js'
 import { seoFor, SITE_URL, SITE_NAME, PUBLIC_PATHS } from '../src/data/seo.js'
 
 const dist = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
-const base = readFileSync(join(dist, 'index.html'), 'utf8')
+let base = readFileSync(join(dist, 'index.html'), 'utf8')
+
+// AdSense: com VITE_ADSENSE_CLIENT (ca-pub-...) nas variáveis do Netlify, o
+// código de verificação vai no <head> de todas as páginas e cria-se o ads.txt.
+const adsClient = (process.env.VITE_ADSENSE_CLIENT || '').trim()
+if (/^ca-pub-\d+$/.test(adsClient)) {
+  const hint = process.env.VITE_ADSENSE_GAMES === 'on' ? ' data-ad-frequency-hint="60s"' : ''
+  base = base.replace(
+    '</head>',
+    `  <meta name="google-adsense-account" content="${adsClient}" />\n    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsClient}" crossorigin="anonymous"${hint}></script>\n  </head>`
+  )
+  writeFileSync(join(dist, 'ads.txt'), `google.com, ${adsClient.replace('ca-', '')}, DIRECT, f08c47fec0942fa0\n`)
+  console.log(`ads: AdSense ${adsClient} e ads.txt`)
+} else if (adsClient) {
+  console.warn(`ads: VITE_ADSENSE_CLIENT inválido (${adsClient}); deve ser ca-pub-seguido de números`)
+}
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
 function jsonLd(s) {

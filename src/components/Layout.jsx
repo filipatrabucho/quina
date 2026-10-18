@@ -1,15 +1,13 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
-import { useAdConsent } from '../hooks/useAdConsent.js'
 import { getDisplayName, getAvatarUrl, getAvatarSeed } from '../lib/discordProfile.js'
 import { visibleGames } from '../data/games.js'
-import { adsenseConfigured } from './AdBanner.jsx'
+import { adsConfigured, showPrivacyOptions } from '../lib/ads.js'
 import Avatar from './Avatar.jsx'
 import Logo from './Logo.jsx'
 import GameIcon from './GameIcon.jsx'
 import GamesMenu from './GamesMenu.jsx'
 import AdSlot from './AdSlot.jsx'
-import ConsentBanner from './ConsentBanner.jsx'
 import { SocialProvider } from '../social/SocialContext.jsx'
 import ChatDock, { HeaderChatButton } from '../social/ChatDock.jsx'
 import { useSocial } from '../social/SocialContext.jsx'
@@ -54,7 +52,6 @@ function SiteNav() {
 
 export default function Layout() {
   useSeo()
-  const { consent, accept, decline } = useAdConsent()
   return (
     <SocialProvider>
     <div className="site">
@@ -93,6 +90,12 @@ export default function Layout() {
           <nav className="site-footer__links">
             <Link to="/conta">Conta</Link>
             <a href="/privacidade.html">Privacidade</a>
+            <a href="/termos.html">Termos</a>
+            {adsConfigured && (
+              <button type="button" className="site-footer__link-btn" onClick={showPrivacyOptions}>
+                Cookies
+              </button>
+            )}
             {import.meta.env.VITE_TIP_URL && (
               <a href={import.meta.env.VITE_TIP_URL} target="_blank" rel="noopener noreferrer">
                 Apoiar o projeto
@@ -103,7 +106,6 @@ export default function Layout() {
         </div>
       </footer>
 
-      {adsenseConfigured && !consent && <ConsentBanner onAccept={accept} onDecline={decline} />}
       <ChatDock />
     </div>
     </SocialProvider>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { gameBreak } from '../../lib/ads.js'
 import GameShell from '../../components/GameShell.jsx'
 import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import Avatar from '../../components/Avatar.jsx'
@@ -129,7 +130,7 @@ function Solo() {
             </li>
           ))}
         </ul>
-        <button className="share-btn" onClick={() => setRun(null)}>Jogar outra vez</button>
+        <button className="share-btn" onClick={() => gameBreak('emojis', () => setRun(null))}>Jogar outra vez</button>
       </div>
     )
   }

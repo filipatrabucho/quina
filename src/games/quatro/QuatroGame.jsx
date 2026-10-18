@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { gameBreak } from '../../lib/ads.js'
 import GameShell from '../../components/GameShell.jsx'
 import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import BotLevelPicker from '../../components/BotLevelPicker.jsx'
@@ -105,7 +106,7 @@ function VsBot() {
             ? 'É a tua vez.'
             : 'O bot está a pensar…'}
       </p>
-      {result && <button className="share-btn" onClick={newGame}>Jogar outra vez</button>}
+      {result && <button className="share-btn" onClick={() => gameBreak('quatro', newGame)}>Jogar outra vez</button>}
     </div>
   )
 }

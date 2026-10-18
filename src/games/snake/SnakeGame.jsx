@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { gameBreak } from '../../lib/ads.js'
 import GameShell from '../../components/GameShell.jsx'
 import { recordResultOnce } from '../../lib/social.js'
 import { SIZE, newGame, step, turn, speedFor } from './snakeLogic.js'
@@ -169,7 +170,7 @@ function SnakeBoard() {
           <div className="snake-overlay">
             {status === 'over' && <p className="snake-over" data-testid="snake-over">Fim! {state.score} {state.score === 1 ? 'ponto' : 'pontos'}</p>}
             {status === 'paused' && <p className="snake-over">Pausa</p>}
-            <button className="share-btn" onClick={() => (status === 'paused' ? setStatus('playing') : restart())} data-testid="snake-start">
+            <button className="share-btn" onClick={() => (status === 'paused' ? setStatus('playing') : gameBreak('snake', () => restart()))} data-testid="snake-start">
               {status === 'over' ? 'Jogar outra vez' : status === 'paused' ? 'Continuar' : 'Começar'}
             </button>
             <p className="modal-note">Setas ou WASD no PC, desliza o dedo no telemóvel. Espaço para pausa.</p>

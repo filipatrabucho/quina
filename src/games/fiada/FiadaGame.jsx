@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { gameBreak } from '../../lib/ads.js'
 import { GRID_SIZE, getTodayDeck, getTodayKey, isValidPlacement, buildInitialSetup } from './utils/fiadaLogic.js'
 import GameIcon from '../../components/GameIcon.jsx'
 import { RefreshIcon } from '../../components/Icons.jsx'
@@ -250,14 +251,14 @@ export default function FiadaGame() {
           {isComplete && (
             <>
               <p className="duel-result">Painel completo em {moves} jogadas!</p>
-              <button className="share-btn" onClick={newGame}>Jogar outra vez</button>
+              <button className="share-btn" onClick={() => gameBreak('fiada', newGame)}>Jogar outra vez</button>
             </>
           )}
 
           {isStuck && !isComplete && (
             <>
               <p className="duel-result">Sem mais azulejos para jogar. Não deu para completar desta vez.</p>
-              <button className="share-btn" onClick={newGame}>Jogar outra vez</button>
+              <button className="share-btn" onClick={() => gameBreak('fiada', newGame)}>Jogar outra vez</button>
             </>
           )}
         </main>

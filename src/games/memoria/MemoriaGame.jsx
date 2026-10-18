@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { gameBreak } from '../../lib/ads.js'
 import GameShell from '../../components/GameShell.jsx'
 import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import Avatar from '../../components/Avatar.jsx'
@@ -118,7 +119,7 @@ function Solo() {
       {game.done && (
         <div className="memo-done" data-testid="memo-done">
           <p className="game-status">Muito bem! Encontraste todos os pares em {game.moves} jogadas e {clock.seconds}s.</p>
-          <button className="share-btn" onClick={() => reset()}>Jogar outra vez</button>
+          <button className="share-btn" onClick={() => gameBreak('memoria', () => reset())}>Jogar outra vez</button>
         </div>
       )}
     </div>
