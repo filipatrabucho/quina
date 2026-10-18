@@ -269,6 +269,24 @@ button { font-family: inherit; }
   .tile--compact { width: 27px; height: 27px; font-size: 0.85rem; }
 }
 
+/* Quarteto no PC: as casas encolhem para as 4 grelhas caberem no espaço
+   (20 casas + 16 espaços de 7px + 3 de 22px = 178px). */
+@media (min-width: 701px) {
+  .main:has(> .boards-grid--4) { container-type: inline-size; }
+  .boards-grid--4 .tile--compact {
+    --t: clamp(26px, calc((100cqi - 178px) / 20), 58px);
+    width: var(--t);
+    height: var(--t);
+    font-size: calc(var(--t) * 0.46);
+  }
+}
+/* Com as regras ao lado, as casas não descem abaixo de 38px: se não couber,
+   as regras passam para baixo (ver PageContent no Layout). */
+@media (min-width: 1280px) {
+  .main:has(> .boards-grid--4) { min-width: calc(38px * 20 + 178px + 24px); }
+  .boards-grid--4 .tile--compact { --t: clamp(38px, calc((100cqi - 178px) / 20), 58px); }
+}
+
 .mode-btn--duel {
   background: var(--ochre);
   border-color: #A5631C;

@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import { getDisplayName, getAvatarUrl, getAvatarSeed } from '../lib/discordProfile.js'
@@ -45,13 +46,48 @@ function useCurrentGame() {
   return game
 }
 
+// Largura que as regras ocupam ao lado do jogo no PC (coluna + espaço + margens).
+const GUIDE_SIDE_SPACE = 290 + 16 + 32
+
 // Nas páginas de jogos: o jogo e, ao lado (PC) ou por baixo (telemóvel), o guia.
 function PageContent() {
   const game = useCurrentGame()
+  const { pathname } = useLocation()
+  const mainRef = useRef(null)
+  const [overflows, setOverflows] = useState(false)
+
+  // Se o jogo não cabe ao lado das regras (ex.: Palavras em Quarteto), as
+  // regras passam para baixo em vez de ficarem por cima do jogo.
+  useEffect(() => {
+    setOverflows(false)
+    const el = mainRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const check = () => {
+      const layout = el.parentElement
+      if (layout.classList.contains('game-layout--wide')) {
+        // Já está em baixo: volta para o lado se o jogo voltar a caber.
+        const prev = el.style.width
+        el.style.width = 'min-content'
+        const need = el.scrollWidth
+        el.style.width = prev
+        const room = layout.clientWidth - GUIDE_SIDE_SPACE
+        if (need <= room) setOverflows(false)
+      } else if (el.scrollWidth > el.clientWidth + 2) {
+        setOverflows(true)
+      }
+    }
+    const ro = new ResizeObserver(check)
+    ro.observe(el)
+    const mo = new MutationObserver(check)
+    mo.observe(el, { childList: true, subtree: true })
+    check()
+    return () => { ro.disconnect(); mo.disconnect() }
+  }, [pathname, game])
+
   if (!game) return <Outlet />
   return (
-    <div className={`game-layout${game.wide ? ' game-layout--wide' : ''}`}>
-      <div className="game-layout__main">
+    <div className={`game-layout${game.wide || overflows ? ' game-layout--wide' : ''}`}>
+      <div className="game-layout__main" ref={mainRef}>
         <Outlet />
       </div>
       <GameGuide game={game} />
