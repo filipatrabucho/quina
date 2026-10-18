@@ -338,3 +338,61 @@ alter table public.friend_groups enable row level security;
 drop policy if exists "grupos: só o dono" on public.friend_groups;
 create policy "grupos: só o dono" on public.friend_groups for all
   using (owner = auth.uid()) with check (owner = auth.uid());
+
+-- ---------- Admin e testers (jogos em beta) ----------
+create table if not exists public.staff (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  role text not null check (role in ('admin', 'tester')),
+  added_at timestamptz not null default now()
+);
+alter table public.staff enable row level security;
+drop policy if exists "staff: ver o meu" on public.staff;
+create policy "staff: ver o meu" on public.staff for select using (user_id = auth.uid());
+-- Ninguém escreve diretamente: só pelas funções abaixo (ou no SQL Editor).
+
+create or replace function public.my_role()
+returns text language sql stable security definer set search_path = public as $$
+  select role from staff where user_id = auth.uid();
+$$;
+grant execute on function public.my_role() to authenticated;
+
+create or replace function public.list_staff()
+returns table (user_id uuid, username text, role text, added_at timestamptz)
+language plpgsql stable security definer set search_path = public as $$
+begin
+  if not exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin') then
+    raise exception 'Só o admin pode ver os testers.';
+  end if;
+  return query
+    select s.user_id, p.username, s.role, s.added_at
+    from staff s left join profiles p on p.id = s.user_id
+    order by s.role, p.username;
+end;
+$$;
+grant execute on function public.list_staff() to authenticated;
+
+-- p_role: 'tester', 'admin' ou null para tirar.
+create or replace function public.set_staff(p_username text, p_role text)
+returns void language plpgsql security definer set search_path = public as $$
+declare uid uuid;
+begin
+  if not exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin') then
+    raise exception 'Só o admin pode gerir testers.';
+  end if;
+  select id into uid from profiles where lower(username) = lower(trim(p_username));
+  if uid is null then raise exception 'Não existe nenhum jogador com esse username.'; end if;
+  if p_role is null then
+    if uid = auth.uid() then raise exception 'Não te podes tirar a ti próprio.'; end if;
+    delete from staff where user_id = uid;
+  elsif p_role in ('admin', 'tester') then
+    insert into staff (user_id, role) values (uid, p_role)
+    on conflict (user_id) do update set role = excluded.role;
+  else
+    raise exception 'Papel inválido.';
+  end if;
+end;
+$$;
+grant execute on function public.set_staff(text, text) to authenticated;
+
+-- PRIMEIRA VEZ: torna-te admin (troca O_TEU_USERNAME pelo teu username e corre só esta linha):
+-- insert into public.staff (user_id, role) select id, 'admin' from public.profiles where username = 'O_TEU_USERNAME' on conflict (user_id) do update set role = 'admin';

@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /conta
+Disallow: /u/
+
+Sitemap: https://tugagames.pt/sitemap.xml

@@ -159,7 +159,7 @@ export default function Perfil() {
       <section>
         <h2 className="profile-section-title">Jogos</h2>
         <div className="profile-games">
-          {GAMES.map((g) => {
+          {GAMES.filter((g) => !g.beta || statByGame[g.key]).map((g) => {
             const st = statByGame[g.key]
             return (
               <div key={g.key} className="profile-game">

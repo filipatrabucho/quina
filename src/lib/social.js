@@ -231,3 +231,21 @@ export function socialUrl(network, value) {
   const handle = v.replace(/^@/, '')
   return /^[A-Za-z0-9_.-]{1,40}$/.test(handle) ? net.base + handle : null
 }
+
+// ---- Admin e testers ----
+export async function getMyRole() {
+  const { data, error } = await supabase.rpc('my_role')
+  fail(error)
+  return data || null
+}
+
+export async function listStaff() {
+  const { data, error } = await supabase.rpc('list_staff')
+  fail(error)
+  return data
+}
+
+export async function setStaff(username, role) {
+  const { error } = await supabase.rpc('set_staff', { p_username: username, p_role: role })
+  fail(error)
+}

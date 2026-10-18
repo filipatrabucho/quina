@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { GAMES, TAG_LABELS } from '../data/games.js'
+import { visibleGames, TAG_LABELS } from '../data/games.js'
+import { useSocial } from '../social/SocialContext.jsx'
 import GameIcon from '../components/GameIcon.jsx'
 import AdSlot from '../components/AdSlot.jsx'
 import { useAuth } from '../hooks/useAuth.js'
@@ -37,19 +38,21 @@ function GameCard({ game }) {
 export default function Hub() {
   const [filter, setFilter] = useState('todos')
   const { user } = useAuth()
-  const featured = GAMES[0]
-  const list = filter === 'todos' ? GAMES : GAMES.filter((g) => g.tags.includes(filter))
+  const social = useSocial()
+  const games = visibleGames(social?.canSeeBeta)
+  const featured = games.find((g) => !g.beta)
+  const list = filter === 'todos' ? games : games.filter((g) => g.tags.includes(filter))
   const hasAccount = user && !user.is_anonymous
 
   return (
     <main className="hub">
       <section className="hero">
         <div className="hero__text">
-          <span className="eyebrow">Jogos online gratuitos</span>
-          <h1>Joga com amigos, direto no browser</h1>
+          <span className="eyebrow">Tuga Games PT</span>
+          <h1>Jogos online grátis em português</h1>
           <p>
-            Palavras, xadrez, 4 em linha, memes e mais. Joga sozinho, contra o computador ou cria uma sala e envia o
-            link a quem quiseres.
+            Palavras, xadrez, 4 em linha, batalha naval, stop, memes e muito mais. Joga sozinho, contra o computador
+            ou cria uma sala e envia o link aos amigos. Sem instalar nada.
           </p>
           <div className="hero__actions">
             <a href="#jogos" className="btn btn--primary">Ver jogos</a>

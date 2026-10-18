@@ -56,7 +56,7 @@ function InviteBox({ code, gameTitle }) {
   const copy = async () => {
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Quina', text: 'Vem jogar comigo!', url: link })
+        await navigator.share({ title: 'Tuga Games', text: 'Vem jogar comigo!', url: link })
         return
       } catch {
         // cancelado, copia

@@ -2,7 +2,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import { useAdConsent } from '../hooks/useAdConsent.js'
 import { getDisplayName, getAvatarUrl, getAvatarSeed } from '../lib/discordProfile.js'
-import { GAMES } from '../data/games.js'
+import { visibleGames } from '../data/games.js'
 import { adsenseConfigured } from './AdBanner.jsx'
 import Avatar from './Avatar.jsx'
 import Logo from './Logo.jsx'
@@ -12,6 +12,8 @@ import AdSlot from './AdSlot.jsx'
 import ConsentBanner from './ConsentBanner.jsx'
 import { SocialProvider } from '../social/SocialContext.jsx'
 import ChatDock, { HeaderChatButton } from '../social/ChatDock.jsx'
+import { useSocial } from '../social/SocialContext.jsx'
+import { useSeo } from '../hooks/useSeo.js'
 
 function AccountChip() {
   const { user, loading } = useAuth()
@@ -32,28 +34,36 @@ function AccountChip() {
   )
 }
 
+function SiteNav() {
+  const s = useSocial()
+  return (
+    <nav className="site-nav" aria-label="Jogos">
+      {visibleGames(s?.canSeeBeta).map((g) => (
+        <NavLink
+          key={g.to}
+          to={g.to}
+          className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}
+        >
+          <GameIcon game={g.key} size={18} />
+          {g.short}
+        </NavLink>
+      ))}
+    </nav>
+  )
+}
+
 export default function Layout() {
+  useSeo()
   const { consent, accept, decline } = useAdConsent()
   return (
     <SocialProvider>
     <div className="site">
       <header className="site-header">
         <div className="site-header__inner">
-          <Link to="/" className="site-logo" aria-label="Página inicial do Quina">
+          <Link to="/" className="site-logo" aria-label="Página inicial do Tuga Games">
             <Logo size={32} />
           </Link>
-          <nav className="site-nav" aria-label="Jogos">
-            {GAMES.map((g) => (
-              <NavLink
-                key={g.to}
-                to={g.to}
-                className={({ isActive }) => `site-nav__link${isActive ? ' site-nav__link--active' : ''}`}
-              >
-                <GameIcon game={g.key} size={18} />
-                {g.short}
-              </NavLink>
-            ))}
-          </nav>
+          <SiteNav />
           <div className="site-header__actions">
             <GamesMenu />
             <HeaderChatButton />
@@ -89,7 +99,7 @@ export default function Layout() {
               </a>
             )}
           </nav>
-          <span className="site-footer__copy">© {new Date().getFullYear()} Quina</span>
+          <span className="site-footer__copy">© {new Date().getFullYear()} Tuga Games PT</span>
         </div>
       </footer>
 

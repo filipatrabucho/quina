@@ -26,9 +26,9 @@ function Art({ game }) {
           <rect x="7" y="17" width="10.5" height="12" rx="2.5" fill="#fff" />
           <rect x="18.75" y="17" width="10.5" height="12" rx="2.5" fill="#FFC542" />
           <rect x="30.5" y="17" width="10.5" height="12" rx="2.5" fill="#2FBF71" />
-          <text x="12.25" y="26.8" fill="#7C5CE0">Q</text>
-          <text x="24" y="26.8" fill="#3B2A00">U</text>
-          <text x="35.75" y="26.8" fill="#fff">I</text>
+          <text x="12.25" y="26.8" fill="#7C5CE0">J</text>
+          <text x="24" y="26.8" fill="#3B2A00">O</text>
+          <text x="35.75" y="26.8" fill="#fff">G</text>
           <rect x="7" y="31.5" width="34" height="2.5" rx="1.25" fill="#fff" opacity="0.35" />
         </g>
       )

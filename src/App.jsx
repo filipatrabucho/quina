@@ -4,10 +4,12 @@ import Layout from './components/Layout.jsx'
 import Hub from './pages/Hub.jsx'
 import PalavrasGame from './games/palavras/PalavrasGame.jsx'
 import FiadaGame from './games/fiada/FiadaGame.jsx'
+import BetaGate from './components/BetaGate.jsx'
 
 // Os jogos novos só são descarregados quando se abrem.
 const Conta = lazy(() => import('./pages/Conta.jsx'))
 const Perfil = lazy(() => import('./pages/Perfil.jsx'))
+const Admin = lazy(() => import('./pages/Admin.jsx'))
 const QuatroGame = lazy(() => import('./games/quatro/QuatroGame.jsx'))
 const GaloGame = lazy(() => import('./games/galo/GaloGame.jsx'))
 const XadrezGame = lazy(() => import('./games/xadrez/XadrezGame.jsx'))
@@ -31,7 +33,7 @@ export default function App() {
       <Route element={<Layout />}>
         <Route index element={<Hub />} />
         <Route path="palavras" element={<PalavrasGame />} />
-        <Route path="fiada" element={<FiadaGame />} />
+        <Route path="fiada" element={<BetaGate game="fiada"><FiadaGame /></BetaGate>} />
         <Route path="quatro-em-linha" element={page(<QuatroGame />)} />
         <Route path="galo" element={page(<GaloGame />)} />
         <Route path="xadrez" element={page(<XadrezGame />)} />
@@ -45,9 +47,10 @@ export default function App() {
         <Route path="2-verdades-1-mentira" element={page(<VerdadesGame />)} />
         <Route path="continua-a-frase" element={page(<FraseGame />)} />
         <Route path="emoji-battle" element={page(<EmojisGame />)} />
-        <Route path="colonos" element={page(<ColonosGame />)} />
+        <Route path="colonos" element={<BetaGate game="colonos">{page(<ColonosGame />)}</BetaGate>} />
         <Route path="conta" element={page(<Conta />)} />
         <Route path="u/:username" element={page(<Perfil />)} />
+        <Route path="admin" element={page(<Admin />)} />
       </Route>
     </Routes>
   )

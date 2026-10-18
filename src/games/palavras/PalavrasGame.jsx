@@ -200,9 +200,9 @@ export default function PalavrasGame() {
       const rows = solvedBoards[i] ? perBoardStatuses[i].slice(0, solvedIndex + 1) : perBoardStatuses[i]
       return buildShareGrid(rows)
     })
-    const text = `Quina ${MODES[mode].label} ${todayKey} ${
+    const text = `Tuga Games ${MODES[mode].label} ${todayKey} ${
       gameState === 'ganhou' ? guesses.length : 'X'
-    }/${maxGuesses}\n\n${grids.join('\n\n')}`
+    }/${maxGuesses}\n\n${grids.join('\n\n')}\n\ntugagames.pt/palavras`
     if (navigator.share) {
       navigator.share({ text }).catch(() => {})
     } else if (navigator.clipboard) {
@@ -230,13 +230,6 @@ export default function PalavrasGame() {
         <button className="icon-btn" onClick={() => setShowHelp(true)} aria-label="Como jogar">
           ?
         </button>
-      {/*   <h1 className="logo">
-          <span className="logo__tile logo__tile--a">Q</span>
-          <span className="logo__tile logo__tile--b">U</span>
-          <span className="logo__tile logo__tile--a">I</span>
-          <span className="logo__tile logo__tile--b">N</span>
-          <span className="logo__tile logo__tile--a">A</span>
-        </h1> */}
         <h2 className="game-title"><GameIcon game="palavras" size={30} />Palavras</h2>
         <button className="icon-btn" onClick={() => setShowStats(true)} aria-label="Estatísticas">
           <ChartIcon />

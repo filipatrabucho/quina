@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import GameShell from '../../components/GameShell.jsx'
 import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import BotLevelPicker from '../../components/BotLevelPicker.jsx'
@@ -50,6 +50,7 @@ function Placement({ onReady, waiting }) {
   const [horizontal, setHorizontal] = useState(true)
   const [hover, setHover] = useState(null)
   const nextShip = SHIPS.find((s) => !fleet.some((f) => f.key === s.key))
+  const boardRef = useRef(null)
 
   useEffect(() => {
     const onKey = (e) => {
@@ -57,6 +58,30 @@ function Placement({ onReady, waiting }) {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
+  }, [])
+
+  // No PC roda-se o navio com a roda do rato (ou o botão direito) por cima do mar.
+  useEffect(() => {
+    const el = boardRef.current
+    if (!el) return undefined
+    let last = 0
+    const onWheel = (e) => {
+      e.preventDefault()
+      const now = Date.now()
+      if (now - last < 180 || Math.abs(e.deltaY) + Math.abs(e.deltaX) < 4) return // touchpads mandam muitos eventos
+      last = now
+      setHorizontal((h) => !h)
+    }
+    const onContext = (e) => {
+      e.preventDefault()
+      setHorizontal((h) => !h)
+    }
+    el.addEventListener('wheel', onWheel, { passive: false })
+    el.addEventListener('contextmenu', onContext)
+    return () => {
+      el.removeEventListener('wheel', onWheel)
+      el.removeEventListener('contextmenu', onContext)
+    }
   }, [])
 
   const preview = useMemo(() => {
@@ -91,10 +116,16 @@ function Placement({ onReady, waiting }) {
           </span>
         ))}
       </div>
-      <Grid cellState={cellState} onCell={click} onHover={setHover} testid="naval-placement" />
-      <p className="modal-note">Toca numa casa para pôr o navio. Toca num navio para o tirar. Os navios não se podem tocar.</p>
+      <div ref={boardRef} className="naval-placement__board" data-testid="naval-placement-board">
+        <Grid cellState={cellState} onCell={click} onHover={setHover} testid="naval-placement" />
+      </div>
+      <p className="modal-note naval-hint naval-hint--mouse">
+        Clica numa casa para pôr o navio e num navio para o tirar. <strong>Roda a roda do rato</strong> (ou usa o botão direito ou a tecla R) para o virar. Os navios não se podem tocar.
+      </p>
+      <p className="modal-note naval-hint naval-hint--touch">Toca numa casa para pôr o navio e num navio para o tirar. Os navios não se podem tocar.</p>
       <div className="game-actions">
-        <button className="mode-btn" onClick={() => setHorizontal((h) => !h)}>Rodar ({horizontal ? 'horizontal' : 'vertical'})</button>
+        <span className="naval-dir" data-testid="naval-dir">{horizontal ? '↔ Horizontal' : '↕ Vertical'}</span>
+        <button className="mode-btn naval-rotate" onClick={() => setHorizontal((h) => !h)} data-testid="naval-rotate">Rodar navio</button>
         <button className="mode-btn" onClick={() => setFleet(randomFleet())}>Aleatório</button>
         <button className="mode-btn" onClick={() => setFleet([])} disabled={!fleet.length}>Limpar</button>
       </div>

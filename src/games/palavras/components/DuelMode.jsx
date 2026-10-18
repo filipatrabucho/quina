@@ -219,7 +219,7 @@ export default function DuelMode({ onExit }) {
     const link = `${window.location.origin}${window.location.pathname}?duelo=${duel.code}`
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Quina 1vs1', text: 'Vem jogar comigo!', url: link })
+        await navigator.share({ title: 'Tuga Games 1vs1', text: 'Vem jogar comigo!', url: link })
         return
       } catch {
         // utilizador cancelou a partilha nativa, cai para copiar

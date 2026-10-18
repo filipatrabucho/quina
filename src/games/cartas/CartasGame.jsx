@@ -12,7 +12,7 @@ export function Card({ card, onClick, playable, small, back, testid }) {
   if (back) {
     return (
       <button className={`card card--back${small ? ' card--small' : ''}`} onClick={onClick} disabled={!onClick} data-testid={testid} aria-label="Baralho">
-        <span className="card__back-logo">Q</span>
+        <span className="card__back-logo">TG</span>
       </button>
     )
   }

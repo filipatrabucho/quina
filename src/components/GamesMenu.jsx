@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { GAMES, TAG_LABELS } from '../data/games.js'
+import { visibleGames, TAG_LABELS } from '../data/games.js'
+import { useSocial } from '../social/SocialContext.jsx'
 import GameIcon from './GameIcon.jsx'
 
 // Menu "Todos os jogos" do cabeçalho no PC: grelha com todos os jogos.
@@ -8,6 +9,7 @@ export default function GamesMenu() {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
   const { pathname } = useLocation()
+  const social = useSocial()
 
   useEffect(() => setOpen(false), [pathname])
   useEffect(() => {
@@ -32,7 +34,7 @@ export default function GamesMenu() {
       </button>
       {open && (
         <div className="games-menu__panel" role="menu">
-          {GAMES.map((g) => (
+          {visibleGames(social?.canSeeBeta).map((g) => (
             <Link key={g.key} to={g.to} role="menuitem" className={`games-menu__item${pathname === g.to ? ' games-menu__item--active' : ''}`}>
               <GameIcon game={g.key} size={40} />
               <span>

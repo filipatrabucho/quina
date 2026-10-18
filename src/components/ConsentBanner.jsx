@@ -2,7 +2,7 @@ export default function ConsentBanner({ onAccept, onDecline }) {
   return (
     <div className="consent-banner">
       <p>
-        Usamos anúncios para ajudar a manter o Quina gratuito. Aceitas cookies de anúncios
+        Usamos anúncios para ajudar a manter o Tuga Games gratuito. Aceitas cookies de anúncios
         personalizados?{' '}
         <a href="/privacidade.html" target="_blank" rel="noopener noreferrer">
           Saber mais

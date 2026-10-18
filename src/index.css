@@ -1692,13 +1692,18 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
 .logo-full { display: inline-flex; align-items: center; gap: 10px; }
 .logo-mark { display: block; }
 .logo-word {
-  font-family: var(--font-display);
+  font-family: 'Fredoka', var(--font-display);
   font-weight: 700;
-  font-size: 1.6rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 1.65rem;
+  letter-spacing: -0.01em;
+  line-height: 1;
   color: #fff;
 }
+.logo-word__tuga { color: #22B04B; }
+.logo-word__games { color: #fff; }
+.logo-word__pt { color: #EF2B36; }
+.logo-mark { height: auto; filter: drop-shadow(0 0 1px rgba(255, 255, 255, 0.35)); }
+@media (max-width: 380px) { .logo-word { font-size: 1.35rem; } }
 .site-nav {
   display: flex;
   gap: 2px;
@@ -1845,6 +1850,7 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
   font-size: 0.85rem;
 }
 .site-footer .logo-word { font-size: 1.2rem; }
+.logo-full { gap: 8px; }
 .site-footer__links { display: flex; gap: 18px; flex: 1; }
 .site-footer__links a { color: var(--stone); text-decoration: none; }
 .site-footer__links a:hover { color: #fff; }
@@ -3440,3 +3446,33 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
   .emoji-puzzle__emojis { font-size: 5rem; }
 }
 @media (min-width: 1024px) { .game-panel > .share-btn { max-width: 360px; } }
+
+/* ---------- Beta e admin ---------- */
+.beta-locked { max-width: 480px; margin: 48px auto; padding: 0 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.beta-locked h2 { margin: 6px 0 0; font-family: var(--font-display); text-transform: uppercase; font-size: 1.8rem; }
+.beta-locked p { margin: 0; color: var(--stone); line-height: 1.5; }
+.admin-page { max-width: 640px; }
+.admin-note { margin: 0; color: var(--stone); text-align: left; }
+.admin-add { display: flex; gap: 8px; flex-wrap: wrap; }
+.admin-add input { flex: 1; min-width: 160px; padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--stone-light); background: var(--cream-deep); color: var(--ink); font: inherit; }
+.admin-add select { padding: 10px; border-radius: 8px; border: 1.5px solid var(--stone-light); background: var(--cream-deep); color: var(--ink); font: inherit; }
+.admin-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; text-align: left; }
+.admin-list li { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--cream-deep); }
+.admin-list a { color: var(--ink); font-weight: 600; text-decoration: none; margin-right: auto; }
+.admin-role { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; padding: 2px 8px; border-radius: 6px; background: rgba(255, 210, 63, 0.15); color: #FFD23F; }
+.admin-role--admin { background: rgba(255, 70, 85, 0.15); color: var(--azulejo); }
+
+/* Batalha Naval: rodar com a roda do rato no PC, botão no telemóvel */
+.naval-placement__board { width: 100%; display: flex; justify-content: center; }
+.naval-dir { font-size: 0.85rem; font-weight: 700; color: var(--ink); padding: 6px 10px; border-radius: 8px; background: var(--cream-deep); border: 1px solid var(--stone-light); }
+.naval-hint--mouse { display: none; }
+@media (hover: hover) and (pointer: fine) {
+  .naval-rotate, .naval-hint--touch { display: none; }
+  .naval-hint--mouse { display: block; }
+}
+.admin-page .account-card { align-items: stretch; }
+.admin-add, .admin-list { width: 100%; }
+@media (max-width: 960px) {
+  .site-header__inner { grid-template-columns: minmax(0, 1fr) auto; }
+  .site-nav { min-width: 0; }
+}

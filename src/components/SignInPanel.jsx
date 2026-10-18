@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { GUEST_NAME_KEY } from '../hooks/useAuth.js'
 
 // Ecrã de entrada no multiplayer: jogar como convidado (só um nome, sem
-// conta), entrar com a conta Quina (email) ou com o Discord.
+// conta), entrar com a conta Tuga Games (email) ou com o Discord.
 export default function SignInPanel({ title, onExit, signInAsGuest, signInWithDiscord }) {
   const [name, setName] = useState(() => localStorage.getItem(GUEST_NAME_KEY) || '')
   const [busy, setBusy] = useState(false)

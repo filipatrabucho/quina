@@ -16,6 +16,7 @@ import {
   listIncoming,
   listGroups,
   createGroup as apiCreateGroup,
+  getMyRole,
   deleteGroup as apiDeleteGroup,
 } from '../lib/social.js'
 import { playNotify } from '../lib/sound.js'
@@ -26,7 +27,7 @@ const SocialContext = createContext(null)
 export const useSocial = () => useContext(SocialContext)
 
 export function SocialProvider({ children }) {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const myId = user && !user.is_anonymous ? user.id : null
   const [me, setMe] = useState(null)
   const [profileError, setProfileError] = useState('')
@@ -38,6 +39,8 @@ export function SocialProvider({ children }) {
   const [panel, setPanel] = useState({ open: false, view: 'amigos', friendId: null })
   const [toasts, setToasts] = useState([])
   const [groups, setGroups] = useState([])
+  const [role, setRole] = useState(null)
+  const [roleLoaded, setRoleLoaded] = useState(false)
   const panelRef = useRef(panel)
   panelRef.current = panel
   const seenMsgs = useRef(null) // ids de mensagens já tratadas (null = ainda não carregou)
@@ -110,6 +113,8 @@ export function SocialProvider({ children }) {
     setUnread({})
     setConversations({})
     setGroups([])
+    setRole(null)
+    setRoleLoaded(!myId)
     seenMsgs.current = null
     prevFriendships.current = null
     if (!myId) return
@@ -132,6 +137,10 @@ export function SocialProvider({ children }) {
         if (alive) seenMsgs.current = new Set()
       })
     listGroups().then((g) => alive && setGroups(g)).catch(() => {})
+    getMyRole()
+      .then((r) => alive && setRole(r))
+      .catch(() => {})
+      .finally(() => alive && setRoleLoaded(true))
     return () => {
       alive = false
     }
@@ -243,6 +252,9 @@ export function SocialProvider({ children }) {
 
   const value = {
     enabled: !!myId,
+    role,
+    roleLoaded: !authLoading && roleLoaded,
+    canSeeBeta: role === 'admin' || role === 'tester',
     me,
     profileError,
     myId,

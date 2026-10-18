@@ -13,6 +13,7 @@ import {
 } from '../lib/account.js'
 import Avatar from '../components/Avatar.jsx'
 import DiscordButton from '../components/DiscordButton.jsx'
+import { useSocial } from '../social/SocialContext.jsx'
 import { getOrCreateMyProfile, updatePublicProfile, SOCIAL_NETWORKS, socialUrl } from '../lib/social.js'
 
 function useReturnTo() {
@@ -229,6 +230,12 @@ function PublicProfileForm({ user }) {
   )
 }
 
+function AdminLink() {
+  const s = useSocial()
+  if (s?.role !== 'admin') return null
+  return <Link className="btn btn--outline btn--small" to="/admin">Gerir testers</Link>
+}
+
 function Profile({ user, signOut }) {
   const [username, setUsername] = useState(getDisplayName(user))
   const [busy, setBusy] = useState(false)
@@ -304,6 +311,7 @@ function Profile({ user, signOut }) {
       )}
 
       {user.email && <p className="modal-note">Email: {user.email}</p>}
+      <AdminLink />
       {error && <p className="duel-error">{error}</p>}
       {info && <p className="account-info">{info}</p>}
       <button className="link-btn" onClick={signOut}>Terminar sessão</button>

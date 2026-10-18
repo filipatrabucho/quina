@@ -9,6 +9,7 @@ export const GAMES = [
     tags: ['online', 'bot'],
     players: '1 a 4',
     badge: 'Beta',
+    beta: true,
   },
   {
     key: 'emojis',
@@ -151,9 +152,13 @@ export const GAMES = [
     tags: ['diario', 'online'],
     players: '1 a 5',
     badge: 'Beta',
+    beta: true,
   },
 ]
 
 export const TAG_LABELS = { online: 'Multiplayer', bot: 'vs Bot', solo: 'Solo', diario: 'Diário' }
 
 export const gameByKey = (key) => GAMES.find((g) => g.key === key)
+
+// Os jogos em beta só aparecem ao admin e aos testers.
+export const visibleGames = (canSeeBeta) => GAMES.filter((g) => !g.beta || canSeeBeta)
