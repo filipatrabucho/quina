@@ -3607,3 +3607,10 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
 .account-field__net { display: inline-flex; align-items: center; gap: 8px; }
 .profile-head__info > .btn { align-self: flex-start; }
 @media (max-width: 700px) { .profile-head__info > .btn { align-self: center; } }
+
+/* Ecrã "Entra para jogar" (jogos só com conta) */
+.login-gate { max-width: 480px; margin: 40px auto; padding: 28px 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; border-radius: 16px; background: var(--cream-deep); }
+.login-gate h2 { margin: 4px 0 0; font-family: var(--font-display); text-transform: uppercase; font-size: 1.8rem; }
+.login-gate p { margin: 0; color: var(--stone); line-height: 1.5; }
+.login-gate__actions { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 300px; margin-top: 6px; }
+.login-gate__actions .btn, .login-gate__actions .btn-discord { width: 100%; justify-content: center; }

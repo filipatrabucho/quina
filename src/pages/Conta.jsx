@@ -25,7 +25,8 @@ function useReturnTo() {
 }
 
 function AuthForms() {
-  const [tab, setTab] = useState('entrar')
+  const [params] = useSearchParams()
+  const [tab, setTab] = useState(() => (params.get('modo') === 'criar' ? 'criar' : 'entrar'))
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [username, setUsername] = useState('')

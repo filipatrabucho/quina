@@ -5,6 +5,7 @@ import Hub from './pages/Hub.jsx'
 import BetaGate from './components/BetaGate.jsx'
 import Sobre from './pages/Sobre.jsx'
 import Contacto from './pages/Contacto.jsx'
+import LoginGate from './components/LoginGate.jsx'
 
 // Os jogos novos só são descarregados quando se abrem.
 const PalavrasGame = lazy(() => import('./games/palavras/PalavrasGame.jsx'))
@@ -28,28 +29,30 @@ const EmojisGame = lazy(() => import('./games/emojis/EmojisGame.jsx'))
 const ColonosGame = lazy(() => import('./games/colonos/ColonosGame.jsx'))
 
 const page = (el) => <Suspense fallback={<p className="page-loading">A carregar…</p>}>{el}</Suspense>
+// Os jogos só se jogam com conta.
+const game = (el) => <LoginGate>{page(el)}</LoginGate>
 
 export default function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<Hub />} />
-        <Route path="palavras" element={page(<PalavrasGame />)} />
-        <Route path="fiada" element={<BetaGate game="fiada">{page(<FiadaGame />)}</BetaGate>} />
-        <Route path="quatro-em-linha" element={page(<QuatroGame />)} />
-        <Route path="galo" element={page(<GaloGame />)} />
-        <Route path="xadrez" element={page(<XadrezGame />)} />
-        <Route path="memes" element={page(<MemesGame />)} />
-        <Route path="batalha-naval" element={page(<NavalGame />)} />
-        <Route path="stop" element={page(<StopGame />)} />
-        <Route path="cartas" element={page(<CartasGame />)} />
-        <Route path="snake" element={page(<SnakeGame />)} />
-        <Route path="memoria" element={page(<MemoriaGame />)} />
-        <Route path="99" element={page(<NoventaGame />)} />
-        <Route path="2-verdades-1-mentira" element={page(<VerdadesGame />)} />
-        <Route path="continua-a-frase" element={page(<FraseGame />)} />
-        <Route path="emoji-battle" element={page(<EmojisGame />)} />
-        <Route path="colonos" element={<BetaGate game="colonos">{page(<ColonosGame />)}</BetaGate>} />
+        <Route path="palavras" element={game(<PalavrasGame />)} />
+        <Route path="fiada" element={<BetaGate game="fiada">{game(<FiadaGame />)}</BetaGate>} />
+        <Route path="quatro-em-linha" element={game(<QuatroGame />)} />
+        <Route path="galo" element={game(<GaloGame />)} />
+        <Route path="xadrez" element={game(<XadrezGame />)} />
+        <Route path="memes" element={game(<MemesGame />)} />
+        <Route path="batalha-naval" element={game(<NavalGame />)} />
+        <Route path="stop" element={game(<StopGame />)} />
+        <Route path="cartas" element={game(<CartasGame />)} />
+        <Route path="snake" element={game(<SnakeGame />)} />
+        <Route path="memoria" element={game(<MemoriaGame />)} />
+        <Route path="99" element={game(<NoventaGame />)} />
+        <Route path="2-verdades-1-mentira" element={game(<VerdadesGame />)} />
+        <Route path="continua-a-frase" element={game(<FraseGame />)} />
+        <Route path="emoji-battle" element={game(<EmojisGame />)} />
+        <Route path="colonos" element={<BetaGate game="colonos">{game(<ColonosGame />)}</BetaGate>} />
         <Route path="conta" element={page(<Conta />)} />
         <Route path="u/:username" element={page(<Perfil />)} />
         <Route path="admin" element={page(<Admin />)} />
