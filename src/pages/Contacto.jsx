@@ -16,7 +16,7 @@ export default function Contacto() {
   const [message, setMessage] = useState('')
   const [copied, setCopied] = useState(false)
   const subject = `[Tuga Games] ${TOPICS.find((t) => t[0] === topic)[1]}`
-  const body = `${message}\n\n${name ? `Nome: ${name}\n` : ''}Página: ${window.location.origin}`
+  const body = `${message}\n\n${name ? `Nome: ${name}\n` : ''}Página: https://tugagames.pt/contacto`
   const mailto = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 
   const copy = async () => {

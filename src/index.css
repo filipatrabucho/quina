@@ -3503,3 +3503,10 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
 .info-form { margin: 20px 0; text-align: left; }
 .info-form h2 { margin: 0; }
 .info-form select, .info-form textarea { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1.5px solid var(--stone-light); background: var(--cream-deep); color: var(--ink); font: inherit; }
+
+/* Desempenho e acessibilidade */
+/* Enquanto o jogo carrega, reserva o espaço para o guia não saltar */
+.page-loading { min-height: calc(100vh - 160px); display: flex; align-items: flex-start; justify-content: center; padding-top: 40px; margin: 0 auto; }
+/* Vermelho dos botões com contraste suficiente para o texto branco */
+.btn--primary, .share-btn { background: #E11D2E; }
+.btn--primary:hover, .share-btn:hover:not(:disabled) { background: #F0303F; }

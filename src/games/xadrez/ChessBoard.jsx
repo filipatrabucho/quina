@@ -50,7 +50,7 @@ export default function ChessBoard({ fen, orientation = 'w', canMove, onMove, la
 
   return (
     <div className="chess-wrap">
-      <div className="chess-board" role="grid" aria-label="Tabuleiro de xadrez">
+      <div className="chess-board" role="group" aria-label="Tabuleiro de xadrez">
         {ranks.map((rank, ri) =>
           files.map((file, fi) => {
             const sq = `${file}${rank}`

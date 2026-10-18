@@ -53,7 +53,10 @@
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Fredoka:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <!-- Fontes sem bloquear a primeira pintura (o texto aparece logo com a fonte do sistema) -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Fredoka:wght@700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Fredoka:wght@700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap"></noscript>
+    <link rel="preload" as="image" href="/logo-mark.webp" type="image/webp">
   </head>
   <body>
     <div id="root"></div>

@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { GAMES } from '../src/data/games.js'
 import { seoFor, SITE_URL, SITE_NAME, PUBLIC_PATHS } from '../src/data/seo.js'
 import { GUIDES } from '../src/data/gameGuides.js'
+import { render } from '../dist-ssr/entry-server.js'
 
 const dist = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
 let base = readFileSync(join(dist, 'index.html'), 'utf8')
@@ -79,6 +80,16 @@ function fallback(s) {
   return `<noscript><h1>${h1}</h1><p>${esc(s.description)}</p>${guide}<ul>${links}</ul><p><a href="/sobre">Sobre</a> · <a href="/contacto">Contacto</a></p></noscript>`
 }
 
+// HTML da página já desenhado (o React aproveita-o ao carregar).
+function prerender(path) {
+  try {
+    return render(path)
+  } catch (e) {
+    console.warn(`seo: não deu para pré-desenhar ${path}: ${e.message}`)
+    return ''
+  }
+}
+
 function page(path) {
   const s = seoFor(path)
   const url = SITE_URL + (path === '/' ? '/' : path)
@@ -92,6 +103,7 @@ function page(path) {
     .replace(/(<meta property="og:url" content=")[^"]*/, `$1${url}`)
     .replace(/(<meta name="twitter:title" content=")[^"]*/, `$1${esc(s.title)}`)
     .replace('<!--seo-fallback-->', fallback(s))
+    .replace('<div id="root"></div>', `<div id="root">${prerender(path)}</div>`)
   const ld = jsonLd(s)
   if (ld) html = html.replace('</head>', `  <script type="application/ld+json">${JSON.stringify(ld)}</script>\n  </head>`)
   return html

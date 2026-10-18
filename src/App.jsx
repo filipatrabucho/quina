@@ -2,16 +2,16 @@ import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout.jsx'
 import Hub from './pages/Hub.jsx'
-import PalavrasGame from './games/palavras/PalavrasGame.jsx'
-import FiadaGame from './games/fiada/FiadaGame.jsx'
 import BetaGate from './components/BetaGate.jsx'
+import Sobre from './pages/Sobre.jsx'
+import Contacto from './pages/Contacto.jsx'
 
 // Os jogos novos só são descarregados quando se abrem.
+const PalavrasGame = lazy(() => import('./games/palavras/PalavrasGame.jsx'))
+const FiadaGame = lazy(() => import('./games/fiada/FiadaGame.jsx'))
 const Conta = lazy(() => import('./pages/Conta.jsx'))
 const Perfil = lazy(() => import('./pages/Perfil.jsx'))
 const Admin = lazy(() => import('./pages/Admin.jsx'))
-const Sobre = lazy(() => import('./pages/Sobre.jsx'))
-const Contacto = lazy(() => import('./pages/Contacto.jsx'))
 const QuatroGame = lazy(() => import('./games/quatro/QuatroGame.jsx'))
 const GaloGame = lazy(() => import('./games/galo/GaloGame.jsx'))
 const XadrezGame = lazy(() => import('./games/xadrez/XadrezGame.jsx'))
@@ -34,8 +34,8 @@ export default function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<Hub />} />
-        <Route path="palavras" element={<PalavrasGame />} />
-        <Route path="fiada" element={<BetaGate game="fiada"><FiadaGame /></BetaGate>} />
+        <Route path="palavras" element={page(<PalavrasGame />)} />
+        <Route path="fiada" element={<BetaGate game="fiada">{page(<FiadaGame />)}</BetaGate>} />
         <Route path="quatro-em-linha" element={page(<QuatroGame />)} />
         <Route path="galo" element={page(<GaloGame />)} />
         <Route path="xadrez" element={page(<XadrezGame />)} />
@@ -53,8 +53,8 @@ export default function App() {
         <Route path="conta" element={page(<Conta />)} />
         <Route path="u/:username" element={page(<Perfil />)} />
         <Route path="admin" element={page(<Admin />)} />
-        <Route path="sobre" element={page(<Sobre />)} />
-        <Route path="contacto" element={page(<Contacto />)} />
+        <Route path="sobre" element={<Sobre />} />
+        <Route path="contacto" element={<Contacto />} />
       </Route>
     </Routes>
   )

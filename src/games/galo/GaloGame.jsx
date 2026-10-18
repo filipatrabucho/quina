@@ -9,7 +9,7 @@ import { winnerOf, nextMark, botMove, galoOnline } from './galoLogic.js'
 
 function Board({ board, onPlay, canPlay, line }) {
   return (
-    <div className="galo-board" role="grid" aria-label="Tabuleiro do jogo do galo">
+    <div className="galo-board" role="group" aria-label="Tabuleiro do jogo do galo">
       {board.map((cell, i) => (
         <button
           key={i}
