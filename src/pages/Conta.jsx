@@ -13,6 +13,7 @@ import {
 } from '../lib/account.js'
 import Avatar from '../components/Avatar.jsx'
 import DiscordButton from '../components/DiscordButton.jsx'
+import SocialIcon from '../components/SocialIcon.jsx'
 import { useSocial } from '../social/SocialContext.jsx'
 import { getOrCreateMyProfile, updatePublicProfile, SOCIAL_NETWORKS, socialUrl } from '../lib/social.js'
 
@@ -213,7 +214,7 @@ function PublicProfileForm({ user }) {
       <div className="account-links">
         {SOCIAL_NETWORKS.map((n) => (
           <label key={n.key} className="account-field">
-            <span>{n.label}</span>
+            <span className="account-field__net"><SocialIcon network={n.key} size={20} /> {n.label}</span>
             <input
               value={links[n.key] || ''}
               onChange={(e) => setLinks((l) => ({ ...l, [n.key]: e.target.value }))}

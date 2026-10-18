@@ -232,6 +232,23 @@ export function socialUrl(network, value) {
   return /^[A-Za-z0-9_.-]{1,40}$/.test(handle) ? net.base + handle : null
 }
 
+// ---- Top de jogadores de cada jogo ----
+export async function getTopPlayers(game, limit = 3) {
+  const { data, error } = await supabase
+    .from('player_stats')
+    .select('user_id, wins, plays')
+    .eq('game', game)
+    .gt('wins', 0)
+    .order('wins', { ascending: false })
+    .order('plays', { ascending: true })
+    .limit(limit)
+  fail(error)
+  if (!data.length) return []
+  const profiles = await getProfilesByIds(data.map((x) => x.user_id))
+  const byId = Object.fromEntries(profiles.map((p) => [p.id, p]))
+  return data.filter((x) => byId[x.user_id]).map((x) => ({ ...x, profile: byId[x.user_id] }))
+}
+
 // ---- Admin e testers ----
 export async function getMyRole() {
   const { data, error } = await supabase.rpc('my_role')

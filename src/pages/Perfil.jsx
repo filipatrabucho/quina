@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { getProfileByUsername, getMedalsAndStats, SOCIAL_NETWORKS, socialUrl } from '../lib/social.js'
+import SocialIcon from '../components/SocialIcon.jsx'
 import { MEDALS } from '../data/medals.js'
 import { GAMES } from '../data/games.js'
 import { useSocial } from '../social/SocialContext.jsx'
@@ -15,7 +16,7 @@ function FriendButton({ profile }) {
   if (!s?.enabled || !s.me) {
     return <Link className="btn btn--outline btn--small" to="/conta">Entrar para adicionar</Link>
   }
-  if (profile.id === s.myId) return <Link className="btn btn--outline btn--small" to="/conta">Editar perfil</Link>
+  if (profile.id === s.myId) return <Link className="btn btn--primary btn--small" to="/conta" data-testid="edit-profile">Editar perfil</Link>
   const rel = s.relationWith(profile.id)
   const run = async (fn) => {
     setBusy(true)
@@ -119,11 +120,11 @@ export default function Perfil() {
                 <li key={l.key}>
                   {l.url ? (
                     <a href={l.url} target="_blank" rel="noopener noreferrer nofollow">
-                      <span className="profile-links__net">{l.label}</span> {l.value.replace(/^https:\/\//, '')}
+                      <SocialIcon network={l.key} /> <span className="profile-links__net">{l.label}</span> {l.value.replace(/^https:\/\//, '')}
                     </a>
                   ) : (
                     <span>
-                      <span className="profile-links__net">{l.label}</span> {l.value}
+                      <SocialIcon network={l.key} /> <span className="profile-links__net">{l.label}</span> {l.value}
                     </span>
                   )}
                 </li>

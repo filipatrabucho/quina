@@ -10,6 +10,7 @@ export const GAMES = [
     players: '1 a 4',
     badge: 'Beta',
     beta: true,
+    wide: true,
   },
   {
     key: 'emojis',

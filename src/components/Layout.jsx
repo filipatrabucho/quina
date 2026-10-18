@@ -16,6 +16,7 @@ import { useSeo } from '../hooks/useSeo.js'
 
 function AccountChip() {
   const { user, loading } = useAuth()
+  const social = useSocial()
   if (loading) return <span className="account-chip account-chip--loading" />
   const hasAccount = user && !user.is_anonymous
   if (!hasAccount) {
@@ -25,21 +26,37 @@ function AccountChip() {
       </Link>
     )
   }
+  // O avatar abre o perfil público; para editar há o botão "Editar perfil".
+  const to = social?.me?.username ? `/u/${social.me.username}` : '/conta'
   return (
-    <Link to="/conta" className="account-chip" aria-label="A minha conta">
+    <Link to={to} className="account-chip" aria-label="O meu perfil" data-testid="account-chip">
       <Avatar src={getAvatarUrl(user)} seed={getAvatarSeed(user)} name={getDisplayName(user)} size={28} />
       <span className="account-chip__name">{getDisplayName(user)}</span>
     </Link>
   )
 }
 
-// O guia do jogo aparece por baixo de cada jogo (não nos jogos em beta para quem não os vê).
-function PageGuide() {
+// Jogo da página atual (os jogos em beta só contam para quem os pode ver).
+function useCurrentGame() {
   const { pathname } = useLocation()
   const s = useSocial()
   const game = GAMES.find((g) => g.to === pathname.replace(/\/+$/, ''))
   if (!game || (game.beta && !s?.canSeeBeta)) return null
-  return <GameGuide game={game} />
+  return game
+}
+
+// Nas páginas de jogos: o jogo e, ao lado (PC) ou por baixo (telemóvel), o guia.
+function PageContent() {
+  const game = useCurrentGame()
+  if (!game) return <Outlet />
+  return (
+    <div className={`game-layout${game.wide ? ' game-layout--wide' : ''}`}>
+      <div className="game-layout__main">
+        <Outlet />
+      </div>
+      <GameGuide game={game} />
+    </div>
+  )
 }
 
 function SiteNav() {
@@ -84,8 +101,7 @@ export default function Layout() {
           <AdSlot variant="rail" />
         </aside>
         <div className="site-main">
-          <Outlet />
-          <PageGuide />
+          <PageContent />
           <div className="page-foot-spot">
             <AdSlot variant="banner" />
           </div>
