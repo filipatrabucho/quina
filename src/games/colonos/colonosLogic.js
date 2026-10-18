@@ -232,13 +232,19 @@ function produce(game, total) {
   })
   const left = bank(game)
   let hands = { ...game.hands }
+  const gains = {} // pid -> { res: n } (para o ecrã mostrar o que cada um ganhou)
   for (const [res, who] of Object.entries(owed)) {
     const need = Object.values(who).reduce((a, b) => a + b, 0)
     const ids = Object.keys(who)
     if (need > left[res] && ids.length > 1) continue // não chega para todos: ninguém recebe
-    for (const id of ids) hands[id] = { ...hands[id], [res]: hands[id][res] + Math.min(who[id], left[res]) }
+    for (const id of ids) {
+      const n = Math.min(who[id], left[res])
+      if (!n) continue
+      hands[id] = { ...hands[id], [res]: hands[id][res] + n }
+      gains[id] = { ...(gains[id] || {}), [res]: n }
+    }
   }
-  return { ...game, hands }
+  return { ...game, hands, gains }
 }
 
 // ---------- Ações ----------
@@ -275,7 +281,7 @@ export function roll(game, pid, rand = Math.random) {
   if (game.phase !== 'roll') throw new Error('Agora não podes lançar os dados.')
   const dice = [1 + Math.floor(rand() * 6), 1 + Math.floor(rand() * 6)]
   const total = dice[0] + dice[1]
-  let next = log({ ...game, dice }, pid, `lançou ${total}`)
+  let next = log({ ...game, dice, rollNo: (game.rollNo || 0) + 1, gains: {} }, pid, `lançou ${total}`)
   if (total !== 7) return { ...produce(next, total), phase: 'main' }
   const discards = {}
   for (const id of game.order) {

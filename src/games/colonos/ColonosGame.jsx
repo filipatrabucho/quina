@@ -4,33 +4,35 @@ import GameShell from '../../components/GameShell.jsx'
 import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import Avatar from '../../components/Avatar.jsx'
 import { recordResultOnce } from '../../lib/social.js'
-import ColonosBoard, { PLAYER_COLORS, TILE_COLOR } from './ColonosBoard.jsx'
+import ColonosBoard, { PLAYER_COLORS } from './ColonosBoard.jsx'
 import {
   RES, RES_NAME, COSTS, DEV_NAME, PIECES, WIN_POINTS, applyAction, currentPlayer, handSize, points, legalSettlements, legalRoads,
   legalCities, robberVictims, portRates, bank, countPieces, pendingActors, startGame, rematch, colonosOnline,
 } from './colonosLogic.js'
 import { botAction } from './colonosBot.js'
 import { HEXES } from './board.js'
+import { ResourceCard, ResIcon, DevCard, DicePair, Die } from './Cards.jsx'
 
 const hasCards = (hand, cost) => RES.every((r) => (hand[r] || 0) >= (cost[r] || 0))
 const BUILD_LABEL = { estrada: 'Estrada', aldeia: 'Aldeia', cidade: 'Cidade', desenvolvimento: 'Carta' }
 
-function ResChip({ res, n, small }) {
-  return (
-    <span className={`col-res${small ? ' col-res--small' : ''}`} style={{ '--rc': TILE_COLOR[res] }} title={RES_NAME[res]}>
-      <i />
-      {small ? n : <><b>{n}</b><span>{RES_NAME[res]}</span></>}
-    </span>
-  )
+// Ícone de recurso com número (custos, trocas, ganhos).
+function ResChip({ res, n }) {
+  return <ResIcon res={res} n={n === '' ? undefined : n} />
 }
 
 function Cost({ cost }) {
   return (
     <span className="col-cost">
-      {RES.filter((r) => cost[r]).flatMap((r) => Array.from({ length: cost[r] }, (_, k) => <i key={r + k} style={{ background: TILE_COLOR[r] }} title={RES_NAME[r]} />))}
+      {RES.filter((r) => cost[r]).map((r) => <ResIcon key={r} res={r} n={cost[r] > 1 ? cost[r] : undefined} />)}
     </span>
   )
 }
+
+const Gains = ({ gains }) =>
+  gains && Object.keys(gains).length ? (
+    <span className="col-gains">{RES.filter((r) => gains[r]).map((r) => <ResIcon key={r} res={r} n={`+${gains[r]}`} />)}</span>
+  ) : null
 
 function Stepper({ value, onChange, max = 19 }) {
   return (
@@ -50,7 +52,7 @@ function CardPicker({ title, hand, count, onConfirm, confirmLabel }) {
       <p><strong>{title}</strong></p>
       {RES.map((r) => (
         <div key={r} className="col-trade-row">
-          <ResChip res={r} n={hand ? hand[r] : ''} small />
+          <ResChip res={r} n={hand ? hand[r] : ''} />
           <span className="col-trade-row__name">{RES_NAME[r]}</span>
           <Stepper value={pick[r]} max={hand ? hand[r] : count} onChange={(v) => setPick((p) => ({ ...p, [r]: v }))} />
         </div>
@@ -78,7 +80,7 @@ function TradePanel({ game, meId, onAction, people, onClose }) {
     return (
       <div className="col-trade">
         <p className="col-trade__title">A tua proposta</p>
-        <p className="col-offer">Dás {RES.filter((r) => offer.give[r]).map((r) => <ResChip key={r} res={r} n={offer.give[r]} small />)} e queres {RES.filter((r) => offer.want[r]).map((r) => <ResChip key={r} res={r} n={offer.want[r]} small />)}</p>
+        <p className="col-offer">Dás {RES.filter((r) => offer.give[r]).map((r) => <ResChip key={r} res={r} n={offer.give[r]} />)} e queres {RES.filter((r) => offer.want[r]).map((r) => <ResChip key={r} res={r} n={offer.want[r]} />)}</p>
         <ul className="col-responses">
           {game.order.filter((id) => id !== meId).map((id) => (
             <li key={id}>
@@ -105,7 +107,7 @@ function TradePanel({ game, meId, onAction, people, onClose }) {
         <small>Quero</small>
         {RES.map((r) => (
           <div key={r} className="col-trade-grid__row">
-            <span className="col-trade-row__res"><ResChip res={r} n={hand[r]} small /> {RES_NAME[r]} <em>{rates[r]}:1</em></span>
+            <span className="col-trade-row__res"><ResChip res={r} n={hand[r]} /> {RES_NAME[r]} <em>{rates[r]}:1</em></span>
             <Stepper value={give[r]} max={hand[r]} onChange={(v) => { setGive((g) => ({ ...g, [r]: v })); if (v) setWant((w) => ({ ...w, [r]: 0 })) }} />
             <Stepper value={want[r]} onChange={(v) => { setWant((w) => ({ ...w, [r]: v })); if (v) setGive((g) => ({ ...g, [r]: 0 })) }} />
           </div>
@@ -136,22 +138,21 @@ function DevCards({ game, meId, onAction, canPlay }) {
         const ready = list.some((c) => c.turn < game.turnNo)
         const playable = type !== 'ponto' && ready && canPlay && (game.phase === 'main' || (game.phase === 'roll' && type === 'cavaleiro'))
         return (
-          <div key={type} className={`col-dev col-dev--${type}`}>
-            <span className="col-dev__name">{DEV_NAME[type]}{list.length > 1 ? ` ×${list.length}` : ''}</span>
+          <DevCard key={type} type={type} count={list.length} disabled={type !== 'ponto' && !playable}>
             {type === 'ponto' ? (
-              <small>Conta 1 ponto (escondido)</small>
+              <small className="dcard__note">Ponto escondido</small>
             ) : (
               <button
-                className="btn btn--outline btn--small"
+                className="dcard__play"
                 disabled={!playable}
-                title={!ready ? 'Comprada nesta vez' : undefined}
+                title={!ready ? 'Comprada nesta vez: só a podes jogar na próxima' : undefined}
                 onClick={() => (type === 'fartura' || type === 'monopolio' ? setChoosing(type) : onAction({ type: 'playDev', card: type }))}
                 data-testid={`col-dev-${type}`}
               >
-                Jogar
+                {ready ? 'Jogar' : 'Na próxima vez'}
               </button>
             )}
-          </div>
+          </DevCard>
         )
       })}
       {choosing === 'monopolio' && (
@@ -160,7 +161,7 @@ function DevCards({ game, meId, onAction, canPlay }) {
           <div className="col-respick">
             {RES.map((r) => (
               <button key={r} className="mode-btn" onClick={() => { onAction({ type: 'playDev', card: 'monopolio', res: r }); setChoosing(null) }}>
-                <ResChip res={r} n="" small /> {RES_NAME[r]}
+                <ResIcon res={r} /> {RES_NAME[r]}
               </button>
             ))}
           </div>
@@ -257,11 +258,7 @@ export function ColonosTable({ game, meId, people, onAction, isOnline }) {
   return (
     <div className="colonos">
       <div className="colonos__board">
-        {game.dice && (
-          <div className="col-dice" data-testid="col-dice">
-            <span>{game.dice[0]}</span><span>{game.dice[1]}</span>
-          </div>
-        )}
+        <DicePair dice={game.dice} rollKey={game.rollNo} total={game.dice ? game.dice[0] + game.dice[1] : 0} />
         <ColonosBoard game={game} colorOf={colorOf} targets={targets} onVertex={onVertex} onEdge={onEdge} onHex={onHex} />
         {robberHex != null && (
           <div className="col-modal col-modal--float" role="dialog">
@@ -288,8 +285,8 @@ export function ColonosTable({ game, meId, people, onAction, isOnline }) {
                 <div className="col-player__info">
                   <span className="col-player__name">{name(id)}{isOnline && id !== meId && !isOnline(id) ? ' · offline' : ''}</span>
                   <span className="col-player__stats">
-                    <span title="Cartas na mão">{handSize(game.hands[id])} cartas</span>
-                    <span title="Cartas de desenvolvimento">{game.devHands[id].length} des.</span>
+                    <span title="Cartas de recursos na mão" className="col-player__cards"><i className="col-cardback" />{handSize(game.hands[id])}</span>
+                    <span title="Cartas de desenvolvimento" className="col-player__cards"><i className="col-cardback col-cardback--dev" />{game.devHands[id].length}</span>
                     <span title="Cavaleiros jogados">{game.knights[id]} cav.</span>
                     <span title="Estrada mais comprida">{game.roadLengths[id]} est.</span>
                   </span>
@@ -297,6 +294,7 @@ export function ColonosTable({ game, meId, people, onAction, isOnline }) {
                     {game.awards.estrada === id && <em>Estrada mais longa</em>}
                     {game.awards.exercito === id && <em>Maior exército</em>}
                   </span>
+                  <Gains gains={game.gains?.[id]} />
                 </div>
                 <b className="col-player__vp" title="Pontos">{points(game, id, id === meId || !!game.winner)}</b>
               </div>
@@ -306,12 +304,17 @@ export function ColonosTable({ game, meId, people, onAction, isOnline }) {
 
         {seated && (
           <div className="col-hand" data-testid="col-hand">
-            {RES.map((r) => <ResChip key={r} res={r} n={hand[r]} />)}
+            {RES.map((r) => (
+              <ResourceCard key={r} res={r} n={hand[r]} size="lg" dim={!hand[r]} pop={game.gains?.[meId]?.[r] ? game.gains[meId][r] : 0} />
+            ))}
           </div>
         )}
 
         {myTurn && game.phase === 'roll' && (
-          <button className="share-btn col-roll" onClick={() => onAction({ type: 'roll' })} data-testid="col-roll">Lançar dados</button>
+          <button className="share-btn col-roll" onClick={() => onAction({ type: 'roll' })} data-testid="col-roll">
+            <span className="col-roll__dice" aria-hidden="true"><Die value={5} /><Die value={2} red /></span>
+            Lançar dados
+          </button>
         )}
 
         {myTurn && game.phase === 'main' && !trading && !offer && (
@@ -349,7 +352,7 @@ export function ColonosTable({ game, meId, people, onAction, isOnline }) {
           <div className="col-trade col-trade--incoming" data-testid="col-incoming">
             <p className="col-trade__title">{name(offer.from)} propõe uma troca</p>
             <p className="col-offer">
-              Dá-te {RES.filter((r) => offer.give[r]).map((r) => <ResChip key={r} res={r} n={offer.give[r]} small />)} e quer {RES.filter((r) => offer.want[r]).map((r) => <ResChip key={r} res={r} n={offer.want[r]} small />)}
+              Dá-te {RES.filter((r) => offer.give[r]).map((r) => <ResChip key={r} res={r} n={offer.give[r]} />)} e quer {RES.filter((r) => offer.want[r]).map((r) => <ResChip key={r} res={r} n={offer.want[r]} />)}
             </p>
             {offer.responses[meId] ? (
               <p className="modal-note">Respondeste: {offer.responses[meId]}.</p>

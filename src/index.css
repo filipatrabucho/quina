@@ -3510,3 +3510,71 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
 /* Vermelho dos botões com contraste suficiente para o texto branco */
 .btn--primary, .share-btn { background: #E11D2E; }
 .btn--primary:hover, .share-btn:hover:not(:disabled) { background: #F0303F; }
+
+/* ---------- Colonos: cartas e dados ---------- */
+.rcard { --c1: #888; --c2: #555; position: relative; display: inline-flex; flex-direction: column; align-items: center; justify-content: space-between; flex-shrink: 0; border-radius: 8px; background: linear-gradient(160deg, var(--c1), var(--c2)); border: 3px solid #F4E6C3; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(0, 0, 0, 0.25); color: #fff; overflow: visible; }
+.rcard svg { display: block; width: 100%; height: auto; }
+.rcard--lg { width: 100%; max-width: 78px; aspect-ratio: 5 / 7; padding: 4px 3px 0; }
+.rcard--md { width: 52px; aspect-ratio: 5 / 7; padding: 3px 2px 0; }
+.rcard--xs { width: 18px; height: 24px; border-width: 1.5px; border-radius: 4px; padding: 1px; justify-content: center; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); }
+.rcard--dim { filter: grayscale(0.85) brightness(0.55); }
+.rcard--stack { box-shadow: 3px 3px 0 -1px #F4E6C3, 3px 3px 0 1px rgba(0, 0, 0, 0.35), 0 3px 8px rgba(0, 0, 0, 0.45); }
+.rcard__name { width: calc(100% + 6px); margin: 0 -3px; padding: 3px 0 4px; border-radius: 0 0 5px 5px; background: rgba(0, 0, 0, 0.35); font-size: 0.62rem; font-weight: 700; text-align: center; letter-spacing: 0.02em; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.6); }
+.rcard__count { position: absolute; top: -9px; right: -9px; min-width: 24px; height: 24px; padding: 0 5px; border-radius: 12px; background: #14141C; border: 2px solid #F4E6C3; color: #fff; font-family: var(--font-display); font-size: 0.95rem; line-height: 20px; text-align: center; z-index: 1; }
+.rcard--dim .rcard__count { filter: none; }
+.rcard__pop { position: absolute; top: 30%; left: 50%; transform: translateX(-50%); font-family: var(--font-display); font-weight: 700; font-size: 1.4rem; color: #FFE08A; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8); animation: rcard-pop 1.6s ease-out forwards; pointer-events: none; z-index: 2; }
+@keyframes rcard-pop { 0% { opacity: 0; transform: translate(-50%, 10px) scale(0.6); } 20% { opacity: 1; transform: translate(-50%, 0) scale(1.15); } 70% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -24px) scale(1); } }
+.col-hand { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; padding: 10px 6px 4px; justify-items: center; }
+.rchip { display: inline-flex; align-items: center; gap: 3px; vertical-align: middle; font-weight: 700; font-size: 0.82rem; }
+.col-cost { display: inline-flex; gap: 5px; flex-wrap: wrap; align-items: center; }
+.col-cost i { display: none; }
+.col-gains { display: inline-flex; gap: 6px; flex-wrap: wrap; animation: col-gain 0.6s ease-out; }
+.col-gains .rchip b { color: #FFE08A; }
+@keyframes col-gain { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.col-player__cards { display: inline-flex; align-items: center; gap: 4px; }
+.col-cardback { display: inline-block; width: 11px; height: 15px; border-radius: 2px; background: repeating-linear-gradient(135deg, #B5651D 0 3px, #8A4A14 3px 6px); border: 1.5px solid #F4E6C3; }
+.col-cardback--dev { background: repeating-linear-gradient(135deg, #6A4BC4 0 3px, #4A3394 3px 6px); }
+/* Cartas de desenvolvimento */
+.col-devs { display: flex; flex-direction: row; flex-wrap: wrap; gap: 10px; }
+.dcard { position: relative; width: 112px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 8px 10px; border-radius: 10px; background: linear-gradient(170deg, #F8EED3, #E5D2A2); border: 3px solid #6A4BC4; color: #2B1E0E; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.45); }
+.dcard--ponto { border-color: #C79A1A; }
+.dcard--disabled { opacity: 0.7; }
+.dcard__title { font-family: var(--font-display); font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.02em; text-align: center; line-height: 1.05; min-height: 2.1em; display: flex; align-items: center; }
+.dcard svg { width: 64px; height: auto; }
+.dcard__text { font-size: 0.66rem; line-height: 1.25; text-align: center; color: #5A4628; min-height: 2.5em; }
+.dcard__play { margin-top: 2px; width: 100%; padding: 5px 4px; border-radius: 6px; border: 0; background: #6A4BC4; color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 0.8rem; text-transform: uppercase; cursor: pointer; }
+.dcard__play:disabled { background: #9C8F7A; cursor: default; font-size: 0.68rem; }
+.dcard__note { font-size: 0.66rem; font-weight: 700; color: #8A6A0E; }
+.dcard .rcard__count { top: -10px; right: -10px; }
+/* Dados */
+.col-dice { position: absolute; top: 10px; left: 10px; z-index: 2; display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; border-radius: 14px; background: rgba(10, 10, 15, 0.55); backdrop-filter: blur(2px); }
+.die { width: 46px; height: 46px; display: block; filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.5)); }
+.die__face { fill: #FFFDF6; stroke: #D8CFB8; stroke-width: 3; }
+.die__pip { fill: #1D1D24; }
+.die--red .die__face { fill: #E53935; stroke: #A12320; }
+.die--red .die__pip { fill: #FFFDF6; }
+.col-dice--rolling .die { animation: die-shake 0.14s linear infinite; }
+.col-dice--rolling .die:nth-child(2) { animation-direction: reverse; }
+@keyframes die-shake { 0% { transform: rotate(-12deg) translateY(-2px); } 50% { transform: rotate(10deg) translateY(2px); } 100% { transform: rotate(-12deg) translateY(-2px); } }
+.col-dice__total { font-family: var(--font-display); font-weight: 700; font-size: 1.9rem; color: #fff; min-width: 28px; text-align: center; animation: col-gain 0.3s ease-out; }
+.col-dice--seven .col-dice__total { color: #FF5A67; }
+.col-roll { display: inline-flex; align-items: center; justify-content: center; gap: 10px; }
+.col-roll__dice { display: inline-flex; gap: 4px; }
+.col-roll__dice .die { width: 26px; height: 26px; filter: none; }
+.col-roll:not(:disabled) .col-roll__dice .die { animation: die-shake 1.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .col-dice--rolling .die, .col-roll .col-roll__dice .die, .rcard__pop { animation: none; } }
+@media (max-width: 520px) {
+  .col-hand { gap: 7px; }
+  .rcard--lg .rcard__name { font-size: 0.55rem; }
+  .die { width: 36px; height: 36px; }
+  .dcard { width: calc(50% - 5px); }
+}
+.col-dice .col-dice__total { width: auto; height: auto; background: none; box-shadow: none; color: #fff; font-size: 1.9rem; }
+.col-dice.col-dice--seven .col-dice__total { color: #FF5A67; }
+/* Cabeçalho no telemóvel com sessão iniciada: só o avatar da conta */
+@media (max-width: 520px) {
+  .account-chip__name { display: none; }
+  .account-chip { padding: 3px; }
+  .site-logo .logo-word { font-size: 1.4rem; }
+}
+@media (max-width: 360px) { .site-logo .logo-word { display: none; } }
