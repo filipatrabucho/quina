@@ -136,6 +136,40 @@ export async function sendInvite(myId, friendId, invite) {
   return data
 }
 
+// Últimas mensagens recebidas (para apanhar o que o tempo real possa ter falhado).
+export async function listIncoming(myId, limit = 30) {
+  const { data, error } = await supabase
+    .from('messages')
+    .select('*')
+    .eq('recipient', myId)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  fail(error)
+  return data.reverse()
+}
+
+// ---- Grupos de amigos (para convidar vários de uma vez) ----
+export async function listGroups() {
+  const { data, error } = await supabase.from('friend_groups').select('id, name, members, created_at').order('created_at')
+  fail(error)
+  return data
+}
+
+export async function createGroup(myId, name, members) {
+  const { data, error } = await supabase
+    .from('friend_groups')
+    .insert({ owner: myId, name: name.trim().slice(0, 40), members })
+    .select('id, name, members, created_at')
+    .single()
+  fail(error)
+  return data
+}
+
+export async function deleteGroup(id) {
+  const { error } = await supabase.from('friend_groups').delete().eq('id', id)
+  fail(error)
+}
+
 export async function markRead(friendId) {
   await supabase.rpc('mark_messages_read', { p_friend: friendId })
 }

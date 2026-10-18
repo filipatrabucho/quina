@@ -18,6 +18,7 @@ export const MEDALS = [
   { key: 'cartas-5', name: 'Às das cartas', description: 'Ganha 5 partidas de Cartas Coloridas.', tier: 'prata', icon: 'star' },
   { key: 'noventa-5', name: 'Nervos de aço', description: 'Ganha 5 partidas de 99.', tier: 'prata', icon: 'shield' },
   { key: 'emojis-5', name: 'Fala emoji', description: 'Ganha 5 jogos de Emoji Battle.', tier: 'prata', icon: 'laugh' },
+  { key: 'colonos-3', name: 'Fundador', description: 'Ganha 3 partidas de Colonos.', tier: 'ouro', icon: 'crown' },
   { key: 'snake-40', name: 'Cobra gigante', description: 'Faz 40 pontos no Snake.', tier: 'ouro', icon: 'flame' },
   { key: 'memes-3', name: 'Rei dos memes', description: 'Ganha 3 jogos dos Memes.', tier: 'ouro', icon: 'laugh' },
   { key: 'xadrez-mestre', name: 'Grande mestre', description: 'Vence o bot de xadrez no nível difícil.', tier: 'ouro', icon: 'crown' },

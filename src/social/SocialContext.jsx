@@ -13,7 +13,14 @@ import {
   sendFriendRequest,
   acceptFriendRequest,
   removeFriendship,
+  listIncoming,
+  listGroups,
+  createGroup as apiCreateGroup,
+  deleteGroup as apiDeleteGroup,
 } from '../lib/social.js'
+import { playNotify } from '../lib/sound.js'
+
+const POLL_MS = 8000
 
 const SocialContext = createContext(null)
 export const useSocial = () => useContext(SocialContext)
@@ -30,8 +37,11 @@ export function SocialProvider({ children }) {
   const [conversations, setConversations] = useState({}) // friendId -> mensagens
   const [panel, setPanel] = useState({ open: false, view: 'amigos', friendId: null })
   const [toasts, setToasts] = useState([])
+  const [groups, setGroups] = useState([])
   const panelRef = useRef(panel)
   panelRef.current = panel
+  const seenMsgs = useRef(null) // ids de mensagens já tratadas (null = ainda não carregou)
+  const prevFriendships = useRef(null)
 
   const pushToast = useCallback((toast) => {
     const id = Math.random().toString(36).slice(2)
@@ -47,12 +57,51 @@ export function SocialProvider({ children }) {
     setPeople((p) => ({ ...p, ...Object.fromEntries(list.map((x) => [x.id, x])) }))
   }, [])
 
+  // Lê as amizades e avisa do que mudou (pedido novo, pedido aceite).
   const refreshFriendships = useCallback(async () => {
     if (!myId) return
     const list = await listFriendships()
+    const prev = prevFriendships.current
+    if (prev) {
+      const before = new Map(prev.map((f) => [f.id, f]))
+      for (const f of list) {
+        const old = before.get(f.id)
+        if (!old && f.status === 'pendente' && f.addressee === myId) {
+          pushToast({ kind: 'pedido', from: f.requester })
+          playNotify('amigos')
+        }
+        if (old && old.status !== 'aceite' && f.status === 'aceite' && f.requester === myId) {
+          pushToast({ kind: 'aceite', from: f.addressee })
+          playNotify('amigos')
+        }
+      }
+    }
+    prevFriendships.current = list
     setFriendships(list)
     await loadPeople(list.map((f) => (f.requester === myId ? f.addressee : f.requester)))
-  }, [myId, loadPeople])
+  }, [myId, loadPeople, pushToast])
+
+  // Uma mensagem recebida (pelo tempo real ou pela verificação periódica).
+  const handleIncoming = useCallback(
+    (m) => {
+      if (!seenMsgs.current || seenMsgs.current.has(m.id)) return
+      seenMsgs.current.add(m.id)
+      setConversations((c) => (c[m.sender] && !c[m.sender].some((x) => x.id === m.id) ? { ...c, [m.sender]: [...c[m.sender], m] } : c))
+      const p = panelRef.current
+      const viewing = p.open && p.view === 'conversa' && p.friendId === m.sender && document.visibilityState === 'visible'
+      if (viewing) markRead(m.sender)
+      else if (!m.read_at) setUnread((u) => ({ ...u, [m.sender]: (u[m.sender] || 0) + 1 }))
+      loadPeople([m.sender])
+      if (m.kind === 'convite') {
+        pushToast({ kind: 'convite', from: m.sender, invite: m.payload })
+        playNotify('convite')
+      } else if (!viewing) {
+        pushToast({ kind: 'mensagem', from: m.sender, body: m.body })
+        playNotify('mensagem')
+      }
+    },
+    [loadPeople, pushToast]
+  )
 
   // Arranque: perfil, amizades, mensagens por ler.
   useEffect(() => {
@@ -60,6 +109,9 @@ export function SocialProvider({ children }) {
     setFriendships([])
     setUnread({})
     setConversations({})
+    setGroups([])
+    seenMsgs.current = null
+    prevFriendships.current = null
     if (!myId) return
     let alive = true
     setProfileError('')
@@ -72,6 +124,14 @@ export function SocialProvider({ children }) {
       .catch((e) => alive && setProfileError(e.message))
     refreshFriendships().catch(() => {})
     listUnread(myId).then((u) => alive && setUnread(u)).catch(() => {})
+    listIncoming(myId)
+      .then((list) => {
+        if (alive) seenMsgs.current = new Set(list.map((m) => m.id))
+      })
+      .catch(() => {
+        if (alive) seenMsgs.current = new Set()
+      })
+    listGroups().then((g) => alive && setGroups(g)).catch(() => {})
     return () => {
       alive = false
     }
@@ -82,30 +142,57 @@ export function SocialProvider({ children }) {
     if (!myId || !me) return undefined
     const channel = supabase
       .channel(`social-${myId}`)
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `recipient=eq.${myId}` }, ({ new: m }) => {
-        setConversations((c) => (c[m.sender] ? { ...c, [m.sender]: [...c[m.sender], m] } : c))
-        const p = panelRef.current
-        if (p.open && p.view === 'conversa' && p.friendId === m.sender) {
-          markRead(m.sender)
-        } else {
-          setUnread((u) => ({ ...u, [m.sender]: (u[m.sender] || 0) + 1 }))
-        }
-        loadPeople([m.sender])
-        if (m.kind === 'convite') pushToast({ kind: 'convite', from: m.sender, invite: m.payload })
-      })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'friendships' }, ({ eventType, new: f }) => {
-        if (eventType === 'INSERT' && f.addressee === myId) pushToast({ kind: 'pedido', from: f.requester })
-        if (eventType === 'UPDATE' && f.requester === myId && f.status === 'aceite') pushToast({ kind: 'aceite', from: f.addressee })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages', filter: `recipient=eq.${myId}` }, ({ new: m }) => handleIncoming(m))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'friendships' }, () => {
         refreshFriendships().catch(() => {})
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'user_medals', filter: `user_id=eq.${myId}` }, ({ new: m }) => {
         pushToast({ kind: 'medalha', medal: m.medal })
+        playNotify('medalha')
       })
       .subscribe()
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [myId, me, refreshFriendships, loadPeople, pushToast])
+  }, [myId, me, refreshFriendships, handleIncoming, pushToast])
+
+  // Verificação periódica (e ao voltar à página): se o tempo real falhar
+  // ou a ligação cair, as mensagens e os pedidos chegam na mesma.
+  useEffect(() => {
+    if (!myId || !me) return undefined
+    let busy = false
+    const check = async () => {
+      if (busy || document.visibilityState !== 'visible') return
+      busy = true
+      try {
+        const [msgs] = await Promise.all([listIncoming(myId, 20), refreshFriendships()])
+        if (!seenMsgs.current) seenMsgs.current = new Set(msgs.map((m) => m.id))
+        else msgs.forEach(handleIncoming)
+        const u = await listUnread(myId)
+        const p = panelRef.current
+        if (p.open && p.view === 'conversa' && u[p.friendId]) {
+          markRead(p.friendId)
+          delete u[p.friendId]
+        }
+        setUnread(u)
+      } catch {
+        // sem rede: tenta na próxima
+      } finally {
+        busy = false
+      }
+    }
+    const t = setInterval(check, POLL_MS)
+    const onVisible = () => document.visibilityState === 'visible' && check()
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', onVisible)
+    window.addEventListener('online', onVisible)
+    return () => {
+      clearInterval(t)
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', onVisible)
+      window.removeEventListener('online', onVisible)
+    }
+  }, [myId, me, refreshFriendships, handleIncoming])
 
   // Quem está online (presença partilhada por todos os utilizadores com conta).
   useEffect(() => {
@@ -189,6 +276,16 @@ export function SocialProvider({ children }) {
     async acceptFriend(friendshipId) {
       await acceptFriendRequest(friendshipId)
       await refreshFriendships()
+    },
+    groups,
+    async createGroup(name, members) {
+      const g = await apiCreateGroup(myId, name, members)
+      setGroups((list) => [...list, g])
+      return g
+    },
+    async deleteGroup(id) {
+      await apiDeleteGroup(id)
+      setGroups((list) => list.filter((g) => g.id !== id))
     },
     async removeFriend(friendshipId) {
       await removeFriendship(friendshipId)

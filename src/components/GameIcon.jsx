@@ -15,6 +15,7 @@ const THEMES = {
   verdades: '#4F46E5',
   frase: '#059669',
   emojis: '#FF7A59',
+  colonos: '#B5651D',
 }
 
 function Art({ game }) {
@@ -188,6 +189,15 @@ function Art({ game }) {
           <path d="M15.5 30q5.5 4.5 11 0" stroke="#3B2400" strokeWidth="2" fill="none" strokeLinecap="round" />
           <circle cx="35" cy="13" r="6.5" fill="#fff" />
           <text x="35" y="16.4" textAnchor="middle" fontSize="9.5" fontWeight="700" fill="#FF7A59" fontFamily="'Barlow Condensed', Inter, sans-serif">?</text>
+        </g>
+      )
+    case 'colonos':
+      return (
+        <g>
+          {[[24, 15, '#2E7D32'], [16.2, 28.5, '#E8B730'], [31.8, 28.5, '#868E9C']].map(([cx, cy, fill]) => (
+            <polygon key={cx + cy} points={[0, 1, 2, 3, 4, 5].map((k) => { const a = ((60 * k - 90) * Math.PI) / 180; return `${(cx + 8.4 * Math.cos(a)).toFixed(2)},${(cy + 8.4 * Math.sin(a)).toFixed(2)}` }).join(' ')} fill={fill} stroke="#F4E6C3" strokeWidth="1.3" />
+          ))}
+          <path d="M20.5 26.5v-3.6l3.5-3 3.5 3v3.6z" fill="#fff" stroke="#3E2C17" strokeWidth="0.9" strokeLinejoin="round" />
         </g>
       )
     default:

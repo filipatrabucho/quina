@@ -33,10 +33,12 @@ export function useAuth() {
     return () => sub.subscription.unsubscribe()
   }, [])
 
-  const signInWithDiscord = () => {
+  // `returnTo`: caminho interno para onde voltar depois do Discord.
+  const signInWithDiscord = (returnTo) => {
+    const path = typeof returnTo === 'string' && returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : window.location.pathname + window.location.search
     supabase.auth.signInWithOAuth({
       provider: 'discord',
-      options: { redirectTo: window.location.origin },
+      options: { redirectTo: window.location.origin + path },
     })
   }
 

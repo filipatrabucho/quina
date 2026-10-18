@@ -1,6 +1,16 @@
 // Catálogo dos jogos (usado no início, no menu e nos cabeçalhos).
 export const GAMES = [
   {
+    key: 'colonos',
+    to: '/colonos',
+    title: 'Colonos',
+    short: 'Colonos',
+    description: 'Coloniza a ilha: junta recursos, constrói aldeias, cidades e estradas e troca com os outros até aos 10 pontos.',
+    tags: ['online', 'bot'],
+    players: '1 a 4',
+    badge: 'Beta',
+  },
+  {
     key: 'emojis',
     to: '/emoji-battle',
     title: 'Emoji Battle',

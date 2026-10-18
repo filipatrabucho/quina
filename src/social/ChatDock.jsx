@@ -5,6 +5,7 @@ import { searchProfiles } from '../lib/social.js'
 import { medalByKey } from '../data/medals.js'
 import Avatar from '../components/Avatar.jsx'
 import MedalBadge from './MedalBadge.jsx'
+import { soundEnabled, setSoundEnabled, playNotify } from '../lib/sound.js'
 
 export function ChatIcon() {
   return (
@@ -296,14 +297,52 @@ function Toasts() {
             </div>
           )
         }
+        if (t.kind === 'mensagem') {
+          return (
+            <button
+              key={t.id}
+              className="social-toast social-toast--msg"
+              onClick={() => {
+                s.dismissToast(t.id)
+                s.openConversation(t.from)
+              }}
+              data-testid="message-toast"
+            >
+              <span className="social-toast__label">Mensagem de {who}</span>
+              <strong>{t.body?.length > 90 ? `${t.body.slice(0, 90)}…` : t.body}</strong>
+            </button>
+          )
+        }
         return (
-          <div key={t.id} className="social-toast" onClick={() => s.dismissToast(t.id)}>
+          <div key={t.id} className="social-toast" onClick={() => s.dismissToast(t.id)} data-testid="friend-toast">
             <span className="social-toast__label">Amigos</span>
             <strong>{t.kind === 'pedido' ? `${who} enviou-te um pedido de amizade` : `${who} aceitou o teu pedido de amizade`}</strong>
           </div>
         )
       })}
     </div>
+  )
+}
+
+function SoundToggle() {
+  const [on, setOn] = useState(soundEnabled)
+  return (
+    <button
+      className={`chat-sound${on ? '' : ' chat-sound--off'}`}
+      onClick={() => {
+        setSoundEnabled(!on)
+        setOn(!on)
+        if (!on) playNotify('mensagem')
+      }}
+      aria-label={on ? 'Desligar o som das notificações' : 'Ligar o som das notificações'}
+      title={on ? 'Som ligado' : 'Som desligado'}
+      data-testid="sound-toggle"
+    >
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M11 5L6 9H3v6h3l5 4z" fill="currentColor" />
+        {on ? <path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13" /> : <path d="M16 9l5 6M21 9l-5 6" />}
+      </svg>
+    </button>
   )
 }
 
@@ -324,6 +363,7 @@ export default function ChatDock() {
         <div className="chat-panel" role="dialog" aria-label="Chat e amigos">
           <div className="chat-panel__head">
             <strong>Chat</strong>
+            <SoundToggle />
             <button className="chat-icon-btn" onClick={() => setPanel({ ...panel, open: false })} aria-label="Fechar chat">
               ×
             </button>

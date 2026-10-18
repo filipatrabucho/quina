@@ -21,6 +21,7 @@ const NoventaGame = lazy(() => import('./games/noventa/NoventaGame.jsx'))
 const VerdadesGame = lazy(() => import('./games/verdades/VerdadesGame.jsx'))
 const FraseGame = lazy(() => import('./games/frase/FraseGame.jsx'))
 const EmojisGame = lazy(() => import('./games/emojis/EmojisGame.jsx'))
+const ColonosGame = lazy(() => import('./games/colonos/ColonosGame.jsx'))
 
 const page = (el) => <Suspense fallback={<p className="page-loading">A carregar…</p>}>{el}</Suspense>
 
@@ -44,6 +45,7 @@ export default function App() {
         <Route path="2-verdades-1-mentira" element={page(<VerdadesGame />)} />
         <Route path="continua-a-frase" element={page(<FraseGame />)} />
         <Route path="emoji-battle" element={page(<EmojisGame />)} />
+        <Route path="colonos" element={page(<ColonosGame />)} />
         <Route path="conta" element={page(<Conta />)} />
         <Route path="u/:username" element={page(<Perfil />)} />
       </Route>

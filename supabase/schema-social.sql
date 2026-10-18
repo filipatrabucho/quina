@@ -181,7 +181,7 @@ create table if not exists public.player_stats (
 -- Lista de jogos (atualizada sempre que há jogos novos).
 alter table public.player_stats drop constraint if exists player_stats_game_check;
 alter table public.player_stats add constraint player_stats_game_check
-  check (game in ('palavras', 'fiada', 'quatro', 'galo', 'xadrez', 'memes', 'naval', 'stop', 'cartas', 'snake', 'memoria', 'noventa', 'verdades', 'frase', 'emojis'));
+  check (game in ('palavras', 'fiada', 'quatro', 'galo', 'xadrez', 'memes', 'naval', 'stop', 'cartas', 'snake', 'memoria', 'noventa', 'verdades', 'frase', 'emojis', 'colonos'));
 alter table public.player_stats enable row level security;
 drop policy if exists "estatisticas: publicas" on public.player_stats;
 create policy "estatisticas: publicas" on public.player_stats for select using (true);
@@ -260,6 +260,7 @@ begin
   if p_game = 'cartas' and s.wins >= 5 and award_medal(uid, 'cartas-5') then earned := array_append(earned, 'cartas-5'); end if;
   if p_game = 'noventa' and s.wins >= 5 and award_medal(uid, 'noventa-5') then earned := array_append(earned, 'noventa-5'); end if;
   if p_game = 'emojis' and s.wins >= 5 and award_medal(uid, 'emojis-5') then earned := array_append(earned, 'emojis-5'); end if;
+  if p_game = 'colonos' and s.wins >= 3 and award_medal(uid, 'colonos-3') then earned := array_append(earned, 'colonos-3'); end if;
   if p_game = 'snake' and p_detail ~ '^[0-9]+$' and p_detail::int >= 40 and award_medal(uid, 'snake-40') then earned := array_append(earned, 'snake-40'); end if;
   if p_game = 'memes' and s.wins >= 3 and award_medal(uid, 'memes-3') then earned := array_append(earned, 'memes-3'); end if;
 
@@ -324,3 +325,16 @@ begin
     end if;
   end loop;
 end $$;
+
+-- ---------- Grupos de amigos (convidar vários de uma vez) ----------
+create table if not exists public.friend_groups (
+  id uuid primary key default gen_random_uuid(),
+  owner uuid not null references auth.users (id) on delete cascade,
+  name text not null check (char_length(name) between 1 and 40),
+  members uuid[] not null default '{}',
+  created_at timestamptz not null default now()
+);
+alter table public.friend_groups enable row level security;
+drop policy if exists "grupos: só o dono" on public.friend_groups;
+create policy "grupos: só o dono" on public.friend_groups for all
+  using (owner = auth.uid()) with check (owner = auth.uid());

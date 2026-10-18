@@ -5,6 +5,7 @@ import { useGameRoom, createRoomState, randomRoomCode, forgetRoom } from '../../
 import InviteFriends from '../../social/InviteFriends.jsx'
 import { gameByKey } from '../../data/games.js'
 import Avatar from '../Avatar.jsx'
+import DiscordButton from '../DiscordButton.jsx'
 
 export function PlayerChip({ player, you, online, extra }) {
   return (
@@ -40,8 +41,10 @@ function NamePrompt({ onSubmit }) {
       <button className="share-btn" type="submit" disabled={!name.trim()}>
         Continuar
       </button>
+      <div className="account-or"><span>ou</span></div>
+      <DiscordButton />
       <Link className="link-btn" to={`/conta?voltar=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
-        Ou entra / cria uma conta
+        Entrar ou criar conta com email
       </Link>
     </form>
   )

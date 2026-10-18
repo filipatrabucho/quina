@@ -12,6 +12,7 @@ import {
   ensureStoredAvatar,
 } from '../lib/account.js'
 import Avatar from '../components/Avatar.jsx'
+import DiscordButton from '../components/DiscordButton.jsx'
 import { getOrCreateMyProfile, updatePublicProfile, SOCIAL_NETWORKS, socialUrl } from '../lib/social.js'
 
 function useReturnTo() {
@@ -96,6 +97,9 @@ function AuthForms() {
           Criar conta
         </button>
       </div>
+
+      <DiscordButton returnTo={returnTo || '/conta'} label={tab === 'criar' ? 'Criar conta com Discord' : 'Entrar com Discord'} />
+      <div className="account-or"><span>ou com email</span></div>
 
       <form className="account-form" onSubmit={handleSubmit}>
         {tab === 'criar' && (
