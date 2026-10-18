@@ -20,6 +20,8 @@ if (/^G-[A-Z0-9]+$/.test(gaId)) {
   const ga =
     `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}window.gtag=gtag;` +
     `gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied',wait_for_update:500});` +
+    // Escolha feita na barra de cookies do site (ver CookieBar.jsx).
+    `try{if(localStorage.getItem('tg-cookies')==='sim')gtag('consent','update',{analytics_storage:'granted'})}catch(e){}` +
     `gtag('js',new Date());gtag('config','${gaId}',{send_page_view:false});` +
     `(function(){var d=false;function l(){if(d)return;d=true;var s=document.createElement('script');s.async=true;` +
     `s.src='https://www.googletagmanager.com/gtag/js?id=${gaId}';document.head.appendChild(s)}` +

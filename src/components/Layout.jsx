@@ -14,6 +14,7 @@ import { SocialProvider } from '../social/SocialContext.jsx'
 import ChatDock, { HeaderChatButton } from '../social/ChatDock.jsx'
 import { useSocial } from '../social/SocialContext.jsx'
 import { useSeo } from '../hooks/useSeo.js'
+import CookieBar, { openCookieBar } from './CookieBar.jsx'
 
 function AccountChip() {
   const { user, loading } = useAuth()
@@ -147,6 +148,7 @@ export default function Layout() {
         </aside>
       </div>
 
+      <CookieBar />
       <footer className="site-footer">
         <div className="site-footer__inner">
           <Logo size={24} />
@@ -156,11 +158,9 @@ export default function Layout() {
             <Link to="/conta">Conta</Link>
             <a href="/privacidade.html">Privacidade</a>
             <a href="/termos.html">Termos</a>
-            {adsConfigured && (
-              <button type="button" className="site-footer__link-btn" onClick={showPrivacyOptions}>
-                Cookies
-              </button>
-            )}
+            <button type="button" className="site-footer__link-btn" onClick={() => { openCookieBar(); if (adsConfigured) showPrivacyOptions() }}>
+              Cookies
+            </button>
             {import.meta.env.VITE_TIP_URL && (
               <a href={import.meta.env.VITE_TIP_URL} target="_blank" rel="noopener noreferrer">
                 Apoiar o projeto
