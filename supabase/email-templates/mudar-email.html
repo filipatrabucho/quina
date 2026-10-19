@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Confirma o teu email novo</title>
+</head>
+<body style="margin:0;padding:0;background:#F2F2F5;font-family:Arial,Helvetica,sans-serif;color:#1F1F28;">
+<div style="display:none;max-height:0;overflow:hidden;">Confirma a mudança de email da tua conta.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F2F2F5;padding:32px 12px;">
+<tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#FFFFFF;border-radius:14px;overflow:hidden;">
+<tr><td align="center" style="background:#FFFFFF;padding:26px 24px 22px;border-bottom:4px solid #E11D2E;">
+<a href="https://tugagames.pt" style="text-decoration:none;"><img src="https://tugagames.pt/logo-tugagames.png" width="200" alt="Tuga Games PT" style="display:block;width:200px;max-width:100%;height:auto;border:0;"></a>
+</td></tr>
+<tr><td style="padding:32px 32px 8px;">
+<h1 style="margin:0 0 14px;font-size:22px;line-height:1.3;color:#0A0A0F;">Confirma o email novo</h1>
+<p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#3A3A48;">Pediste para mudar o email da tua conta Tuga Games de {{ .Email }} para {{ .NewEmail }}.</p><p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#3A3A48;">Carrega no botão para confirmar a mudança.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:26px 0 22px;"><tr><td style="border-radius:10px;background:#E11D2E;">
+<a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 26px;font-size:16px;font-weight:bold;color:#FFFFFF;text-decoration:none;border-radius:10px;">Confirmar email novo</a>
+</td></tr></table>
+<p style="margin:0 0 6px;font-size:13px;line-height:1.5;color:#6B6B7B;">Se o botão não funcionar, copia este endereço para o browser:</p>
+<p style="margin:0 0 24px;font-size:12px;line-height:1.5;word-break:break-all;"><a href="{{ .ConfirmationURL }}" style="color:#E11D2E;">{{ .ConfirmationURL }}</a></p>
+<p style="margin:0 0 28px;font-size:13px;line-height:1.5;color:#6B6B7B;">Se não foste tu a pedir esta mudança, ignora este email e muda a tua password.</p>
+</td></tr>
+<tr><td style="padding:18px 32px 24px;border-top:1px solid #EAEAF0;font-size:12px;line-height:1.6;color:#8A8A99;">
+Tuga Games PT · Jogos online grátis em português<br>
+<a href="https://tugagames.pt" style="color:#8A8A99;">tugagames.pt</a> · Dúvidas? <a href="https://tugagames.pt/contacto" style="color:#8A8A99;">Fala connosco</a>
+</td></tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>

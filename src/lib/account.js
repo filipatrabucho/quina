@@ -12,6 +12,7 @@ function translateAuthError(error) {
   if (/password should be at least/i.test(msg)) return 'A password tem de ter pelo menos 6 carateres.'
   if (/unable to validate email|invalid email|email address .* is invalid/i.test(msg)) return 'Esse email não é válido.'
   if (/database error saving new user/i.test(msg)) return 'Esse username já está a ser usado.'
+  if (/should be different from the old password|same_password/i.test(msg)) return 'A password nova tem de ser diferente da atual.'
   if (/rate limit/i.test(msg)) return 'Demasiadas tentativas. Espera um bocadinho e tenta outra vez.'
   if (/profiles_username_unico|duplicate key/i.test(msg)) return 'Esse username já está a ser usado.'
   return msg
@@ -44,7 +45,7 @@ export async function signUpWithEmail({ email, password, username }) {
     password,
     options: {
       data: { username: name, full_name: name, avatar_seed: randomSeed() },
-      emailRedirectTo: `${window.location.origin}/conta`,
+      emailRedirectTo: `${window.location.origin}/conta?confirmado=1`,
     },
   })
   if (error) fail(error)
@@ -66,8 +67,16 @@ export async function signInWithEmail({ email, password }) {
 
 export async function sendPasswordReset(email) {
   const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-    redirectTo: `${window.location.origin}/conta`,
+    // O link do email abre a página Conta já com sessão e o formulário da password nova.
+    redirectTo: `${window.location.origin}/conta?nova-password=1`,
   })
+  if (error) fail(error)
+}
+
+export async function updatePassword(password, confirm) {
+  if (password.length < 6) throw new Error('A password tem de ter pelo menos 6 carateres.')
+  if (password !== confirm) throw new Error('As duas passwords não são iguais.')
+  const { error } = await supabase.auth.updateUser({ password })
   if (error) fail(error)
 }
 

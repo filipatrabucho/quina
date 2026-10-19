@@ -10,6 +10,7 @@ import {
   regenerateAvatar,
   changeUsername,
   ensureStoredAvatar,
+  updatePassword,
 } from '../lib/account.js'
 import Avatar from '../components/Avatar.jsx'
 import DiscordButton from '../components/DiscordButton.jsx'
@@ -240,6 +241,81 @@ function AdminLink() {
   return <Link className="btn btn--outline btn--small" to="/admin">Gerir testers</Link>
 }
 
+// Password nova: depois do link "esqueci-me da password" (aberto) ou para
+// mudar a password na conta (fechado até carregar no botão).
+function PasswordForm({ recovery, onDone }) {
+  const [open, setOpen] = useState(recovery)
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+  const [info, setInfo] = useState('')
+
+  if (!open) {
+    return (
+      <>
+        {info && <p className="account-info">{info}</p>}
+        <button type="button" className="link-btn" onClick={() => { setInfo(''); setOpen(true) }} data-testid="change-password">
+          Mudar password
+        </button>
+      </>
+    )
+  }
+
+  const submit = async (e) => {
+    e.preventDefault()
+    setBusy(true)
+    setError('')
+    try {
+      await updatePassword(password, confirm)
+      setPassword('')
+      setConfirm('')
+      setInfo('Password alterada. Já podes usá-la para entrar.')
+      if (!recovery) setOpen(false)
+      onDone?.()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <form className={`account-form${recovery ? ' account-card account-recovery' : ''}`} onSubmit={submit} data-testid="password-form">
+      {recovery && <h3 className="account-recovery__title">Define a tua password nova</h3>}
+      <label className="account-field">
+        <span>Password nova</span>
+        <input type="password" name="new-password" autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} minLength={6} required autoFocus />
+      </label>
+      <label className="account-field">
+        <span>Repete a password</span>
+        <input type="password" name="confirm-password" autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} minLength={6} required />
+      </label>
+      {error && <p className="duel-error">{error}</p>}
+      {info && <p className="account-info">{info}</p>}
+      <button className="share-btn" type="submit" disabled={busy || !password || !confirm}>
+        Guardar password
+      </button>
+    </form>
+  )
+}
+
+// Erros que o Supabase põe no endereço quando um link do email falha.
+function useLinkError() {
+  const [linkError] = useState(() => {
+    if (typeof window === 'undefined') return ''
+    const raw = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : ''
+    const params = new URLSearchParams(raw || window.location.search)
+    const code = params.get('error_code') || params.get('error')
+    if (!code) return ''
+    if (/expired/i.test(code) || /expired/i.test(params.get('error_description') || '')) {
+      return 'Este link já expirou ou já foi usado. Pede um novo abaixo.'
+    }
+    return 'Não foi possível abrir este link. Pede um novo abaixo.'
+  })
+  return linkError
+}
+
 function Profile({ user, signOut }) {
   const [username, setUsername] = useState(getDisplayName(user))
   const [busy, setBusy] = useState(false)
@@ -315,6 +391,7 @@ function Profile({ user, signOut }) {
       )}
 
       {user.email && <p className="modal-note">Email: {user.email}</p>}
+      {user.app_metadata?.provider === 'email' && <PasswordForm recovery={false} />}
       <AdminLink />
       {error && <p className="duel-error">{error}</p>}
       {info && <p className="account-info">{info}</p>}
@@ -325,14 +402,32 @@ function Profile({ user, signOut }) {
 
 export default function Conta() {
   const { user, loading, signOut } = useAuth()
+  const [params, setParams] = useSearchParams()
+  const recovery = params.get('nova-password') === '1'
+  const confirmed = params.get('confirmado') === '1'
+  const linkError = useLinkError()
+  const [passwordChanged, setPasswordChanged] = useState(false)
+  const loggedIn = user && !user.is_anonymous
 
   return (
     <main className="account-page">
       <h2 className="game-title">A minha conta</h2>
+      {linkError && !loggedIn && <p className="duel-error account-link-error" data-testid="link-error">{linkError}</p>}
       {loading ? (
         <p>A carregar…</p>
-      ) : user && !user.is_anonymous ? (
+      ) : loggedIn ? (
         <>
+          {confirmed && <p className="account-info account-confirmed" data-testid="email-confirmed">Email confirmado! A tua conta está pronta, já podes jogar.</p>}
+          {passwordChanged && <p className="account-info account-confirmed" data-testid="password-changed">Password alterada. Já podes usá-la para entrar.</p>}
+          {recovery && (
+            <PasswordForm
+              recovery
+              onDone={() => {
+                setPasswordChanged(true)
+                setParams({}, { replace: true })
+              }}
+            />
+          )}
           <Profile user={user} signOut={signOut} />
           <PublicProfileForm user={user} />
         </>

@@ -3568,3 +3568,8 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
 .google-official__slot { color-scheme: light; }
 .google-official__slot iframe { color-scheme: light; }
 .profile-own-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+/* Conta: password nova e confirmação de email */
+.account-recovery { padding: 24px; gap: 14px; border: 1px solid var(--azulejo); }
+.account-recovery__title { margin: 0; font-family: var(--font-display); text-transform: uppercase; font-size: 1.3rem; }
+.account-confirmed, .account-link-error { width: 100%; margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--cream-deep); text-align: center; }
