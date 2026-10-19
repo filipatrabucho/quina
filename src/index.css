@@ -3560,3 +3560,7 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
 .cookie-bar p { margin: 0; flex: 1 1 260px; font-size: 0.9rem; line-height: 1.45; color: var(--stone); }
 .cookie-bar a { color: var(--ink); }
 .cookie-bar__actions { display: flex; gap: 8px; margin-left: auto; }
+
+/* Botão oficial da Google (o iframe tem fundo próprio) */
+.google-official { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.google-official__slot { width: 100%; min-height: 44px; display: flex; justify-content: center; }
