@@ -34,13 +34,19 @@ export function useAuth() {
   }, [])
 
   // `returnTo`: caminho interno para onde voltar depois do Discord.
-  const signInWithDiscord = (returnTo) => {
+  const signInWithProvider = (provider, returnTo) => {
     const path = typeof returnTo === 'string' && returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : window.location.pathname + window.location.search
     supabase.auth.signInWithOAuth({
-      provider: 'discord',
-      options: { redirectTo: window.location.origin + path },
+      provider,
+      options: {
+        redirectTo: window.location.origin + path,
+        // Google: deixa escolher a conta (quem tem várias contas Gmail).
+        ...(provider === 'google' ? { queryParams: { prompt: 'select_account' } } : {}),
+      },
     })
   }
+  const signInWithDiscord = (returnTo) => signInWithProvider('discord', returnTo)
+  const signInWithGoogle = (returnTo) => signInWithProvider('google', returnTo)
 
   // Jogar sem conta Discord: sessão anónima do Supabase com um nome à
   // escolha. O nome vai logo no signInAnonymously para que o primeiro
@@ -57,5 +63,5 @@ export function useAuth() {
 
   const signOut = () => supabase.auth.signOut()
 
-  return { user, loading, signInWithDiscord, signInAsGuest, signOut, discordActivity }
+  return { user, loading, signInWithDiscord, signInWithGoogle, signInAsGuest, signOut, discordActivity }
 }

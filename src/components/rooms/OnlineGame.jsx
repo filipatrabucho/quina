@@ -6,6 +6,7 @@ import InviteFriends from '../../social/InviteFriends.jsx'
 import { gameByKey } from '../../data/games.js'
 import Avatar from '../Avatar.jsx'
 import DiscordButton from '../DiscordButton.jsx'
+import GoogleButton from '../GoogleButton.jsx'
 import { track } from '../../lib/analytics.js'
 
 export function PlayerChip({ player, you, online, extra }) {
@@ -43,6 +44,7 @@ function NamePrompt({ onSubmit }) {
         Continuar
       </button>
       <div className="account-or"><span>ou</span></div>
+      <GoogleButton />
       <DiscordButton />
       <Link className="link-btn" to={`/conta?voltar=${encodeURIComponent(window.location.pathname + window.location.search)}`}>
         Entrar ou criar conta com email

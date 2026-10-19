@@ -13,6 +13,7 @@ import {
 } from '../lib/account.js'
 import Avatar from '../components/Avatar.jsx'
 import DiscordButton from '../components/DiscordButton.jsx'
+import GoogleButton from '../components/GoogleButton.jsx'
 import SocialIcon from '../components/SocialIcon.jsx'
 import { useSocial } from '../social/SocialContext.jsx'
 import { getOrCreateMyProfile, updatePublicProfile, SOCIAL_NETWORKS, socialUrl } from '../lib/social.js'
@@ -101,6 +102,7 @@ function AuthForms() {
         </button>
       </div>
 
+      <GoogleButton returnTo={returnTo || '/conta'} label={tab === 'criar' ? 'Criar conta com Google' : 'Entrar com Google'} />
       <DiscordButton returnTo={returnTo || '/conta'} label={tab === 'criar' ? 'Criar conta com Discord' : 'Entrar com Discord'} />
       <div className="account-or"><span>ou com email</span></div>
 

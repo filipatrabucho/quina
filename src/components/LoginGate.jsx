@@ -2,9 +2,10 @@ import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import { supabaseConfigured } from '../lib/supabaseClient.js'
 import DiscordButton from './DiscordButton.jsx'
+import GoogleButton from './GoogleButton.jsx'
 import Logo from './Logo.jsx'
 
-// Para jogar é preciso conta (email ou Discord). As sessões de convidado
+// Para jogar é preciso conta (email, Google ou Discord). As sessões de convidado
 // não contam, exceto dentro da Atividade do Discord, onde a identidade
 // vem do próprio Discord.
 export default function LoginGate({ children }) {
@@ -24,6 +25,7 @@ export default function LoginGate({ children }) {
       <div className="login-gate__actions">
         <Link className="btn btn--primary" to={`/conta?voltar=${voltar}&modo=criar`} data-testid="gate-signup">Criar conta</Link>
         <Link className="btn btn--outline" to={`/conta?voltar=${voltar}`} data-testid="gate-login">Já tenho conta</Link>
+        <GoogleButton returnTo={returnTo} />
         <DiscordButton returnTo={returnTo} />
       </div>
     </div>
