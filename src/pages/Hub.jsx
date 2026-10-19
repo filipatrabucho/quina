@@ -1,20 +1,22 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { visibleGames } from '../data/games.js'
 import { useSocial } from '../social/SocialContext.jsx'
 import GameIcon from '../components/GameIcon.jsx'
 import AdSlot from '../components/AdSlot.jsx'
 import { useAuth } from '../hooks/useAuth.js'
+import MedalBadge from '../social/MedalBadge.jsx'
+import { medalByKey } from '../data/medals.js'
 
 const CATEGORIES = [
   { key: 'todos', label: 'Todos' },
-  { key: 'online', label: 'Com amigos' },
-  { key: 'bot', label: 'Contra o computador' },
-  { key: 'solo', label: 'Sozinho' },
+  { key: 'online', label: 'Multiplayer' },
+  { key: 'bot', label: 'vs Bot' },
+  { key: 'solo', label: 'Solo' },
   { key: 'diario', label: 'Diários' },
 ]
 
-const MODE_LABEL = { online: 'Online', bot: 'Contra o computador', solo: 'Sozinho', diario: 'Diário' }
+const MODE_LABEL = { online: 'Multiplayer', bot: 'vs Bot', solo: 'Solo', diario: 'Diário' }
 
 // Os três jogos do topo e a frase que aparece em cada um.
 const FEATURED = [
@@ -29,6 +31,45 @@ function playersLabel(players) {
 }
 
 const normalize = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+
+// Medalhas que aparecem no banner (existem mesmo no site).
+const BANNER_MEDALS = ['primeira-vitoria', 'lenda', 'popular']
+
+function FriendsBanner({ hasAccount, profilePath, onShowMultiplayer }) {
+  return (
+    <section className="promo" aria-labelledby="promo-title">
+      <div className="promo__text">
+        <h2 id="promo-title">Joga online com os teus amigos, ganha troféus e diverte-te!</h2>
+        <p>Cria uma sala, envia o link e começam a jogar em segundos. Cada vitória conta para as tuas medalhas e para o top de cada jogo.</p>
+        <div className="promo__actions">
+          {hasAccount ? (
+            <>
+              <button type="button" className="btn btn--primary btn--small" onClick={onShowMultiplayer}>Jogar com amigos</button>
+              <Link to={profilePath} className="btn btn--outline btn--small">Ver os meus troféus</Link>
+            </>
+          ) : (
+            <>
+              <Link to="/conta?modo=criar" className="btn btn--primary btn--small" data-testid="promo-signup">Criar conta grátis</Link>
+              <button type="button" className="btn btn--outline btn--small" onClick={onShowMultiplayer}>Ver jogos multiplayer</button>
+            </>
+          )}
+        </div>
+      </div>
+      <div className="promo__art" aria-hidden="true">
+        {BANNER_MEDALS.map((key, i) => (
+          <div key={key} className={`promo__medal promo__medal--${i}`}>
+            <MedalBadge medal={medalByKey[key]} size={i === 1 ? 96 : 72} title="" />
+          </div>
+        ))}
+        <div className="promo__icons">
+          {['emojis', 'stop', 'memes', 'noventa'].map((k) => (
+            <GameIcon key={k} game={k} size={40} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
 
 function GameTile({ game }) {
   return (
@@ -78,6 +119,19 @@ export default function Hub() {
   const featured = FEATURED.map((f) => ({ ...f, game: games.find((g) => g.key === f.key) })).filter((f) => f.game)
   const count = (key) => (key === 'todos' ? games.length : games.filter((g) => g.tags.includes(key)).length)
   const current = CATEGORIES.find((c) => c.key === category)
+  const profilePath = social?.me?.username ? `/u/${social.me.username}` : '/conta'
+  // O scroll só depois de a lista mudar (o banner e os destaques saem da página).
+  const scrollToList = useRef(false)
+  const showMultiplayer = () => {
+    setQuery('')
+    setCategory('online')
+    scrollToList.current = true
+  }
+  useEffect(() => {
+    if (!scrollToList.current) return
+    scrollToList.current = false
+    document.getElementById('jogos')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [category])
 
   return (
     <main className="home">
@@ -115,6 +169,8 @@ export default function Hub() {
           </button>
         ))}
       </nav>
+
+      {browsing && <FriendsBanner hasAccount={hasAccount} profilePath={profilePath} onShowMultiplayer={showMultiplayer} />}
 
       {browsing && featured.length > 0 && (
         <section className="home-section">

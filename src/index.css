@@ -1930,6 +1930,28 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
 .tab--active { color: #fff; }
 .tab--active::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 2px; background: var(--azulejo); }
 
+/* Banner "Joga com os teus amigos" */
+.promo { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 300px; align-items: center; gap: 24px; padding: 28px 32px; border-radius: 16px; overflow: hidden; background: radial-gradient(520px 260px at 100% 0%, rgba(255, 210, 63, 0.16), transparent 70%), linear-gradient(120deg, #2A1220 0%, #1A1430 55%, #10172A 100%); border: 1px solid #2E2438; }
+.promo__text h2 { margin: 0 0 10px; font-size: clamp(1.35rem, 2.6vw, 1.9rem); font-weight: 800; line-height: 1.2; max-width: 560px; }
+.promo__text p { margin: 0; color: #B9B6C8; font-size: 0.95rem; line-height: 1.55; max-width: 520px; }
+.promo__actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+.promo__art { position: relative; height: 170px; }
+.promo__medal { position: absolute; filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.45)); }
+.promo__medal--0 { left: 18px; top: 46px; transform: rotate(-10deg); }
+.promo__medal--1 { left: 102px; top: 0; }
+.promo__medal--2 { left: 206px; top: 50px; transform: rotate(9deg); }
+.promo__icons { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); display: flex; gap: 8px; padding: 8px 10px; border-radius: 14px; background: rgba(10, 10, 15, 0.45); border: 1px solid rgba(255, 255, 255, 0.06); }
+@media (max-width: 760px) {
+  .promo { grid-template-columns: 1fr; padding: 22px 20px; gap: 18px; }
+  .promo__art { order: -1; height: 100px; width: 260px; margin: 0 auto; }
+  .promo__medal--0 { left: 10px; top: 24px; }
+  .promo__medal--0 svg, .promo__medal--2 svg { width: 56px; height: 56px; }
+  .promo__medal--1 { left: 92px; }
+  .promo__medal--1 svg { width: 76px; height: 76px; }
+  .promo__medal--2 { left: 190px; top: 26px; }
+  .promo__icons { display: none; }
+}
+
 /* Cores de cada jogo (miniaturas) */
 .game-card { --c1: #7C5CE0; }
 .game-card--palavras { --c1: #7C5CE0; }
