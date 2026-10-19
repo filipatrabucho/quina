@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth.js'
 import { getProfileByUsername, getMedalsAndStats, SOCIAL_NETWORKS, socialUrl } from '../lib/social.js'
 import SocialIcon from '../components/SocialIcon.jsx'
 import { MEDALS } from '../data/medals.js'
@@ -9,6 +10,22 @@ import Avatar from '../components/Avatar.jsx'
 import GameIcon from '../components/GameIcon.jsx'
 import MedalBadge from '../social/MedalBadge.jsx'
 
+// No meu perfil: editar e terminar sessão.
+function OwnProfileActions() {
+  const { signOut } = useAuth()
+  const navigate = useNavigate()
+  const logout = async () => {
+    await signOut()
+    navigate('/')
+  }
+  return (
+    <div className="profile-own-actions">
+      <Link className="btn btn--primary btn--small" to="/conta" data-testid="edit-profile">Editar perfil</Link>
+      <button type="button" className="btn btn--outline btn--small" onClick={logout} data-testid="logout">Terminar sessão</button>
+    </div>
+  )
+}
+
 function FriendButton({ profile }) {
   const s = useSocial()
   const [busy, setBusy] = useState(false)
@@ -16,7 +33,7 @@ function FriendButton({ profile }) {
   if (!s?.enabled || !s.me) {
     return <Link className="btn btn--outline btn--small" to="/conta">Entrar para adicionar</Link>
   }
-  if (profile.id === s.myId) return <Link className="btn btn--primary btn--small" to="/conta" data-testid="edit-profile">Editar perfil</Link>
+  if (profile.id === s.myId) return <OwnProfileActions />
   const rel = s.relationWith(profile.id)
   const run = async (fn) => {
     setBusy(true)
