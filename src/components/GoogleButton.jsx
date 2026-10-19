@@ -1,8 +1,13 @@
 import { useAuth } from '../hooks/useAuth.js'
 
+// Só aparece depois de o login Google estar ligado no Supabase
+// (variável VITE_GOOGLE_LOGIN=on no Netlify).
+export const googleLoginOn = import.meta.env.VITE_GOOGLE_LOGIN === 'on'
+
 // Entrar (ou criar conta) com a conta Google / Gmail.
 export default function GoogleButton({ returnTo, label = 'Continuar com Google' }) {
   const { signInWithGoogle } = useAuth()
+  if (!googleLoginOn) return null
   return (
     <button type="button" className="btn-google" onClick={() => signInWithGoogle(returnTo)} data-testid="google-login">
       <svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true">
