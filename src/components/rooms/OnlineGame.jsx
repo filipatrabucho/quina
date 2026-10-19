@@ -31,7 +31,7 @@ function NamePrompt({ onSubmit }) {
       }}
     >
       <h2>Como te chamas?</h2>
-      <p className="modal-note">Escolhe um nome para jogares online. Não precisas de conta.</p>
+      <p className="modal-note">Escolhe um nome para jogares online.</p>
       <input
         className="duel-name-input"
         value={name}

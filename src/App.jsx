@@ -28,9 +28,6 @@ const FraseGame = lazy(() => import('./games/frase/FraseGame.jsx'))
 const EmojisGame = lazy(() => import('./games/emojis/EmojisGame.jsx'))
 const ColonosGame = lazy(() => import('./games/colonos/ColonosGame.jsx'))
 
-// Maquetes de design (só em desenvolvimento, não vão para o site).
-const Mockups = import.meta.env.DEV ? lazy(() => import('./mockups/Mockups.jsx')) : null
-
 const page = (el) => <Suspense fallback={<p className="page-loading">A carregar…</p>}>{el}</Suspense>
 // Os jogos só se jogam com conta.
 const game = (el) => <LoginGate>{page(el)}</LoginGate>
@@ -38,7 +35,6 @@ const game = (el) => <LoginGate>{page(el)}</LoginGate>
 export default function App() {
   return (
     <Routes>
-      {Mockups && <Route path="_mock/:v" element={page(<Mockups />)} />}
       <Route element={<Layout />}>
         <Route index element={<Hub />} />
         <Route path="palavras" element={game(<PalavrasGame />)} />

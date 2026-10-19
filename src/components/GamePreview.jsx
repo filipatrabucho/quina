@@ -1,4 +1,6 @@
-// Pré-visualizações desenhadas de cada jogo (em vez de imagens geradas).
+import GameIcon from './GameIcon.jsx'
+
+// Pré-visualizações desenhadas de cada jogo, para as miniaturas da página inicial.
 const L = (letters, states) =>
   letters.split('').map((ch, i) => (
     <span key={i} className={`pv-tile pv-tile--${states[i]}`}>{ch}</span>
@@ -145,7 +147,19 @@ export default function GamePreview({ game }) {
           <div className="pv-f-bubble pv-f-bubble--me">…o gato estava a pagar a renda 😂</div>
         </div>
       )
+    case 'colonos':
+      return (
+        <div className="pv pv-colonos">
+          {['#3D8B37', '#C9A227', '#9C5B2E', '#7A8B99', '#C9A227', '#3D8B37', '#E3C78F'].map((c, i) => (
+            <span key={i} style={{ background: c }} />
+          ))}
+        </div>
+      )
     default:
-      return <div className="pv" />
+      return (
+        <div className="pv">
+          <GameIcon game={game} size={64} />
+        </div>
+      )
   }
 }

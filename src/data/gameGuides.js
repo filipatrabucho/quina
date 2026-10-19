@@ -95,7 +95,7 @@ export const GUIDES = {
       'Cada voto vale 100 pontos e o meme mais votado da ronda ganha mais 50.',
     ],
     tips: ['Piadas internas do grupo costumam ganhar mais votos do que piadas genéricas.', 'Textos curtos leem-se melhor.'],
-    faq: [['Preciso de conta para jogar?', 'Não. Basta escolheres um nome. Com conta ficas com estatísticas e medalhas.']],
+    faq: [['Preciso de conta para jogar?', 'Sim, uma conta grátis (email, Google ou Discord). Assim ficas com estatísticas, medalhas e lugar no top.']],
   },
   naval: {
     intro:
@@ -207,7 +207,7 @@ export const GUIDES = {
       'Cada voto vale 100 pontos e a frase mais votada da ronda ganha mais 50.',
     ],
     tips: ['Respostas inesperadas ganham mais do que as óbvias.', 'Termina sempre antes do tempo: a frase que não for enviada não entra na votação.'],
-    faq: [['Preciso de conta?', 'Não, basta escolher um nome e entrar na sala com o código ou o link.']],
+    faq: [['Preciso de conta?', 'Sim, uma conta grátis. Depois é só entrar na sala com o código ou o link.']],
   },
   emojis: {
     intro:
