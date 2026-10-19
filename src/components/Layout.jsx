@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigationType } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import { getDisplayName, getAvatarUrl, getAvatarSeed } from '../lib/discordProfile.js'
 import { visibleGames, GAMES } from '../data/games.js'
@@ -114,8 +114,21 @@ function SiteNav() {
   )
 }
 
+// Ao mudar de página (ex.: abrir outro jogo no menu) volta ao topo.
+// Não mexe quando só muda o ?query da mesma página (ex.: entrar numa sala)
+// nem no botão "voltar" do browser, que repõe a posição anterior.
+function useScrollToTopOnNavigate() {
+  const { pathname, hash } = useLocation()
+  const navType = useNavigationType()
+  useEffect(() => {
+    if (hash || navType === 'POP') return
+    window.scrollTo(0, 0)
+  }, [pathname, hash, navType])
+}
+
 export default function Layout() {
   useSeo()
+  useScrollToTopOnNavigate()
   return (
     <SocialProvider>
     <div className="site">

@@ -1,109 +1,169 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { visibleGames, TAG_LABELS } from '../data/games.js'
+import { visibleGames } from '../data/games.js'
 import { useSocial } from '../social/SocialContext.jsx'
 import GameIcon from '../components/GameIcon.jsx'
 import AdSlot from '../components/AdSlot.jsx'
 import { useAuth } from '../hooks/useAuth.js'
 
-const FILTERS = [
+const CATEGORIES = [
   { key: 'todos', label: 'Todos' },
-  { key: 'online', label: 'Multiplayer' },
-  { key: 'bot', label: 'vs Bot' },
-  { key: 'solo', label: 'Solo' },
+  { key: 'online', label: 'Com amigos' },
+  { key: 'bot', label: 'Contra o computador' },
+  { key: 'solo', label: 'Sozinho' },
   { key: 'diario', label: 'Diários' },
 ]
 
-function GameCard({ game }) {
+const MODE_LABEL = { online: 'Online', bot: 'Contra o computador', solo: 'Sozinho', diario: 'Diário' }
+
+// Os três jogos do topo e a frase que aparece em cada um.
+const FEATURED = [
+  { key: 'palavras', note: 'Palavra nova todos os dias à meia-noite' },
+  { key: 'emojis', note: 'Filmes, séries e jogos escondidos em emojis' },
+  { key: 'stop', note: 'Nome, país, animal… e quem acaba grita STOP' },
+]
+
+function playersLabel(players) {
+  const p = players.replace(' a ', '–')
+  return p === '1' ? '1 jogador' : `${p} jogadores`
+}
+
+const normalize = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+
+function GameTile({ game }) {
   return (
-    <Link to={game.to} className={`game-card game-card--${game.key}`}>
-      <div className="game-card__art">
-        <GameIcon game={game.key} size={76} className="game-card__icon" />
-        {game.badge && <span className={`game-card__badge game-card__badge--${game.badge.toLowerCase()}`}>{game.badge}</span>}
+    <Link to={game.to} className={`gtile game-card game-card--${game.key}`} title={game.description}>
+      <div className="gtile__art">
+        <GameIcon game={game.key} size={64} className="gtile__icon" />
+        {game.beta && <span className="gtile__badge">Beta</span>}
       </div>
-      <div className="game-card__body">
+      <div className="gtile__info">
         <h3>{game.title}</h3>
-        <p>{game.description}</p>
+        <span>{playersLabel(game.players)} · {MODE_LABEL[game.tags[0]]}</span>
       </div>
-      <div className="game-card__foot">
-        <span className="game-card__meta">
-          {game.tags.map((t) => TAG_LABELS[t]).join(' · ')} · {game.players} jog.
-        </span>
-        <span className="game-card__play">Jogar</span>
+    </Link>
+  )
+}
+
+function FeaturedCard({ game, note }) {
+  return (
+    <Link to={game.to} className={`spot game-card--${game.key}`}>
+      <div className="spot__art">
+        <GameIcon game={game.key} size={84} />
+      </div>
+      <div className="spot__info">
+        <h3>{game.title}</h3>
+        <p>{note}</p>
+        <span className="spot__meta">{playersLabel(game.players)}</span>
       </div>
     </Link>
   )
 }
 
 export default function Hub() {
-  const [filter, setFilter] = useState('todos')
+  const [category, setCategory] = useState('todos')
+  const [query, setQuery] = useState('')
   const { user } = useAuth()
   const social = useSocial()
   const games = visibleGames(social?.canSeeBeta)
-  const featured = games.find((g) => !g.beta)
-  const list = filter === 'todos' ? games : games.filter((g) => g.tags.includes(filter))
   const hasAccount = user && !user.is_anonymous
 
-  return (
-    <main className="hub">
-      <section className="hero">
-        <div className="hero__text">
-          <span className="eyebrow">Tuga Games PT</span>
-          <h1>Jogos online grátis em português</h1>
-          <p>
-            Palavras, xadrez, 4 em linha, batalha naval, stop, memes e muito mais. Joga sozinho, contra o computador
-            ou cria uma sala e envia o link aos amigos. Sem instalar nada.
-          </p>
-          <div className="hero__actions">
-            <a href="#jogos" className="btn btn--primary">Ver jogos</a>
-            {hasAccount ? (
-              <Link to={featured.to} className="btn btn--outline">Jogar {featured.short}</Link>
-            ) : (
-              <Link to="/conta" className="btn btn--outline">Criar conta</Link>
-            )}
-          </div>
-        </div>
+  const q = normalize(query.trim())
+  const list = games.filter(
+    (g) =>
+      (category === 'todos' || g.tags.includes(category)) &&
+      (!q || normalize(`${g.title} ${g.short} ${g.description}`).includes(q)),
+  )
+  const browsing = category === 'todos' && !q
+  const featured = FEATURED.map((f) => ({ ...f, game: games.find((g) => g.key === f.key) })).filter((f) => f.game)
+  const count = (key) => (key === 'todos' ? games.length : games.filter((g) => g.tags.includes(key)).length)
+  const current = CATEGORIES.find((c) => c.key === category)
 
-        <Link to={featured.to} className={`feature game-card--${featured.key}`} aria-label={`Destaque: ${featured.title}`}>
-          <div className="feature__art">
-            <GameIcon game={featured.key} size={112} />
+  return (
+    <main className="home">
+      <section className="home-top">
+        <div className="home-top__text">
+          <h1>Jogos online grátis</h1>
+          <p>{games.length} jogos em português para jogar no browser, sozinho, contra o computador ou com amigos.</p>
+        </div>
+        <label className="home-search">
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20l-3.5-3.5" />
+          </svg>
+          <input
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Procurar jogo"
+            aria-label="Procurar jogo"
+          />
+        </label>
+      </section>
+
+      <nav className="home-cats" aria-label="Categorias">
+        {CATEGORIES.map((c) => (
+          <button
+            key={c.key}
+            type="button"
+            className={`home-cat${category === c.key ? ' home-cat--active' : ''}`}
+            aria-pressed={category === c.key}
+            onClick={() => setCategory(c.key)}
+          >
+            {c.label}
+            <span className="home-cat__n">{count(c.key)}</span>
+          </button>
+        ))}
+      </nav>
+
+      {browsing && featured.length > 0 && (
+        <section className="home-section">
+          <h2>Em destaque</h2>
+          <div className="spot-grid">
+            {featured.map((f) => (
+              <FeaturedCard key={f.key} game={f.game} note={f.note} />
+            ))}
           </div>
-          <div className="feature__info">
-            <span className="eyebrow">Destaque</span>
-            <h2>{featured.title}</h2>
-            <p>{featured.description}</p>
-            <div className="feature__meta">
-              <span>{featured.players} jogadores</span>
-              <span>Online</span>
-            </div>
-            <span className="btn btn--primary btn--small">Jogar agora</span>
+        </section>
+      )}
+
+      <section id="jogos" className="home-section">
+        <h2>{browsing ? 'Todos os jogos' : q ? `Resultados (${list.length})` : `${current.label} (${list.length})`}</h2>
+        {list.length ? (
+          <div className="tile-grid">
+            {list.map((g) => (
+              <GameTile key={g.key} game={g} />
+            ))}
           </div>
-        </Link>
+        ) : (
+          <p className="home-empty">
+            Nenhum jogo encontrado.{' '}
+            <button type="button" className="link-btn" onClick={() => { setQuery(''); setCategory('todos') }}>Ver todos</button>
+          </p>
+        )}
       </section>
 
       <AdSlot variant="banner" className="hub__ad" />
 
-      <section id="jogos" className="games-section">
-        <div className="games-section__head">
-          <h2>Jogos</h2>
-          <div className="tabs" role="tablist" aria-label="Filtrar jogos">
-            {FILTERS.map((f) => (
-              <button
-                key={f.key}
-                role="tab"
-                aria-selected={filter === f.key}
-                className={`tab${filter === f.key ? ' tab--active' : ''}`}
-                onClick={() => setFilter(f.key)}
-              >
-                {f.label}
-              </button>
-            ))}
+      <section className="home-about">
+        <h2>Sobre o Tuga Games</h2>
+        <div className="home-about__cols">
+          <div>
+            <h3>Sem instalar nada</h3>
+            <p>Todos os jogos abrem no browser, no computador ou no telemóvel. Não há downloads nem aplicações.</p>
+          </div>
+          <div>
+            <h3>Joga com amigos</h3>
+            <p>Cria uma sala, envia o link e começa a jogar. Também podes adicionar amigos e convidá-los pelo site.</p>
+          </div>
+          <div>
+            <h3>Feito em Portugal</h3>
+            <p>Palavras portuguesas, regras explicadas em português e um top de jogadores em cada jogo.</p>
           </div>
         </div>
-        <div className="games-grid">
-          {list.map((g) => (
-            <GameCard key={g.key} game={g} />
-          ))}
+        <div className="home-about__links">
+          {!hasAccount && <Link to="/conta?modo=criar" className="btn btn--primary btn--small">Criar conta grátis</Link>}
+          <Link to="/sobre" className="link-btn">Mais sobre o site</Link>
         </div>
       </section>
     </main>
