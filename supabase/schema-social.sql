@@ -319,7 +319,7 @@ create trigger medals_on_message after insert on public.messages
 do $$
 declare t text;
 begin
-  foreach t in array array['messages', 'friendships', 'user_medals'] loop
+  foreach t in array array['messages', 'friendships', 'user_medals', 'player_stats'] loop
     if not exists (select 1 from pg_publication_tables where pubname = 'supabase_realtime' and tablename = t) then
       execute format('alter publication supabase_realtime add table public.%I', t);
     end if;

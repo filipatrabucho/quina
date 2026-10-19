@@ -180,6 +180,9 @@ const RECORDED_KEY = 'quina-resultados-registados'
 
 // Regista o resultado de uma partida (só para contas). `key` evita contar a
 // mesma partida duas vezes (ex.: depois de um refresh).
+// Avisa o resto do site (ex.: o top 3) de que as estatísticas mudaram.
+export const STATS_CHANGED = 'tg-stats-changed'
+
 export async function recordResultOnce(key, game, won, detail = null) {
   let done = []
   try {
@@ -195,6 +198,7 @@ export async function recordResultOnce(key, game, won, detail = null) {
   const user = s.session?.user
   if (!user || user.is_anonymous) return
   const { error } = await supabase.rpc('record_game_result', { p_game: game, p_won: !!won, p_detail: detail })
+  if (!error) window.dispatchEvent(new CustomEvent(STATS_CHANGED, { detail: { game } }))
   if (error) {
     // Não ficou registado: deixa tentar outra vez (ex.: depois de um refresh).
     try {

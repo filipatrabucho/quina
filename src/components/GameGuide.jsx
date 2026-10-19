@@ -1,20 +1,53 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { GUIDES } from '../data/gameGuides.js'
-import { getTopPlayers } from '../lib/social.js'
+import { getTopPlayers, STATS_CHANGED } from '../lib/social.js'
+import { supabase } from '../lib/supabaseClient.js'
 import Avatar from './Avatar.jsx'
 
-// Top 3 de quem mais ganhou neste jogo (só contas).
+// De quanto em quanto tempo o top volta a ser lido (se o tempo real falhar).
+const TOP_REFRESH_MS = 20000
+
+// Top 3 de quem mais ganhou neste jogo (só contas). Atualiza sozinho.
 function TopPlayers({ game }) {
   const [top, setTop] = useState(null)
   useEffect(() => {
     let alive = true
+    let timer = null
     setTop(null)
-    getTopPlayers(game.key)
-      .then((list) => alive && setTop(list))
-      .catch(() => alive && setTop([]))
+    const load = () =>
+      getTopPlayers(game.key)
+        .then((list) => alive && setTop(list))
+        .catch(() => alive && setTop((t) => t ?? []))
+    // Junta vários avisos seguidos numa só leitura.
+    const soon = () => {
+      clearTimeout(timer)
+      timer = setTimeout(load, 400)
+    }
+    load()
+
+    // A minha vitória (gravada neste browser) e as dos outros (tempo real).
+    const onMine = (e) => e.detail?.game === game.key && soon()
+    window.addEventListener(STATS_CHANGED, onMine)
+    const channel = supabase
+      .channel(`top-${game.key}-${Math.random().toString(36).slice(2, 8)}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'player_stats', filter: `game=eq.${game.key}` }, soon)
+      .subscribe()
+
+    // Rede de segurança: volta a ler de vez em quando e ao voltar ao separador.
+    const poll = setInterval(() => document.visibilityState === 'visible' && load(), TOP_REFRESH_MS)
+    const onVisible = () => document.visibilityState === 'visible' && soon()
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', onVisible)
+
     return () => {
       alive = false
+      clearTimeout(timer)
+      clearInterval(poll)
+      window.removeEventListener(STATS_CHANGED, onMine)
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', onVisible)
+      supabase.removeChannel(channel)
     }
   }, [game.key])
   if (top === null) return <p className="game-top__empty">A carregar…</p>
