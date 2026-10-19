@@ -55,14 +55,37 @@ export function useGameRoom({ game, code, me, logic }) {
   const amHostRef = useRef(amHost)
   amHostRef.current = amHost
 
+  // Jogos em tempo real (ex.: Bombas) mudam o estado muitas vezes por
+  // segundo: o envio fica limitado a uma mensagem a cada `broadcastMs`.
+  const sendTimer = useRef(null)
+  const lastSent = useRef(0)
+  const flush = useCallback(() => {
+    sendTimer.current = null
+    lastSent.current = Date.now()
+    const current = stateRef.current
+    localStorage.setItem(storageKey(game, code), JSON.stringify(current))
+    channelRef.current?.send('state', { state: current, now: Date.now() })
+  }, [game, code])
+  useEffect(
+    () => () => {
+      clearTimeout(sendTimer.current)
+      sendTimer.current = null
+    },
+    []
+  )
+
   const commit = useCallback(
     (next) => {
       stateRef.current = next
       setState(next)
-      localStorage.setItem(storageKey(game, code), JSON.stringify(next))
-      channelRef.current?.send('state', { state: next, now: Date.now() })
+      const gap = logic.broadcastMs || 0
+      if (!gap) return flush()
+      if (sendTimer.current) return undefined
+      const wait = Math.max(0, gap - (Date.now() - lastSent.current))
+      sendTimer.current = setTimeout(flush, wait)
+      return undefined
     },
-    [game, code]
+    [logic, flush]
   )
 
   const applyAsHost = useCallback(
@@ -151,7 +174,7 @@ export function useGameRoom({ game, code, me, logic }) {
     if (!amHost) return undefined
     const t = setInterval(() => {
       if (logic.tick && stateRef.current?.status === 'playing') applyAsHost({ type: 'tick' }, me.id)
-    }, 1000)
+    }, logic.tickMs || 1000)
     const r = setInterval(() => {
       channelRef.current?.send('state', { state: stateRef.current, now: Date.now() })
     }, 5000)

@@ -142,6 +142,26 @@ export const GUIDES = {
     tips: ['Guarda os coringas para o fim.', 'Fica atento a quem tem só uma carta e usa as cartas especiais nesse jogador.'],
     faq: [['Posso jogar sozinho?', 'Sim, contra 1 a 3 bots.']],
   },
+  bombas: {
+    intro:
+      'O Bombas & Companhia é um jogo de arena para até 4 jogadores: anda pelo labirinto, põe bombas para rebentar as caixas de madeira, apanha os prémios escondidos e elimina os adversários antes que te apanhem a ti. Joga contra bots ou cria uma sala e convida os teus amigos.',
+    rules: [
+      'Anda com as setas ou WASD e põe uma bomba com Espaço. No telemóvel usa o comando e o botão 💣 no ecrã.',
+      'Cada bomba explode passado pouco mais de 2 segundos, em cruz. A explosão para nas paredes de pedra e parte a primeira caixa que encontrar.',
+      'Quem for apanhado pela explosão (incluindo quem pôs a bomba) sai da ronda. Uma explosão faz rebentar as bombas que apanhar.',
+      'Algumas caixas escondem prémios: 💣 mais uma bomba de cada vez, 🔥 explosões mais compridas e 👟 mais velocidade.',
+      'Ganha a ronda o último que ficar na arena. Aos 2 minutos começa a morte súbita: caem blocos de pedra em espiral e a arena vai fechando.',
+    ],
+    tips: [
+      'Antes de pores uma bomba, vê para onde vais fugir: os corredores sem saída são armadilhas.',
+      'Junta prémios de alcance com cuidado: as explosões compridas também te apanham a ti.',
+      'Usa as bombas para fechar o caminho aos adversários.',
+    ],
+    faq: [
+      ['Posso jogar sozinho?', 'Sim, no modo vs Bots jogas contra 1 a 3 bots. Numa sala online o anfitrião também pode juntar bots.'],
+      ['Quantos jogadores dá?', 'Até 4 na mesma arena, entre pessoas e bots.'],
+    ],
+  },
   snake: {
     intro:
       'O Snake é o clássico jogo da cobra dos telemóveis antigos: guia a cobra até à comida, cresce e tenta não bater em ti própria. Joga diretamente no browser, no PC ou no telemóvel, e bate o teu recorde.',

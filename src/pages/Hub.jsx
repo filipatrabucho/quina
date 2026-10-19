@@ -8,8 +8,8 @@ import { CATEGORIES, GameSearch } from '../components/Sidebar.jsx'
 import { useAuth } from '../hooks/useAuth.js'
 
 const MODE_LABEL = { online: 'Multiplayer', bot: 'vs Bot', solo: 'Solo', diario: 'Diário' }
-// Os dois jogos grandes do topo.
-const FEATURED = ['emojis', 'stop']
+// Os jogos grandes do topo.
+const FEATURED = ['bombas', 'emojis', 'stop']
 // Quantas miniaturas antes do anúncio a meio da grelha.
 const BEFORE_AD = 6
 

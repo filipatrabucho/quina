@@ -27,6 +27,7 @@ const VerdadesGame = lazy(() => import('./games/verdades/VerdadesGame.jsx'))
 const FraseGame = lazy(() => import('./games/frase/FraseGame.jsx'))
 const EmojisGame = lazy(() => import('./games/emojis/EmojisGame.jsx'))
 const ColonosGame = lazy(() => import('./games/colonos/ColonosGame.jsx'))
+const BombasGame = lazy(() => import('./games/bombas/BombasGame.jsx'))
 
 const page = (el) => <Suspense fallback={<p className="page-loading">A carregar…</p>}>{el}</Suspense>
 // Os jogos só se jogam com conta.
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="99" element={game(<NoventaGame />)} />
         <Route path="2-verdades-1-mentira" element={game(<VerdadesGame />)} />
         <Route path="continua-a-frase" element={game(<FraseGame />)} />
+        <Route path="bombas" element={game(<BombasGame />)} />
         <Route path="emoji-battle" element={game(<EmojisGame />)} />
         <Route path="colonos" element={<BetaGate game="colonos">{game(<ColonosGame />)}</BetaGate>} />
         <Route path="conta" element={page(<Conta />)} />

@@ -13,6 +13,16 @@ export const GAMES = [
     wide: true,
   },
   {
+    key: 'bombas',
+    to: '/bombas',
+    title: 'Bombas & Companhia',
+    short: 'Bombas',
+    description: 'Arena com bombas: rebenta caixas, apanha prémios e elimina os adversários. Contra bots ou com amigos.',
+    tags: ['online', 'bot'],
+    players: '1 a 4',
+    badge: 'Novo',
+  },
+  {
     key: 'emojis',
     to: '/emoji-battle',
     title: 'Emoji Battle',

@@ -147,6 +147,17 @@ export default function GamePreview({ game }) {
           <div className="pv-f-bubble pv-f-bubble--me">…o gato estava a pagar a renda 😂</div>
         </div>
       )
+    case 'bombas': {
+      // mini arena 7×5: # parede, + caixa, B bomba, F chama, 1/2 jogadores
+      const map = ['#######', '#1.+F.#', '#.#F#+#', '#+FFFB#', '###F#2#']
+      return (
+        <div className="pv pv-bombas">
+          {map.join('').split('').map((c, i) => (
+            <span key={i} className={`pv-b-${{ '#': 'wall', '+': 'crate', B: 'bomb', F: 'fire', 1: 'p1', 2: 'p2' }[c] || 'floor'}`} />
+          ))}
+        </div>
+      )
+    }
     case 'colonos':
       return (
         <div className="pv pv-colonos">
