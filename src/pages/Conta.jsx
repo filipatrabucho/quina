@@ -238,7 +238,7 @@ function PublicProfileForm({ user }) {
 function AdminLink() {
   const s = useSocial()
   if (s?.role !== 'admin') return null
-  return <Link className="btn btn--outline btn--small" to="/admin">Gerir testers</Link>
+  return <Link className="btn btn--outline btn--small" to="/admin">Backoffice</Link>
 }
 
 // Password nova: depois do link "esqueci-me da password" (aberto) ou para

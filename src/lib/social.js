@@ -272,3 +272,21 @@ export async function setStaff(username, role) {
   const { error } = await supabase.rpc('set_staff', { p_username: username, p_role: role })
   fail(error)
 }
+
+// ---- Backoffice ----
+export async function adminListUsers({ query = '', role = null, limit = 25, offset = 0 } = {}) {
+  const { data, error } = await supabase.rpc('admin_list_users', { p_query: query, p_role: role, p_limit: limit, p_offset: offset })
+  fail(error)
+  return { users: data || [], total: data?.[0]?.total ? Number(data[0].total) : 0 }
+}
+
+export async function adminStats() {
+  const { data, error } = await supabase.rpc('admin_stats')
+  fail(error)
+  return data
+}
+
+export async function adminSetRole(userId, role) {
+  const { error } = await supabase.rpc('admin_set_role', { p_user: userId, p_role: role })
+  fail(error)
+}

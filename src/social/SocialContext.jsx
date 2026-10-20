@@ -175,6 +175,8 @@ export function SocialProvider({ children }) {
       busy = true
       try {
         const [msgs] = await Promise.all([listIncoming(myId, 20), refreshFriendships()])
+        // Um tester novo (ou removido) vê a mudança sem ter de sair e entrar.
+        getMyRole().then(setRole).catch(() => {})
         if (!seenMsgs.current) seenMsgs.current = new Set(msgs.map((m) => m.id))
         else msgs.forEach(handleIncoming)
         const u = await listUnread(myId)

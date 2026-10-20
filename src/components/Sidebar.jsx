@@ -37,6 +37,12 @@ const ICONS = {
     </>
   ),
   friends: <path d="M4 5h16v11H9l-5 4z" />,
+  admin: (
+    <>
+      <path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z" />
+      <path d="M9 12l2 2 4-4" />
+    </>
+  ),
   search: (
     <>
       <circle cx="11" cy="11" r="7" />
@@ -141,6 +147,12 @@ export default function Sidebar({ onNavigate }) {
             <span className="side-link__label">Amigos</span>
             {s.totalUnread > 0 && <em className="side-badge">{s.totalUnread}</em>}
           </button>
+        )}
+        {s?.role === 'admin' && (
+          <Link to="/admin" className={`side-link${location.pathname === '/admin' ? ' side-link--on' : ''}`} onClick={onNavigate} title="Backoffice" data-testid="side-admin">
+            <Icon name="admin" />
+            <span className="side-link__label">Backoffice</span>
+          </Link>
         )}
       </nav>
 

@@ -118,6 +118,8 @@ function SiteShell() {
   const game = useCurrentGame()
   const [drawer, setDrawer] = useState(false)
   const isHome = pathname === '/'
+  // Sem anúncios nas páginas internas (backoffice).
+  const ads = !pathname.startsWith('/admin')
 
   // Fecha o menu do telemóvel ao mudar de página e com a tecla Esc.
   useEffect(() => setDrawer(false), [pathname])
@@ -157,13 +159,17 @@ function SiteShell() {
         <div className="site-body">
           <div className="site-main">
             <PageContent />
-            <div className="page-foot-spot">
-              <AdSlot variant="banner" />
-            </div>
+            {ads && (
+              <div className="page-foot-spot">
+                <AdSlot variant="banner" />
+              </div>
+            )}
           </div>
-          <aside className="side-col side-col--right">
-            <AdSlot variant="rail" />
-          </aside>
+          {ads && (
+            <aside className="side-col side-col--right">
+              <AdSlot variant="rail" />
+            </aside>
+          )}
         </div>
 
         <footer className="site-footer">

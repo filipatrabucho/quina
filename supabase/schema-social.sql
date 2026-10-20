@@ -395,5 +395,75 @@ end;
 $$;
 grant execute on function public.set_staff(text, text) to authenticated;
 
+-- ---------- Backoffice (só admin) ----------
+-- Lista de utilizadores com pesquisa, papel e número de partidas.
+create or replace function public.admin_list_users(p_query text default '', p_role text default null, p_limit int default 25, p_offset int default 0)
+returns table (user_id uuid, username text, email text, avatar_url text, created_at timestamptz, provider text, plays bigint, wins bigint, role text, total bigint)
+language plpgsql stable security definer set search_path = public, auth as $$
+begin
+  if not exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin') then
+    raise exception 'Só o admin pode ver os utilizadores.';
+  end if;
+  return query
+    select p.id, p.username, u.email::text, p.avatar_url, p.created_at,
+           coalesce(u.raw_app_meta_data ->> 'provider', 'email'),
+           coalesce(st.plays, 0), coalesce(st.wins, 0), sf.role,
+           count(*) over ()
+    from profiles p
+    join auth.users u on u.id = p.id
+    left join (select ps.user_id, sum(ps.plays)::bigint plays, sum(ps.wins)::bigint wins from player_stats ps group by ps.user_id) st on st.user_id = p.id
+    left join staff sf on sf.user_id = p.id
+    where (coalesce(trim(p_query), '') = ''
+           or p.username ilike '%' || replace(replace(replace(trim(p_query), '\', '\\'), '%', '\%'), '_', '\_') || '%'
+           or u.email ilike '%' || replace(replace(replace(trim(p_query), '\', '\\'), '%', '\%'), '_', '\_') || '%')
+      and (p_role is null or (p_role = 'jogador' and sf.role is null) or sf.role = p_role)
+    order by p.created_at desc
+    limit greatest(1, least(p_limit, 100)) offset greatest(0, p_offset);
+end;
+$$;
+grant execute on function public.admin_list_users(text, text, int, int) to authenticated;
+
+-- Números gerais e partidas por jogo.
+create or replace function public.admin_stats()
+returns json language plpgsql stable security definer set search_path = public, auth as $$
+begin
+  if not exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin') then
+    raise exception 'Só o admin pode ver as estatísticas.';
+  end if;
+  return json_build_object(
+    'users', (select count(*) from profiles),
+    'users_7d', (select count(*) from profiles where created_at > now() - interval '7 days'),
+    'testers', (select count(*) from staff where role = 'tester'),
+    'admins', (select count(*) from staff where role = 'admin'),
+    'plays', (select coalesce(sum(plays), 0) from player_stats),
+    'games', (select coalesce(json_agg(g order by g.plays desc), '[]'::json) from (
+      select game, count(*) as players, sum(plays) as plays, sum(wins) as wins from player_stats group by game
+    ) g)
+  );
+end;
+$$;
+grant execute on function public.admin_stats() to authenticated;
+
+-- Mudar o papel pelo id (o backoffice usa isto; o set_staff por username continua a funcionar).
+create or replace function public.admin_set_role(p_user uuid, p_role text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin') then
+    raise exception 'Só o admin pode gerir papéis.';
+  end if;
+  if p_role is null or p_role = 'jogador' then
+    if p_user = auth.uid() then raise exception 'Não te podes tirar a ti próprio.'; end if;
+    delete from staff where user_id = p_user;
+  elsif p_role in ('admin', 'tester') then
+    if p_user = auth.uid() and p_role <> 'admin' then raise exception 'Não podes tirar o teu próprio acesso de admin.'; end if;
+    insert into staff (user_id, role) values (p_user, p_role)
+    on conflict (user_id) do update set role = excluded.role;
+  else
+    raise exception 'Papel inválido.';
+  end if;
+end;
+$$;
+grant execute on function public.admin_set_role(uuid, text) to authenticated;
+
 -- PRIMEIRA VEZ: torna-te admin (troca O_TEU_USERNAME pelo teu username e corre só esta linha):
 -- insert into public.staff (user_id, role) select id, 'admin' from public.profiles where username = 'O_TEU_USERNAME' on conflict (user_id) do update set role = 'admin';
