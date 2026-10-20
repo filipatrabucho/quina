@@ -5,7 +5,6 @@ import Hub from './pages/Hub.jsx'
 import BetaGate from './components/BetaGate.jsx'
 import Sobre from './pages/Sobre.jsx'
 import Contacto from './pages/Contacto.jsx'
-import LoginGate from './components/LoginGate.jsx'
 
 // Os jogos novos só são descarregados quando se abrem.
 const PalavrasGame = lazy(() => import('./games/palavras/PalavrasGame.jsx'))
@@ -32,8 +31,8 @@ const BlackjackGame = lazy(() => import('./games/blackjack/BlackjackGame.jsx'))
 const PokerGame = lazy(() => import('./games/poker/PokerGame.jsx'))
 
 const page = (el) => <Suspense fallback={<p className="page-loading">A carregar…</p>}>{el}</Suspense>
-// Os jogos só se jogam com conta.
-const game = (el) => <LoginGate>{page(el)}</LoginGate>
+// Os jogos abrem para todos; as salas online pedem conta (ver LoginGate).
+const game = (el) => page(el)
 
 export default function App() {
   return (

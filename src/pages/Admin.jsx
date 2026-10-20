@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSocial } from '../social/SocialContext.jsx'
-import { adminListUsers, adminSetRole, adminStats } from '../lib/social.js'
+import { adminListUsers, adminSetRole, adminStats, adminPlayStats } from '../lib/social.js'
 import { GAMES, gameByKey } from '../data/games.js'
 import Avatar from '../components/Avatar.jsx'
 import GameIcon from '../components/GameIcon.jsx'
@@ -180,10 +180,99 @@ function Games({ stats }) {
   )
 }
 
+const PERIODS = [7, 30, 90]
+const dayLabel = (d) => new Date(`${d}T12:00:00`).toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' })
+
+// Pessoas por dia (uma série: barras finas, valor ao passar o rato).
+function DayBars({ days, period }) {
+  const byDay = Object.fromEntries(days.map((d) => [d.day, d]))
+  const list = []
+  for (let i = period - 1; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000)
+    const key = d.toLocaleDateString('sv-SE', { timeZone: 'Europe/Lisbon' })
+    list.push({ day: key, players: byDay[key]?.players || 0, plays: byDay[key]?.plays || 0 })
+  }
+  const max = Math.max(1, ...list.map((d) => d.players))
+  return (
+    <figure className="bo-chart">
+      <figcaption>Pessoas que jogaram, por dia</figcaption>
+      <div className="bo-bars" data-testid="bo-day-bars">
+        <span className="bo-bars__max">{max}</span>
+        {list.map((d) => (
+          <div key={d.day} className="bo-bar" tabIndex={0} aria-label={`${dayLabel(d.day)}: ${d.players} pessoas, ${d.plays} partidas`}>
+            <i style={{ height: `${(d.players / max) * 100}%` }} />
+            <span className="bo-bar__tip">{dayLabel(d.day)}<br /><b>{d.players}</b> pessoas · {d.plays} partidas</span>
+          </div>
+        ))}
+      </div>
+      <div className="bo-bars__axis"><span>{dayLabel(list[0].day)}</span><span>Hoje</span></div>
+    </figure>
+  )
+}
+
+function Plays() {
+  const [period, setPeriod] = useState(30)
+  const [data, setData] = useState(null)
+  const [error, setError] = useState('')
+  useEffect(() => {
+    setError('')
+    adminPlayStats(period).then(setData, (e) => setError(e.message))
+  }, [period])
+  const t = data?.totals
+  const byGame = Object.fromEntries((data?.games || []).map((g) => [g.game, g]))
+  const list = [...GAMES].sort((a, b) => (byGame[b.key]?.players || 0) - (byGame[a.key]?.players || 0) || (byGame[b.key]?.opened || 0) - (byGame[a.key]?.opened || 0))
+  return (
+    <section className="bo-card" data-testid="bo-plays">
+      <div className="bo-toolbar">
+        <p className="admin-note" style={{ margin: 0, flex: '1 1 260px' }}>
+          Conta toda a gente, com e sem conta. <b>Abriram</b> = abriram a página do jogo; <b>Jogaram</b> = acabaram pelo menos uma partida.
+        </p>
+        <div className="bo-filters">
+          {PERIODS.map((p) => (
+            <button key={p} type="button" className={`home-cat${period === p ? ' home-cat--active' : ''}`} onClick={() => setPeriod(p)} data-testid={`bo-period-${p}`}>
+              {p} dias
+            </button>
+          ))}
+        </div>
+      </div>
+      {error && <p className="duel-error">{error}</p>}
+      <div className="bo-stats">
+        <Stat label="Abriram um jogo" value={t?.visitors} hint="pessoas diferentes" />
+        <Stat label="Jogaram" value={t?.players} hint="acabaram uma partida" />
+        <Stat label="Partidas" value={t?.plays} hint={t ? `${(t.plays / Math.max(1, t.players)).toFixed(1)} por pessoa` : null} />
+        <Stat label="Sem conta / com conta" value={t ? `${t.guest_players} / ${t.account_players}` : null} hint="pessoas que jogaram" />
+      </div>
+      {data && <DayBars days={data.days} period={period} />}
+      <div className="bo-table-wrap">
+        <table className="bo-table" data-testid="bo-plays-table">
+          <thead>
+            <tr><th>Jogo</th><th className="bo-num">Abriram</th><th className="bo-num">Jogaram</th><th className="bo-num">Partidas</th><th className="bo-num">Sozinho/bots</th><th className="bo-num">Online</th></tr>
+          </thead>
+          <tbody>
+            {list.map((g) => {
+              const r = byGame[g.key]
+              return (
+                <tr key={g.key}>
+                  <td><Link to={g.to} className="bo-user"><GameIcon game={g.key} size={30} /><b>{g.title}</b></Link></td>
+                  <td className="bo-num">{r?.opened ?? 0}</td>
+                  <td className="bo-num"><b>{r?.players ?? 0}</b></td>
+                  <td className="bo-num">{r?.plays ?? 0}</td>
+                  <td className="bo-num">{r?.solo ?? 0}</td>
+                  <td className="bo-num">{r?.online ?? 0}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
+
 // Backoffice: utilizadores, testers e jogos (só para o admin).
 export default function Admin() {
   const s = useSocial()
-  const [tab, setTab] = useState('users')
+  const [tab, setTab] = useState('plays')
   const [stats, setStats] = useState(null)
   const isAdmin = s?.role === 'admin'
   const loadStats = useCallback(() => adminStats().then(setStats).catch(() => {}), [])
@@ -216,10 +305,13 @@ export default function Admin() {
         <Stat label="Jogos em beta" value={betaGames.length} hint={`de ${GAMES.length} jogos`} />
       </div>
       <div className="bo-tabs" role="tablist">
+        <button type="button" role="tab" aria-selected={tab === 'plays'} className={`bo-tab${tab === 'plays' ? ' bo-tab--on' : ''}`} onClick={() => setTab('plays')} data-testid="bo-tab-plays">Quem jogou</button>
         <button type="button" role="tab" aria-selected={tab === 'users'} className={`bo-tab${tab === 'users' ? ' bo-tab--on' : ''}`} onClick={() => setTab('users')}>Utilizadores e testers</button>
         <button type="button" role="tab" aria-selected={tab === 'games'} className={`bo-tab${tab === 'games' ? ' bo-tab--on' : ''}`} onClick={() => setTab('games')}>Jogos</button>
       </div>
-      {tab === 'users' ? <Users myId={s.myId} onChanged={loadStats} /> : <Games stats={stats} />}
+      {tab === 'plays' && <Plays />}
+      {tab === 'users' && <Users myId={s.myId} onChanged={loadStats} />}
+      {tab === 'games' && <Games stats={stats} />}
     </main>
   )
 }

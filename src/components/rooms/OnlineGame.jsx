@@ -8,6 +8,7 @@ import Avatar from '../Avatar.jsx'
 import DiscordButton from '../DiscordButton.jsx'
 import GoogleButton from '../GoogleButton.jsx'
 import { track } from '../../lib/analytics.js'
+import LoginGate from '../LoginGate.jsx'
 
 export function PlayerChip({ player, you, online, extra }) {
   return (
@@ -188,7 +189,15 @@ function Room({ game, code, me, logic, renderGame, renderLobbyOptions, prepareSt
   )
 }
 
-export default function OnlineGame({ game, logic, renderGame, renderLobbyOptions, prepareStart }) {
+export default function OnlineGame(props) {
+  return (
+    <LoginGate>
+      <OnlineLobby {...props} />
+    </LoginGate>
+  )
+}
+
+function OnlineLobby({ game, logic, renderGame, renderLobbyOptions, prepareStart }) {
   const { me, needsName, setGuestName, loading } = usePlayerIdentity()
   const [params, setParams] = useSearchParams()
   const code = (params.get('sala') || '').toUpperCase()

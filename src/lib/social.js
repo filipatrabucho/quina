@@ -1,5 +1,6 @@
 import { supabase } from './supabaseClient.js'
 import { track } from './analytics.js'
+import { GAME_FINISHED, logPlay, countGuestPlay, modeOfKey } from './plays.js'
 
 const PROFILE_FIELDS = 'id, username, avatar_url, bio, links, created_at'
 
@@ -194,9 +195,14 @@ export async function recordResultOnce(key, game, won, detail = null) {
   track('game_end', { game_name: game, result: won ? 'vitoria' : 'derrota' })
   const save = (list) => localStorage.setItem(RECORDED_KEY, JSON.stringify(list.slice(-300)))
   save([...done, key])
+  const mode = modeOfKey(key)
+  logPlay('partida', game, mode, !!won)
   const { data: s } = await supabase.auth.getSession()
   const user = s.session?.user
-  if (!user || user.is_anonymous) return
+  const guest = !user || user.is_anonymous
+  // Avisa o site (partilhar o resultado e, sem conta, sugerir criar uma).
+  window.dispatchEvent(new CustomEvent(GAME_FINISHED, { detail: { game, won: !!won, detail, mode, guest, guestPlays: guest ? countGuestPlay() : 0 } }))
+  if (guest) return
   const { error } = await supabase.rpc('record_game_result', { p_game: game, p_won: !!won, p_detail: detail })
   if (!error) window.dispatchEvent(new CustomEvent(STATS_CHANGED, { detail: { game } }))
   if (error) {
@@ -322,4 +328,11 @@ export async function saveMyWallet(game, chips) {
     .from('game_wallets')
     .upsert({ user_id: id, game, chips: Math.floor(chips), updated_at: new Date().toISOString() })
   fail(error)
+}
+
+// Quem jogou (com e sem conta), para o backoffice.
+export async function adminPlayStats(days = 30) {
+  const { data, error } = await supabase.rpc('admin_play_stats', { p_days: days })
+  fail(error)
+  return data
 }

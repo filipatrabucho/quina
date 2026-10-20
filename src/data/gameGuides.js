@@ -95,7 +95,7 @@ export const GUIDES = {
       'Cada voto vale 100 pontos e o meme mais votado da ronda ganha mais 50.',
     ],
     tips: ['Piadas internas do grupo costumam ganhar mais votos do que piadas genéricas.', 'Textos curtos leem-se melhor.'],
-    faq: [['Preciso de conta para jogar?', 'Sim, uma conta grátis (email, Google ou Discord). Assim ficas com estatísticas, medalhas e lugar no top.']],
+    faq: [['Preciso de conta para jogar?', 'Sim: este jogo é online, com amigos, e para isso precisas de uma conta grátis (email, Google ou Discord). Assim ficas também com estatísticas, medalhas e lugar no top.']],
   },
   naval: {
     intro:

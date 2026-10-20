@@ -181,7 +181,7 @@ create table if not exists public.player_stats (
 -- Lista de jogos (atualizada sempre que há jogos novos).
 alter table public.player_stats drop constraint if exists player_stats_game_check;
 alter table public.player_stats add constraint player_stats_game_check
-  check (game in ('palavras', 'fiada', 'quatro', 'galo', 'xadrez', 'memes', 'naval', 'stop', 'cartas', 'snake', 'memoria', 'noventa', 'verdades', 'frase', 'emojis', 'colonos', 'bombas', 'blackjack', 'poker'));
+  check (game in ('palavras', 'fiada', 'quatro', 'galo', 'xadrez', 'memes', 'naval', 'stop', 'cartas', 'snake', 'memoria', 'noventa', 'verdades', 'frase', 'emojis', 'colonos', 'bombas', 'blackjack', 'poker', 'sueca'));
 alter table public.player_stats enable row level security;
 drop policy if exists "estatisticas: publicas" on public.player_stats;
 create policy "estatisticas: publicas" on public.player_stats for select using (true);
@@ -482,6 +482,80 @@ drop policy if exists "carteiras: criar a minha" on public.game_wallets;
 create policy "carteiras: criar a minha" on public.game_wallets for insert with check (user_id = auth.uid());
 drop policy if exists "carteiras: mudar a minha" on public.game_wallets;
 create policy "carteiras: mudar a minha" on public.game_wallets for update using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- ---------- Partidas jogadas (com e sem conta) ----------
+-- Cada visitante tem um id aleatório guardado no browser. 'abriu' = abriu a
+-- página do jogo (uma vez por sessão); 'partida' = acabou uma partida.
+-- Ninguém lê esta tabela diretamente: só o admin, pelas funções abaixo.
+create table if not exists public.game_plays (
+  id bigint generated always as identity primary key,
+  kind text not null check (kind in ('abriu', 'partida')),
+  game text not null check (game ~ '^[a-z0-9-]{1,30}$'),
+  mode text check (mode in ('solo', 'online')),
+  won boolean,
+  visitor text not null check (visitor ~ '^[A-Za-z0-9_-]{6,40}$'),
+  user_id uuid references auth.users (id) on delete set null,
+  created_at timestamptz not null default now()
+);
+create index if not exists game_plays_created_idx on public.game_plays (created_at);
+create index if not exists game_plays_visitor_idx on public.game_plays (visitor, created_at);
+alter table public.game_plays enable row level security;
+
+create or replace function public.log_play(p_kind text, p_game text, p_mode text, p_won boolean, p_visitor text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  -- Travão contra abusos: no máximo 200 registos por visitante por hora.
+  if (select count(*) from game_plays where visitor = p_visitor and created_at > now() - interval '1 hour') >= 200 then
+    return;
+  end if;
+  insert into game_plays (kind, game, mode, won, visitor, user_id)
+  values (p_kind, p_game, p_mode, p_won, p_visitor, auth.uid());
+end;
+$$;
+grant execute on function public.log_play(text, text, text, boolean, text) to anon, authenticated;
+
+-- Números para o backoffice (últimos p_days dias).
+create or replace function public.admin_play_stats(p_days int default 30)
+returns json language plpgsql stable security definer set search_path = public as $$
+declare
+  since timestamptz := now() - make_interval(days => greatest(1, least(p_days, 365)));
+begin
+  if not exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin') then
+    raise exception 'Só o admin pode ver estes números.';
+  end if;
+  return json_build_object(
+    'totals', (
+      select json_build_object(
+        'visitors', count(distinct coalesce(user_id::text, visitor)) filter (where kind = 'abriu'),
+        'players', count(distinct coalesce(user_id::text, visitor)) filter (where kind = 'partida'),
+        'plays', count(*) filter (where kind = 'partida'),
+        'guest_players', count(distinct visitor) filter (where kind = 'partida' and user_id is null),
+        'account_players', count(distinct user_id) filter (where kind = 'partida')
+      ) from game_plays where created_at >= since
+    ),
+    'games', (
+      select coalesce(json_agg(g order by g.plays desc, g.opened desc), '[]'::json) from (
+        select game,
+          count(distinct coalesce(user_id::text, visitor)) filter (where kind = 'abriu') as opened,
+          count(distinct coalesce(user_id::text, visitor)) filter (where kind = 'partida') as players,
+          count(*) filter (where kind = 'partida') as plays,
+          count(*) filter (where kind = 'partida' and mode = 'solo') as solo,
+          count(*) filter (where kind = 'partida' and mode = 'online') as online
+        from game_plays where created_at >= since group by game
+      ) g
+    ),
+    'days', (
+      select coalesce(json_agg(d order by d.day), '[]'::json) from (
+        select (created_at at time zone 'Europe/Lisbon')::date as day,
+          count(distinct coalesce(user_id::text, visitor)) filter (where kind = 'partida') as players,
+          count(*) filter (where kind = 'partida') as plays
+        from game_plays where created_at >= since group by 1
+      ) d
+    )
+  );
+end;
+$$;
+grant execute on function public.admin_play_stats(int) to authenticated;
 
 -- PRIMEIRA VEZ: torna-te admin (troca O_TEU_USERNAME pelo teu username e corre só esta linha):
 -- insert into public.staff (user_id, role) select id, 'admin' from public.profiles where username = 'O_TEU_USERNAME' on conflict (user_id) do update set role = 'admin';

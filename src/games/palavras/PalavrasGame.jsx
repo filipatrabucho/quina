@@ -11,6 +11,7 @@ import {
 } from './utils/gameLogic.js'
 import { preloadDictionary, isRealWord } from './utils/dictionary.js'
 import DuelMode from './components/DuelMode.jsx'
+import LoginGate from '../../components/LoginGate.jsx'
 
 import GameIcon from '../../components/GameIcon.jsx'
 import { ChartIcon } from '../../components/Icons.jsx'
@@ -234,7 +235,9 @@ export default function PalavrasGame() {
       </header>
 
       {view === 'duelo' ? (
-        <DuelMode onExit={() => setView('jogo')} />
+        <LoginGate>
+          <DuelMode onExit={() => setView('jogo')} />
+        </LoginGate>
       ) : (
         <>
       <div className="mode-switch">

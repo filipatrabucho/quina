@@ -5,6 +5,7 @@ import GameIcon from '../../components/GameIcon.jsx'
 import { RefreshIcon } from '../../components/Icons.jsx'
 import { recordResultOnce } from '../../lib/social.js'
 import FiadaMultiplayer from './components/FiadaMultiplayer.jsx'
+import LoginGate from '../../components/LoginGate.jsx'
 
 const STORAGE_PREFIX = 'quina-fiada-estado-v2-'
 
@@ -158,7 +159,9 @@ export default function FiadaGame() {
       </div>
 
       {view === 'duelo' ? (
-        <FiadaMultiplayer onExit={() => setView('solo')} />
+        <LoginGate>
+          <FiadaMultiplayer onExit={() => setView('solo')} />
+        </LoginGate>
       ) : (
         <main className="fiada">
           {/* <div className="fiada-stats-row">

@@ -14,6 +14,8 @@ import ChatDock, { HeaderChatButton } from '../social/ChatDock.jsx'
 import { useSocial } from '../social/SocialContext.jsx'
 import { useSeo } from '../hooks/useSeo.js'
 import CookieBar, { openCookieBar } from './CookieBar.jsx'
+import GameEndToast from './GameEndToast.jsx'
+import { logOpen } from '../lib/plays.js'
 
 function AccountChip() {
   const { user, loading } = useAuth()
@@ -121,6 +123,11 @@ function SiteShell() {
   // Sem anúncios nas páginas internas (backoffice).
   const ads = !pathname.startsWith('/admin')
 
+  // Conta quem abre cada jogo (uma vez por sessão), com ou sem conta.
+  useEffect(() => {
+    if (game) logOpen(game.key)
+  }, [game?.key]) // eslint-disable-line react-hooks/exhaustive-deps
+
   // Fecha o menu do telemóvel ao mudar de página e com a tecla Esc.
   useEffect(() => setDrawer(false), [pathname])
   useEffect(() => {
@@ -196,6 +203,7 @@ function SiteShell() {
       </div>
 
       <CookieBar />
+      <GameEndToast />
       <ChatDock />
     </div>
   )
