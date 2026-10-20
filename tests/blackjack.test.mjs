@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { handValue, startGame, applyAction, tick, START_CHIPS, BET_MS, TURN_MS } from '../src/games/blackjack/blackjackLogic.js'
+import { handValue, startGame, applyAction, tick, isBot, blackjackOnline, START_CHIPS, BET_MS, TURN_MS, BOT_DELAY_MS } from '../src/games/blackjack/blackjackLogic.js'
 
 const c = (rank, suit = 's') => ({ id: Math.random(), rank, suit })
 // Prepara o sapato para sair por esta ordem (pop tira do fim).
@@ -90,4 +90,46 @@ test('sem fichas: recomeçar com 1000', () => {
   g = { ...g, chips: { a: 0 } }
   g = applyAction(g, 'a', { type: 'rebuy' })
   assert.equal(g.chips.a, START_CHIPS)
+})
+
+test('as fichas vêm da carteira (e quem não tem carteira começa com 1000)', () => {
+  const g = startGame(['a', 'b', 'c'], 0, Math.random, { chips: { a: 2350, b: 0 } })
+  assert.equal(g.chips.a, 2350)
+  assert.equal(g.chips.b, 0, 'sem fichas fica sem fichas (pode recomeçar)')
+  assert.equal(g.chips.c, START_CHIPS)
+  const r = applyAction(g, 'b', { type: 'rebuy' })
+  assert.equal(r.chips.b, START_CHIPS)
+})
+
+test('bots apostam sozinhos, jogam com tempo e a mão acaba', () => {
+  let g = startGame(['h', 'bot0', 'bot1'], 0, Math.random, { bots: ['bot0', 'bot1'], timed: false })
+  assert.equal(g.deadline, null, 'sozinho: sem tempo para apostar')
+  assert.ok(g.bets.bot0 >= 10 && g.bets.bot1 >= 10, 'os bots já apostaram')
+  assert.equal(g.phase, 'bet', 'espera pela pessoa')
+  let t = 0
+  for (let round = 0; round < 30; round++) {
+    g = applyAction(g, 'h', { type: 'bet', amount: 10 }, t)
+    let guard = 0
+    while (g.phase === 'play' && guard++ < 50) {
+      if (g.turn.id === 'h') {
+        assert.equal(g.deadline, null, 'sozinho: sem tempo para jogar')
+        g = applyAction(g, 'h', { type: 'stand' }, t)
+      } else {
+        assert.ok(isBot(g, g.turn.id))
+        t = g.deadline + 1
+        g = tick(g, t)
+      }
+    }
+    assert.equal(g.phase, 'done')
+    if (g.chips.h < 10) g = applyAction(g, 'h', { type: 'rebuy' })
+    g = applyAction(g, 'h', { type: 'next' }, t)
+  }
+})
+
+test('online: o anfitrião junta bots e usa as carteiras', () => {
+  const g = blackjackOnline.start([{ id: 'a' }, { id: 'b' }], { bots: 9, chips: { a: 5000 } }, 0)
+  assert.deepEqual(g.order, ['a', 'b', 'bot0', 'bot1', 'bot2'], 'no máximo 5 lugares')
+  assert.equal(g.chips.a, 5000)
+  assert.equal(g.chips.b, START_CHIPS)
+  assert.ok(BOT_DELAY_MS < TURN_MS)
 })

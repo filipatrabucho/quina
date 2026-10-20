@@ -160,7 +160,7 @@ export const GUIDES = {
   },
   blackjack: {
     intro:
-      'O Blackjack (ou 21) é o jogo de cartas de casino mais conhecido: tenta fazer uma mão mais perto de 21 do que a banca, sem passar. Joga sozinho contra a banca ou senta-te numa mesa com até 5 amigos. As fichas são a fingir, não há dinheiro envolvido.',
+      'O Blackjack (ou 21) é o jogo de cartas de casino mais conhecido: tenta fazer uma mão mais perto de 21 do que a banca, sem passar. Joga numa mesa com bots ou senta-te com até 5 amigos. As fichas são a fingir e ficam guardadas na tua conta: o que ganhas ou perdes conta para a próxima vez.',
     rules: [
       'As cartas de 2 a 10 valem o número, as figuras valem 10 e o Ás vale 11 ou 1 (o que der mais jeito).',
       'Aposta antes de cada mão. Recebes 2 cartas e a banca mostra só uma das dela.',
@@ -171,6 +171,7 @@ export const GUIDES = {
     tips: ['Com 17 ou mais costuma ser melhor ficar.', 'Se a banca mostra 2 a 6, ela rebenta mais vezes: fica com mãos mais baixas.', 'Divide sempre ases e oitos; nunca dividas dez.'],
     faq: [
       ['É a dinheiro?', 'Não. As fichas são a fingir e, se ficares sem nenhuma, recomeças com 1000.'],
+      ['As minhas fichas ficam guardadas?', 'Sim. O teu saldo fica na tua conta e passa de uma partida para a outra, sozinho ou na mesa com amigos.'],
       ['Quantos podem jogar na mesa?', 'Até 5 pessoas, cada uma contra a banca.'],
     ],
   },

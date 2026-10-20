@@ -11,6 +11,11 @@ export const DECKS = 6
 const RESHUFFLE_AT = 78 // reembaralha quando restarem menos de 1,5 baralhos
 export const TURN_MS = 30000 // online: quem não joga a tempo fica
 export const BET_MS = 30000 // online: quem não aposta a tempo fica de fora da mão
+export const BOT_DELAY_MS = 900
+export const BOT_NAMES = ['Bot Rita', 'Bot Zé', 'Bot Inês', 'Bot Rui']
+export const MAX_SEATS = 5
+
+export const isBot = (g, id) => !!g.bots?.includes(id)
 
 export function cardValue(card) {
   if (card.rank === 'A') return 11
@@ -53,21 +58,46 @@ const clone = (g) => ({
   dealer: g.dealer.slice(),
 })
 
-export function startGame(ids, now = Date.now(), rand = Math.random) {
-  return {
+// Fichas guardadas na conta (carteira); sem valor válido começa com START_CHIPS.
+const walletChips = (v) => (Number.isFinite(v) && v >= 0 ? Math.floor(v) : START_CHIPS)
+
+// opts.chips: fichas de cada um (vêm da carteira); opts.bots: ids dos bots;
+// opts.timed: false = sem tempo para as pessoas (sozinho contra a banca).
+export function startGame(ids, now = Date.now(), rand = Math.random, opts = {}) {
+  const { chips = {}, bots = [], timed = true } = opts
+  const g = {
     round: 0,
     order: ids,
+    bots,
+    timed,
     shoe: newShoe(rand),
-    chips: Object.fromEntries(ids.map((id) => [id, START_CHIPS])),
+    chips: Object.fromEntries(ids.map((id) => [id, bots.includes(id) ? START_CHIPS : walletChips(chips[id])])),
     bets: {},
     hands: {},
     dealer: [],
     phase: 'bet',
     turn: null,
-    deadline: now + BET_MS,
+    deadline: timed ? now + BET_MS : null,
     results: null,
     lastBet: {},
   }
+  return botsBet(g, now, rand)
+}
+
+// Os bots apostam logo (e recomeçam com fichas novas se ficarem sem nenhuma).
+function botsBet(g, now, rand) {
+  for (const id of g.bots || []) {
+    if (g.bets[id] != null) continue
+    if (g.chips[id] < MIN_BET) g.chips[id] = START_CHIPS
+    const options = [10, 25, 25, 50, 50, 100].filter((v) => v <= g.chips[id])
+    g.bets[id] = options[Math.floor(rand() * options.length)]
+  }
+  return maybeDeal(g, now, rand)
+}
+
+function turnDeadline(g, id, now) {
+  if (isBot(g, id)) return now + BOT_DELAY_MS
+  return g.timed === false ? null : now + TURN_MS
 }
 
 // ---------- Apostas ----------
@@ -124,7 +154,7 @@ function nextTurn(g, now, rand) {
     const h = hs.findIndex((x) => !x.done)
     if (h >= 0) {
       g.turn = { id, h }
-      g.deadline = now + TURN_MS
+      g.deadline = turnDeadline(g, id, now)
       return g
     }
   }
@@ -173,7 +203,7 @@ function act(game, id, type, now, rand) {
   } else {
     throw new Error('Jogada desconhecida.')
   }
-  return hand.done ? nextTurn(g, now, rand) : { ...g, deadline: now + TURN_MS }
+  return hand.done ? nextTurn(g, now, rand) : { ...g, deadline: turnDeadline(g, id, now) }
 }
 
 // ---------- Banca e pagamentos ----------
@@ -219,13 +249,13 @@ function finish(g, now, rand, dealerBlackjack = false) {
   return g
 }
 
-export function nextHand(game, now = Date.now()) {
+export function nextHand(game, now = Date.now(), rand = Math.random) {
   if (game.phase !== 'done') return game
   const g = clone(game)
   g.phase = 'bet'
   g.bets = {}
-  g.deadline = now + BET_MS
-  return g
+  g.deadline = g.timed === false ? null : now + BET_MS
+  return botsBet(g, now, rand)
 }
 
 // Fichas a fingir: quem fica sem fichas pode recomeçar com 1000.
@@ -245,7 +275,7 @@ export function applyAction(game, id, action, now = Date.now(), rand = Math.rand
     case 'split':
       return act(game, id, action.type, now, rand)
     case 'next':
-      return nextHand(game, now)
+      return nextHand(game, now, rand)
     case 'rebuy':
       return rebuy(game, id)
     default:
@@ -263,8 +293,25 @@ export function tick(game, now, rand = Math.random) {
     if (dealt.phase === 'bet') return { ...dealt, bets: {}, deadline: now + BET_MS } // ninguém apostou
     return dealt
   }
-  if (game.phase === 'play' && game.turn) return act(game, game.turn.id, 'stand', now, rand)
+  if (game.phase === 'play' && game.turn) {
+    const id = game.turn.id
+    return act(game, id, isBot(game, id) ? botMove(game, id) : 'stand', now, rand)
+  }
   return game
+}
+
+// Estratégia simples dos bots (perto da "estratégia básica").
+export function botMove(g, id) {
+  const hand = g.hands[id][g.turn.h]
+  const { total, soft } = handValue(hand.cards)
+  const up = cardValue(g.dealer[0])
+  if (canSplit(g, id) && ['A', '8'].includes(hand.cards[0].rank)) return 'split'
+  if (canDouble(g, id) && (total === 11 || (total === 10 && up < 10))) return 'double'
+  if (soft) return total >= 19 || (total === 18 && up <= 8) ? 'stand' : 'hit'
+  if (total >= 17) return 'stand'
+  if (total >= 13) return up <= 6 ? 'stand' : 'hit'
+  if (total === 12) return up >= 4 && up <= 6 ? 'stand' : 'hit'
+  return 'hit'
 }
 
 export const canDouble = (game, id) => {
@@ -280,8 +327,12 @@ export const blackjackOnline = {
   minPlayers: 1,
   maxPlayers: 5,
   tick: true,
+  tickMs: 300,
   start(players, action, now) {
-    return startGame(players.map((p) => p.id), now)
+    const humans = players.map((p) => p.id)
+    const nBots = Math.max(0, Math.min(MAX_SEATS - humans.length, Number(action.bots) || 0))
+    const bots = Array.from({ length: nBots }, (_, i) => `bot${i}`)
+    return startGame([...humans, ...bots], now, Math.random, { chips: action.chips || {}, bots })
   },
   reduce(game, action, fromId, { now }) {
     if (action.type === 'tick') return tick(game, now)

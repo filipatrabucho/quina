@@ -465,5 +465,23 @@ end;
 $$;
 grant execute on function public.admin_set_role(uuid, text) to authenticated;
 
+-- ---------- Carteira de fichas (a fingir) por jogo ----------
+-- O saldo do Blackjack passa de uma partida para a outra. É público (a mesa
+-- online mostra as fichas de todos) e cada um só escreve o seu.
+create table if not exists public.game_wallets (
+  user_id uuid not null references auth.users (id) on delete cascade,
+  game text not null check (game in ('blackjack')),
+  chips integer not null check (chips >= 0 and chips <= 100000000),
+  updated_at timestamptz not null default now(),
+  primary key (user_id, game)
+);
+alter table public.game_wallets enable row level security;
+drop policy if exists "carteiras: publicas" on public.game_wallets;
+create policy "carteiras: publicas" on public.game_wallets for select using (true);
+drop policy if exists "carteiras: criar a minha" on public.game_wallets;
+create policy "carteiras: criar a minha" on public.game_wallets for insert with check (user_id = auth.uid());
+drop policy if exists "carteiras: mudar a minha" on public.game_wallets;
+create policy "carteiras: mudar a minha" on public.game_wallets for update using (user_id = auth.uid()) with check (user_id = auth.uid());
+
 -- PRIMEIRA VEZ: torna-te admin (troca O_TEU_USERNAME pelo teu username e corre só esta linha):
 -- insert into public.staff (user_id, role) select id, 'admin' from public.profiles where username = 'O_TEU_USERNAME' on conflict (user_id) do update set role = 'admin';

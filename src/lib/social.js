@@ -290,3 +290,36 @@ export async function adminSetRole(userId, role) {
   const { error } = await supabase.rpc('admin_set_role', { p_user: userId, p_role: role })
   fail(error)
 }
+
+// ---- Carteira de fichas (a fingir) que passa de uma partida para a outra ----
+async function myUserId() {
+  const { data } = await supabase.auth.getSession()
+  const user = data.session?.user
+  return user && !user.is_anonymous ? user.id : null
+}
+
+// Fichas de cada id (só quem já tem carteira aparece).
+export async function getWallets(game, ids) {
+  const list = ids.filter((id) => /^[0-9a-f-]{36}$/i.test(id))
+  if (!list.length) return {}
+  const { data, error } = await supabase.from('game_wallets').select('user_id, chips').eq('game', game).in('user_id', list)
+  fail(error)
+  return Object.fromEntries(data.map((w) => [w.user_id, w.chips]))
+}
+
+// As minhas fichas, ou null se ainda não tiver carteira (ou não tiver conta).
+export async function getMyWallet(game) {
+  const id = await myUserId()
+  if (!id) return null
+  const w = await getWallets(game, [id])
+  return w[id] ?? null
+}
+
+export async function saveMyWallet(game, chips) {
+  const id = await myUserId()
+  if (!id || !Number.isFinite(chips) || chips < 0) return
+  const { error } = await supabase
+    .from('game_wallets')
+    .upsert({ user_id: id, game, chips: Math.floor(chips), updated_at: new Date().toISOString() })
+  fail(error)
+}
