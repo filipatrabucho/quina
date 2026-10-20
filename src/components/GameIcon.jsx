@@ -17,6 +17,8 @@ const THEMES = {
   emojis: '#FF7A59',
   colonos: '#B5651D',
   bombas: '#2E7D4F',
+  blackjack: '#14603C',
+  poker: '#7A1F2B',
 }
 
 function Art({ game }) {
@@ -199,6 +201,18 @@ function Art({ game }) {
             <polygon key={cx + cy} points={[0, 1, 2, 3, 4, 5].map((k) => { const a = ((60 * k - 90) * Math.PI) / 180; return `${(cx + 8.4 * Math.cos(a)).toFixed(2)},${(cy + 8.4 * Math.sin(a)).toFixed(2)}` }).join(' ')} fill={fill} stroke="#F4E6C3" strokeWidth="1.3" />
           ))}
           <path d="M20.5 26.5v-3.6l3.5-3 3.5 3v3.6z" fill="#fff" stroke="#3E2C17" strokeWidth="0.9" strokeLinejoin="round" />
+        </g>
+      )
+    case 'blackjack':
+      return (
+        <g fontFamily="'Barlow Condensed', Inter, sans-serif" fontWeight="700">
+          <rect x="9" y="12" width="17" height="24" rx="3" fill="#fff" transform="rotate(-12 17 24)" />
+          <text x="13" y="24" fontSize="10" fill="#15151C" transform="rotate(-12 17 24)">A</text>
+          <text x="15" y="33" fontSize="9" fill="#15151C" transform="rotate(-12 17 24)">♠</text>
+          <rect x="21" y="11" width="17" height="24" rx="3" fill="#fff" transform="rotate(10 30 23)" />
+          <text x="25" y="23" fontSize="10" fill="#D7263D" transform="rotate(10 30 23)">K</text>
+          <text x="27" y="32" fontSize="9" fill="#D7263D" transform="rotate(10 30 23)">♥</text>
+          <text x="24" y="44.5" textAnchor="middle" fontSize="7.5" fill="#FFD23F">21</text>
         </g>
       )
     case 'bombas':

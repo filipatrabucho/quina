@@ -158,6 +158,16 @@ export default function GamePreview({ game }) {
         </div>
       )
     }
+    case 'blackjack':
+      return (
+        <div className="pv pv-bj">
+          <div className="pv-bj__row">
+            <span className="pv-card">A<i>♠</i></span>
+            <span className="pv-card pv-card--red">K<i>♥</i></span>
+          </div>
+          <span className="pv-bj__val">21</span>
+        </div>
+      )
     case 'colonos':
       return (
         <div className="pv pv-colonos">

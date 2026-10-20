@@ -142,6 +142,22 @@ export const GUIDES = {
     tips: ['Guarda os coringas para o fim.', 'Fica atento a quem tem só uma carta e usa as cartas especiais nesse jogador.'],
     faq: [['Posso jogar sozinho?', 'Sim, contra 1 a 3 bots.']],
   },
+  blackjack: {
+    intro:
+      'O Blackjack (ou 21) é o jogo de cartas de casino mais conhecido: tenta fazer uma mão mais perto de 21 do que a banca, sem passar. Joga sozinho contra a banca ou senta-te numa mesa com até 5 amigos. As fichas são a fingir, não há dinheiro envolvido.',
+    rules: [
+      'As cartas de 2 a 10 valem o número, as figuras valem 10 e o Ás vale 11 ou 1 (o que der mais jeito).',
+      'Aposta antes de cada mão. Recebes 2 cartas e a banca mostra só uma das dela.',
+      'Pedir dá-te mais uma carta; Ficar passa a vez. Se passares de 21, rebentas e perdes a aposta.',
+      'Dobrar duplica a aposta e recebes só mais uma carta. Com duas cartas iguais podes Dividir em duas mãos.',
+      'A banca pede cartas até ter 17 ou mais. Ganhar paga 1 para 1 e o Blackjack (Ás + carta de 10) paga 3 para 2.',
+    ],
+    tips: ['Com 17 ou mais costuma ser melhor ficar.', 'Se a banca mostra 2 a 6, ela rebenta mais vezes: fica com mãos mais baixas.', 'Divide sempre ases e oitos; nunca dividas dez.'],
+    faq: [
+      ['É a dinheiro?', 'Não. As fichas são a fingir e, se ficares sem nenhuma, recomeças com 1000.'],
+      ['Quantos podem jogar na mesa?', 'Até 5 pessoas, cada uma contra a banca.'],
+    ],
+  },
   bombas: {
     intro:
       'O Bombas & Companhia é um jogo de arena para até 4 jogadores: anda pelo labirinto, põe bombas para rebentar as caixas de madeira, apanha os prémios escondidos e elimina os adversários antes que te apanhem a ti. Joga contra bots ou cria uma sala e convida os teus amigos.',

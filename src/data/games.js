@@ -24,6 +24,17 @@ export const GAMES = [
     beta: true,
   },
   {
+    key: 'blackjack',
+    to: '/blackjack',
+    title: 'Blackjack',
+    short: 'Blackjack',
+    description: 'Chega o mais perto de 21 sem passar e ganha à banca. Sozinho ou numa mesa com amigos, com fichas a fingir.',
+    tags: ['solo', 'online'],
+    players: '1 a 5',
+    badge: 'Beta',
+    beta: true,
+  },
+  {
     key: 'emojis',
     to: '/emoji-battle',
     title: 'Emoji Battle',
