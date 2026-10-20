@@ -557,5 +557,9 @@ end;
 $$;
 grant execute on function public.admin_play_stats(int) to authenticated;
 
+-- Avisa a API do Supabase de que há funções e tabelas novas (sem isto pode
+-- dar "Could not find the function ... in the schema cache").
+notify pgrst, 'reload schema';
+
 -- PRIMEIRA VEZ: torna-te admin (troca O_TEU_USERNAME pelo teu username e corre só esta linha):
 -- insert into public.staff (user_id, role) select id, 'admin' from public.profiles where username = 'O_TEU_USERNAME' on conflict (user_id) do update set role = 'admin';
