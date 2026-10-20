@@ -187,6 +187,60 @@ function DevCards({ game, meId, onAction, canPlay }) {
   )
 }
 
+const EVENT_ICON = { sete: '🎲', ladrao: '🦹', premio: '🏆', cavaleiro: '🛡️', estradas: '🛤️', fartura: '🌾', monopolio: '💰' }
+
+// Aviso grande em cima do mapa: 7, ladrão, cartas de desenvolvimento e prémios.
+function EventBanner({ game, meId, name, colorOf }) {
+  const ev = game.event
+  const [shown, setShown] = useState(null)
+  const firstSeq = useState(() => ev?.seq || 0)[0]
+  useEffect(() => {
+    if (!ev || ev.seq <= firstSeq) return undefined
+    setShown(ev)
+    const t = setTimeout(() => setShown((cur) => (cur?.seq === ev.seq ? null : cur)), 4000)
+    return () => clearTimeout(t)
+  }, [ev?.seq]) // eslint-disable-line react-hooks/exhaustive-deps
+  if (!shown) return null
+  const who = shown.by === meId ? 'Tu' : name(shown.by)
+  const me = shown.by === meId
+  let title = ''
+  let sub = ''
+  let icon = EVENT_ICON[shown.kind]
+  if (shown.kind === 'sete') {
+    title = `${who} ${me ? 'tiraste' : 'tirou'} um 7!`
+    sub = 'Quem tem mais de 7 cartas descarta metade e o ladrão vai mexer-se.'
+  } else if (shown.kind === 'ladrao') {
+    title = `${who} ${me ? 'moveste' : 'moveu'} o ladrão`
+    sub = !shown.victim
+      ? 'Esse terreno deixa de produzir.'
+      : me
+        ? `e roubaste uma carta a ${name(shown.victim)}`
+        : shown.victim === meId
+          ? 'e roubou-te uma carta!'
+          : `e roubou uma carta a ${name(shown.victim)}`
+  } else if (shown.kind === 'dev') {
+    icon = EVENT_ICON[shown.card]
+    title = `${who} ${me ? 'jogaste' : 'jogou'} ${DEV_NAME[shown.card]}`
+    if (shown.card === 'cavaleiro') sub = 'Vai mover o ladrão e roubar uma carta.'
+    if (shown.card === 'estradas') sub = 'Constrói 2 estradas grátis.'
+    const took = me ? 'Levaste' : 'Levou'
+    if (shown.card === 'fartura') sub = `${took} ${(shown.res || []).map((r) => RES_NAME[r]).join(' e ')} do banco.`
+    if (shown.card === 'monopolio') sub = `${took} todas as cartas de ${RES_NAME[shown.res]} (${shown.total}).`
+  } else if (shown.kind === 'premio') {
+    title = `${who} ${me ? 'ficaste' : 'ficou'} com ${shown.award === 'estrada' ? 'a Estrada mais longa' : 'o Maior exército'}`
+    sub = '+2 pontos'
+  }
+  return (
+    <div className={`col-event col-event--${shown.kind}`} role="status" data-testid="col-event" style={{ '--pc': colorOf(shown.by) }} key={shown.seq}>
+      <span className="col-event__icon" aria-hidden="true">{icon}</span>
+      <span className="col-event__text">
+        <b>{title}</b>
+        {sub && <small>{sub}</small>}
+      </span>
+    </div>
+  )
+}
+
 export function ColonosTable({ game, meId, people, onAction, isOnline }) {
   const [mode, setMode] = useState(null)
   const [trading, setTrading] = useState(false)
@@ -290,6 +344,7 @@ export function ColonosTable({ game, meId, people, onAction, isOnline }) {
       <div className="colonos__board">
         <DicePair dice={game.dice} rollKey={game.rollNo} total={game.dice ? game.dice[0] + game.dice[1] : 0} />
         <ColonosBoard game={game} colorOf={colorOf} targets={targets} onVertex={onVertex} onEdge={onEdge} onHex={onHex} />
+        <EventBanner game={game} meId={meId} name={name} colorOf={colorOf} />
         {robberHex != null && (
           <div className="col-modal col-modal--float" role="dialog">
             <p><strong>Roubar a quem?</strong></p>
@@ -419,9 +474,17 @@ export function ColonosTable({ game, meId, people, onAction, isOnline }) {
         </details>
 
         <ol className="col-log" data-testid="col-log">
-          {game.log.slice(-8).reverse().map((l, i) => (
-            <li key={game.log.length - i}><b style={{ color: colorOf(l.by) }}>{name(l.by)}</b> {fmt(l.msg)}</li>
-          ))}
+          {game.log
+            .map((l, i) => ({ ...l, key: i }))
+            .filter((l) => !l.only || l.only.includes(meId))
+            .slice(-10)
+            .reverse()
+            .map((l) => (
+              <li key={l.key} className={l.only ? 'col-log__private' : ''}>
+                {l.by && <b style={{ color: colorOf(l.by) }}>{name(l.by)}</b>} {fmt(l.msg)}
+                {l.only && <em title="Só tu vês isto"> (só tu vês)</em>}
+              </li>
+            ))}
         </ol>
       </aside>
 

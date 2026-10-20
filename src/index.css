@@ -3822,3 +3822,16 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
   .bo-hide-sm { display: none; }
 }
 .bomb-over__note { margin: -4px 0 0; color: #C9C6D6; font-size: 0.9rem; max-width: 360px; }
+/* Colonos: aviso grande em cima do mapa */
+.colonos__board { position: relative; }
+.col-event { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); z-index: 6; display: flex; align-items: center; gap: 12px; max-width: min(92%, 460px); padding: 12px 18px 12px 14px; border-radius: 16px; background: rgba(12, 12, 20, 0.92); border: 2px solid var(--pc, #fff); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55); color: #fff; pointer-events: none; animation: col-event-in 0.35s cubic-bezier(.2, 1.4, .4, 1), col-event-out 0.4s ease-in 3.6s forwards; }
+.col-event__icon { font-size: 2.2rem; line-height: 1; }
+.col-event__text { display: flex; flex-direction: column; gap: 2px; }
+.col-event__text b { font: 800 1.08rem var(--font-body); }
+.col-event__text small { color: #C9C6D6; font-size: 0.85rem; }
+.col-event--ladrao, .col-event--sete { border-color: #FF4655; }
+@keyframes col-event-in { from { transform: translate(-50%, -16px) scale(0.9); opacity: 0; } }
+@keyframes col-event-out { to { transform: translate(-50%, -10px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .col-event { animation: none; } }
+.col-log__private { color: #FFD23F; }
+.col-log__private em { font-style: normal; font-size: 0.75rem; color: #9A9AAB; }

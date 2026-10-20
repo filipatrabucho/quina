@@ -193,20 +193,25 @@ function updateLongestRoad(game) {
     const top = game.order.filter((id) => lengths[id] === max)
     next = max >= 5 && top.length === 1 ? top[0] : null
   }
-  const log = next !== holder && next ? [...game.log, { by: next, msg: `ficou com a Estrada mais longa (${max})` }] : game.log
-  return { ...game, roadLengths: lengths, awards: { ...game.awards, estrada: next }, log }
+  const updated = { ...game, roadLengths: lengths, awards: { ...game.awards, estrada: next } }
+  if (next === holder || !next) return updated
+  return event({ ...updated, log: [...game.log, { by: next, msg: `ficou com a Estrada mais longa (${max})` }] }, 'premio', next, { award: 'estrada', n: max })
 }
 
 function updateArmy(game, pid) {
   const holder = game.awards.exercito
   const k = game.knights[pid]
   if (k >= 3 && holder !== pid && (!holder || k > game.knights[holder])) {
-    return { ...game, awards: { ...game.awards, exercito: pid }, log: [...game.log, { by: pid, msg: `ficou com o Maior exército (${k})` }] }
+    return event({ ...game, awards: { ...game.awards, exercito: pid }, log: [...game.log, { by: pid, msg: `ficou com o Maior exército (${k})` }] }, 'premio', pid, { award: 'exercito', n: k })
   }
   return game
 }
 
-const log = (game, by, msg) => ({ ...game, log: [...game.log.slice(-40), { by, msg }] })
+// `only`: entrada privada (só esses jogadores a veem, ex.: a carta roubada).
+const log = (game, by, msg, only = null) => ({ ...game, log: [...game.log.slice(-60), only ? { by, msg, only } : { by, msg }] })
+// Acontecimento para o aviso grande em cima do mapa.
+const event = (game, kind, by, extra = {}) => ({ ...game, event: { seq: (game.event?.seq || 0) + 1, kind, by, ...extra } })
+const cardList = (cards) => RES.filter((r) => cards[r]).map((r) => `${cards[r]} ${RES_NAME[r]}`).join(', ')
 
 function checkWin(game) {
   const pid = currentPlayer(game)
@@ -244,7 +249,11 @@ function produce(game, total) {
       gains[id] = { ...(gains[id] || {}), [res]: n }
     }
   }
-  return { ...game, hands, gains }
+  let next = { ...game, hands, gains }
+  const ids = game.order.filter((id) => gains[id])
+  if (!ids.length) next = log(next, null, `Saiu ${total}: ninguém recebeu cartas`)
+  for (const id of ids) next = log(next, id, `recebeu ${cardList(gains[id])}`)
+  return next
 }
 
 // ---------- Ações ----------
@@ -283,6 +292,7 @@ export function roll(game, pid, rand = Math.random) {
   const total = dice[0] + dice[1]
   let next = log({ ...game, dice, rollNo: (game.rollNo || 0) + 1, gains: {} }, pid, `lançou ${total}`)
   if (total !== 7) return { ...produce(next, total), phase: 'main' }
+  next = event(next, 'sete', pid)
   const discards = {}
   for (const id of game.order) {
     const n = handSize(game.hands[id])
@@ -321,7 +331,12 @@ function moveRobber(game, pid, hex, victim, rand = Math.random) {
       losses: { seq: (game.losses?.seq || 0) + 1, kind: 'ladrao', by: pid, cards: { [victim]: { [card]: 1 } } },
     }
     next = log(next, pid, `moveu o ladrão e roubou uma carta a @${victim}`)
-  } else next = log(next, pid, 'moveu o ladrão')
+    next = log(next, pid, `roubou 1 ${RES_NAME[card]} a @${victim}`, [pid, victim])
+    next = event(next, 'ladrao', pid, { victim })
+  } else {
+    next = log(next, pid, 'moveu o ladrão')
+    next = event(next, 'ladrao', pid, { victim: null })
+  }
   return { ...next, phase: game.afterRobber || 'main', afterRobber: null }
 }
 
@@ -360,7 +375,7 @@ function buyDev(game, pid) {
   if (!hasCards(game.hands[pid], COSTS.desenvolvimento)) throw new Error('Não tens cartas suficientes.')
   const [card, ...devDeck] = game.devDeck
   const next = pay({ ...game, devDeck, devHands: { ...game.devHands, [pid]: [...game.devHands[pid], { ...card, turn: game.turnNo }] } }, pid, COSTS.desenvolvimento)
-  return log(next, pid, 'comprou uma carta de desenvolvimento')
+  return log(log(next, pid, 'comprou uma carta de desenvolvimento'), pid, `tirou a carta ${DEV_NAME[card.type]}`, [pid])
 }
 
 function playDev(game, pid, action) {
@@ -374,11 +389,11 @@ function playDev(game, pid, action) {
   switch (card.type) {
     case 'cavaleiro':
       next = { ...next, knights: { ...next.knights, [pid]: next.knights[pid] + 1 }, phase: 'robber', afterRobber: game.phase }
-      next = updateArmy(log(next, pid, 'jogou um Cavaleiro'), pid)
+      next = updateArmy(log(event(next, 'dev', pid, { card: 'cavaleiro' }), pid, 'jogou a carta Cavaleiro'), pid)
       return next
     case 'estradas': {
       const can = Math.min(2, PIECES.estrada - countPieces(game, pid, 'estrada'))
-      next = log(next, pid, 'jogou Construção de estradas')
+      next = log(event(next, 'dev', pid, { card: 'estradas' }), pid, 'jogou a carta Construção de estradas')
       return can > 0 && legalRoads(next, pid).length ? { ...next, phase: 'estradas', freeRoads: can } : next
     }
     case 'fartura': {
@@ -387,7 +402,8 @@ function playDev(game, pid, action) {
       const left = bank(game)
       const gain = emptyHand()
       for (const r of picks) if (left[r] - gain[r] > 0) gain[r]++
-      return log({ ...next, hands: { ...next.hands, [pid]: addCards(next.hands[pid], gain) } }, pid, `jogou Ano de fartura (${picks.map((r) => RES_NAME[r]).join(' e ')})`)
+      next = event(next, 'dev', pid, { card: 'fartura', res: picks })
+      return log({ ...next, hands: { ...next.hands, [pid]: addCards(next.hands[pid], gain) } }, pid, `jogou a carta Ano de fartura e levou ${picks.map((r) => RES_NAME[r]).join(' e ')}`)
     }
     case 'monopolio': {
       const r = action.res
@@ -403,7 +419,8 @@ function playDev(game, pid, action) {
       }
       hands[pid] = { ...hands[pid], [r]: hands[pid][r] + total }
       const losses = { seq: (game.losses?.seq || 0) + 1, kind: 'monopolio', by: pid, res: r, cards: taken }
-      return log({ ...next, hands, losses }, pid, `jogou Monopólio e levou ${total} de ${RES_NAME[r]}`)
+      next = event(next, 'dev', pid, { card: 'monopolio', res: r, total })
+      return log({ ...next, hands, losses }, pid, `jogou a carta Monopólio e levou ${total} ${RES_NAME[r]} (${Object.entries(taken).map(([id, c]) => `@${id} ${c[r]}`).join(', ') || 'ninguém tinha'})`)
     }
     default:
       throw new Error('Carta inválida.')
