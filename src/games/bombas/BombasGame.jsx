@@ -4,7 +4,7 @@ import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import Avatar from '../../components/Avatar.jsx'
 import { gameBreak } from '../../lib/ads.js'
 import { recordResultOnce } from '../../lib/social.js'
-import { W, H, COLORS, MAX, BOT_NAMES, idx, stepMs, startGame, nextRound, advance, applyInput, bombasOnline } from './bombasLogic.js'
+import { W, H, COLORS, MAX, BOT_NAMES, SUDDEN_VS_BOTS_MS, idx, stepMs, startGame, nextRound, advance, applyInput, bombasOnline } from './bombasLogic.js'
 
 const POWER_LABEL = { b: '+1 bomba', r: '+ alcance', s: '+ velocidade' }
 const KEYS = { ArrowUp: 'u', ArrowDown: 'd', ArrowLeft: 'l', ArrowRight: 'r', w: 'u', s: 'd', a: 'l', d: 'r', W: 'u', S: 'd', A: 'l', D: 'r' }
@@ -209,6 +209,7 @@ function Board({ game, meId, people, onAction, now, children }) {
                   ? 'Ganhaste a ronda!'
                   : `${name(game.winner)} ganhou a ronda`}
             </h3>
+            {game.skipped && <p className="bomb-over__note">Já não havia ninguém em jogo, por isso os bots acabaram a ronda num instante.</p>}
             {children}
           </div>
         )}
@@ -270,7 +271,7 @@ function VsBots() {
           data-testid="bomb-start"
           onClick={() => {
             const ids = ['tu', ...Array.from({ length: bots }, (_, i) => `bot${i}`)]
-            setGame(startGame(ids, ids.slice(1)))
+            setGame(startGame(ids, ids.slice(1), Date.now(), { suddenMs: SUDDEN_VS_BOTS_MS }))
           }}
         >
           Começar
@@ -345,7 +346,7 @@ const HELP = (
     <p>Anda pela arena com as <strong>setas</strong> (ou WASD) e põe bombas com <strong>Espaço</strong>. No telemóvel usa os botões no ecrã.</p>
     <p>As bombas explodem passado pouco tempo, em cruz. A explosão parte as caixas de madeira e elimina quem apanhar, incluindo tu!</p>
     <p>Dentro de algumas caixas há prémios: 💣 mais uma bomba de cada vez, 🔥 explosões mais compridas e 👟 mais velocidade.</p>
-    <p>Ganha a ronda quem ficar sozinho na arena. Aos 2 minutos começa a <strong>morte súbita</strong>: caem blocos de pedra em espiral e a arena vai fechando.</p>
+    <p>Ganha a ronda quem ficar sozinho na arena. Na <strong>morte súbita</strong> (1 minuto contra bots, 2 minutos online) caem blocos de pedra em espiral e a arena vai fechando.</p>
   </>
 )
 

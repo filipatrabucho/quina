@@ -62,7 +62,7 @@ function makeGrid() {
   return { grid: cells.join(''), hidden }
 }
 
-function newRound(ids, bots, score, round, now) {
+function newRound(ids, bots, score, round, now, suddenMs = SUDDEN_MS) {
   const { grid, hidden } = makeGrid()
   const players = {}
   ids.forEach((id, i) => {
@@ -80,9 +80,10 @@ function newRound(ids, bots, score, round, now) {
     flames: [],
     nextBomb: 1,
     startedAt: now,
-    suddenAt: now + SUDDEN_MS,
+    suddenMs,
+    suddenAt: now + suddenMs,
     dropped: 0,
-    endsAt: now + ROUND_MS,
+    endsAt: now + suddenMs + (ROUND_MS - SUDDEN_MS),
     over: false,
     winner: null,
     score,
@@ -91,14 +92,17 @@ function newRound(ids, bots, score, round, now) {
 
 export const BOT_NAMES = ['Bot Rita', 'Bot Zé', 'Bot Inês']
 
-export function startGame(ids, bots = [], now = Date.now()) {
+// Contra bots a morte súbita começa mais cedo (rondas mais curtas).
+export const SUDDEN_VS_BOTS_MS = 60000
+
+export function startGame(ids, bots = [], now = Date.now(), { suddenMs = SUDDEN_MS } = {}) {
   const score = Object.fromEntries(ids.map((id) => [id, 0]))
-  return newRound(ids, bots, score, 1, now)
+  return newRound(ids, bots, score, 1, now, suddenMs)
 }
 
 export function nextRound(game, now = Date.now()) {
   const bots = game.order.filter((id) => game.players[id].bot)
-  return newRound(game.order, bots, game.score, game.round + 1, now)
+  return newRound(game.order, bots, game.score, game.round + 1, now, game.suddenMs || SUDDEN_MS)
 }
 
 const bombAt = (g, x, y) => g.bombs.find((b) => b.x === x && b.y === y)
@@ -347,10 +351,13 @@ function botThink(g, id, now) {
   }
   // 3. Ir buscar prémios, depois caixas ou adversários, sem entrar em casas perigosas.
   const safe = (x, y) => !times.has(idx(x, y))
+  const nearEnemy = (x, y) => g.order.some((o) => o !== id && g.players[o].alive && Math.abs(g.players[o].x - x) + Math.abs(g.players[o].y - y) <= 1)
   const target =
     bfs(g, p.x, p.y, (x, y) => !!g.powers[idx(x, y)], safe, 10) ||
+    // Vai atrás de um adversário que esteja perto (mais agressivo).
+    (Math.random() < 0.6 && bfs(g, p.x, p.y, nearEnemy, safe, 10)) ||
     bfs(g, p.x, p.y, (x, y) => Object.values(DIRS).some(([dx, dy]) => cellAt(g, x + dx, y + dy) === '+'), safe) ||
-    bfs(g, p.x, p.y, (x, y) => g.order.some((o) => o !== id && g.players[o].alive && Math.abs(g.players[o].x - x) + Math.abs(g.players[o].y - y) <= 1), safe)
+    bfs(g, p.x, p.y, nearEnemy, safe)
   if (target && Math.random() < 0.9) {
     p.dir = target
     return
@@ -361,9 +368,8 @@ function botThink(g, id, now) {
 }
 
 // ---------- Avanço do tempo ----------
-export function advance(game, now) {
-  if (game.over) return game
-  const g = clone(game)
+// Um passo do mundo (altera `g`); devolve se mudou algo visível.
+function step(g, now) {
   let changed = false
   const bombsBefore = g.bombs.length
   for (const id of g.order) if (g.players[id].bot) botThink(g, id, now)
@@ -378,6 +384,23 @@ export function advance(game, now) {
   const wasOver = g.over
   checkEnd(g, now)
   if (g.over !== wasOver) changed = true
+  return changed
+}
+
+export function advance(game, now) {
+  if (game.over) return game
+  const g = clone(game)
+  let changed = step(g, now)
+  // Já não há pessoas vivas (só bots): não vale a pena ficar a ver.
+  // Simula o resto da ronda de uma vez para saber quem ganha.
+  const humans = g.order.filter((id) => !g.players[id].bot)
+  if (!g.over && humans.length && humans.every((id) => !g.players[id].alive)) {
+    for (let t = now + 100; !g.over && t <= g.endsAt + 1000; t += 100) step(g, t)
+    g.bombs = []
+    g.flames = []
+    g.skipped = true
+    changed = true
+  }
   // As mudanças de direção dos bots só contam se mexerem em algo visível.
   return changed ? g : game
 }

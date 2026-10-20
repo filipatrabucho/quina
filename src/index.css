@@ -3821,3 +3821,4 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
   .bo-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bo-hide-sm { display: none; }
 }
+.bomb-over__note { margin: -4px 0 0; color: #C9C6D6; font-size: 0.9rem; max-width: 360px; }

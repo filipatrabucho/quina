@@ -150,7 +150,7 @@ export const GUIDES = {
       'Cada bomba explode passado pouco mais de 2 segundos, em cruz. A explosão para nas paredes de pedra e parte a primeira caixa que encontrar.',
       'Quem for apanhado pela explosão (incluindo quem pôs a bomba) sai da ronda. Uma explosão faz rebentar as bombas que apanhar.',
       'Algumas caixas escondem prémios: 💣 mais uma bomba de cada vez, 🔥 explosões mais compridas e 👟 mais velocidade.',
-      'Ganha a ronda o último que ficar na arena. Aos 2 minutos começa a morte súbita: caem blocos de pedra em espiral e a arena vai fechando.',
+      'Ganha a ronda o último que ficar na arena. Na morte súbita (ao fim de 1 minuto contra bots e de 2 minutos online) caem blocos de pedra em espiral e a arena vai fechando.',
     ],
     tips: [
       'Antes de pores uma bomba, vê para onde vais fugir: os corredores sem saída são armadilhas.',

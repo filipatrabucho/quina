@@ -146,3 +146,17 @@ test('morte súbita: a arena fecha em espiral e esmaga quem lá estiver', async 
   h = advance(h, SUDDEN_MS + DROP_MS * 200)
   assert.equal(h.over, true)
 })
+
+test('contra bots: a morte súbita começa mais cedo e a ronda acaba logo quando a pessoa é eliminada', async () => {
+  const { SUDDEN_VS_BOTS_MS } = await import('../src/games/bombas/bombasLogic.js')
+  let g = startGame(['tu', 'b0', 'b1'], ['b0', 'b1'], 0, { suddenMs: SUDDEN_VS_BOTS_MS })
+  assert.equal(g.suddenAt, SUDDEN_VS_BOTS_MS)
+  assert.equal(nextRound(g, 1000).suddenAt, 1000 + SUDDEN_VS_BOTS_MS, 'a ronda seguinte mantém o tempo')
+  // a pessoa fica no meio de uma explosão
+  g = { ...g, bombs: [{ id: 50, x: g.players.tu.x, y: g.players.tu.y, owner: 'b0', at: 100, range: 1 }] }
+  g = advance(g, 100)
+  assert.equal(g.players.tu.alive, false)
+  assert.equal(g.over, true, 'não fica à espera dos bots')
+  assert.equal(g.skipped, true)
+  assert.notEqual(g.winner, 'tu')
+})
