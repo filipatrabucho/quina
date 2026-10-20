@@ -89,7 +89,7 @@ function ResourceArt({ res }) {
 }
 
 // Carta de recurso. size: 'lg' (mão), 'md', 'xs' (ícone nos textos).
-export function ResourceCard({ res, n, size = 'md', dim = false, pop = 0, label = true }) {
+export function ResourceCard({ res, n, size = 'md', dim = false, pop = 0, loss = 0, lossKey = 0, label = true }) {
   const [a, b] = CARD_BG[res]
   return (
     <span
@@ -102,6 +102,7 @@ export function ResourceCard({ res, n, size = 'md', dim = false, pop = 0, label 
       {label && size !== 'xs' && <span className="rcard__name">{RES_NAME[res]}</span>}
       {n != null && n !== '' && size !== 'xs' && <b className="rcard__count">{n}</b>}
       {pop > 0 && <span key={pop} className="rcard__pop">+{pop}</span>}
+      {loss > 0 && <span key={`l${lossKey}`} className="rcard__pop rcard__pop--loss">−{loss}</span>}
     </span>
   )
 }

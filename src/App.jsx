@@ -52,7 +52,7 @@ export default function App() {
         <Route path="99" element={game(<NoventaGame />)} />
         <Route path="2-verdades-1-mentira" element={game(<VerdadesGame />)} />
         <Route path="continua-a-frase" element={game(<FraseGame />)} />
-        <Route path="bombas" element={game(<BombasGame />)} />
+        <Route path="bombas" element={<BetaGate game="bombas">{game(<BombasGame />)}</BetaGate>} />
         <Route path="emoji-battle" element={game(<EmojisGame />)} />
         <Route path="colonos" element={<BetaGate game="colonos">{game(<ColonosGame />)}</BetaGate>} />
         <Route path="conta" element={page(<Conta />)} />

@@ -3773,3 +3773,10 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
 @media (hover: none), (max-width: 760px) { .bomb-hint--keys { display: none; } .bomb-hint--touch { display: inline; } }
 /* No PC a arena cabe na altura do ecrã (com o placar e os botões). */
 @media (min-width: 761px) { .bomb-game { max-width: min(760px, calc((100vh - 340px) * 13 / 11)); min-width: 420px; } }
+.rcard__pop--loss { color: #FF6B6B; }
+.col-alert { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 10px; background: rgba(47, 191, 113, 0.14); border: 1px solid rgba(47, 191, 113, 0.5); color: #fff; font-size: 0.9rem; line-height: 1.4; animation: col-alert-in 0.25s ease-out; }
+.col-alert--loss { background: rgba(255, 70, 85, 0.14); border-color: rgba(255, 70, 85, 0.6); }
+.col-alert span { flex: 1; }
+.col-alert__close { border: 0; background: none; color: var(--stone); font-size: 1.2rem; line-height: 1; cursor: pointer; padding: 0 2px; }
+@keyframes col-alert-in { from { transform: translateY(-6px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .col-alert { animation: none; } }

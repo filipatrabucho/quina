@@ -8,8 +8,9 @@ import { CATEGORIES, GameSearch } from '../components/Sidebar.jsx'
 import { useAuth } from '../hooks/useAuth.js'
 
 const MODE_LABEL = { online: 'Multiplayer', bot: 'vs Bot', solo: 'Solo', diario: 'Diário' }
-// Os jogos grandes do topo.
-const FEATURED = ['bombas', 'emojis', 'stop']
+// Os jogos grandes do topo: os 3 primeiros desta lista que a pessoa pode ver
+// (o Bombas está em beta e só aparece aos testers).
+const FEATURED_PICKS = ['bombas', 'emojis', 'stop', 'palavras']
 // Quantas miniaturas antes do anúncio a meio da grelha.
 const BEFORE_AD = 6
 
@@ -66,8 +67,8 @@ export default function Hub() {
     (g) => (!category || g.tags.includes(category)) && (!q || normalize(`${g.title} ${g.short} ${g.description}`).includes(q)),
   )
   const browsing = !category && !q
-  const big = browsing ? FEATURED.map((k) => games.find((g) => g.key === k)).filter(Boolean) : []
-  const rest = browsing ? list.filter((g) => !FEATURED.includes(g.key)) : list
+  const big = browsing ? FEATURED_PICKS.map((k) => games.find((g) => g.key === k)).filter(Boolean).slice(0, 3) : []
+  const rest = browsing ? list.filter((g) => !big.includes(g)) : list
   const current = CATEGORIES.find((c) => c.key === category)
   const count = (key) => (key ? games.filter((g) => g.tags.includes(key)).length : games.length)
 

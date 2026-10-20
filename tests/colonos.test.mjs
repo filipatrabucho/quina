@@ -107,6 +107,11 @@ test('colonos: 7 obriga a descartar metade e o ladrão rouba uma carta', () => {
     assert.equal(L.handSize(after.hands.b), before - 1)
     assert.equal(L.handSize(after.hands.a), 3)
     assert.equal(after.phase, 'main')
+    // fica registado o que a vítima perdeu, para lhe mostrar o aviso
+    assert.equal(after.losses.kind, 'ladrao')
+    assert.equal(after.losses.by, 'a')
+    assert.deepEqual(after.losses.cards, { b: { trigo: 1 } })
+    assert.equal(after.losses.seq, (g.losses?.seq || 0) + 1)
   }
 })
 
@@ -206,4 +211,14 @@ test('colonos: partidas inteiras entre bots acabam com alguém nos 10 pontos', (
       assert.ok(L.countPieces(g, id, 'aldeia') <= 5 && L.countPieces(g, id, 'cidade') <= 4 && L.countPieces(g, id, 'estrada') <= 15)
     }
   }
+})
+
+test('colonos: Monopólio regista quanto cada jogador perdeu', () => {
+  let g = quickGame(['a', 'b', 'c'])
+  g = { ...g, phase: 'main', hands: { a: hand({}), b: hand({ la: 3, trigo: 1 }), c: hand({ madeira: 2 }) }, devHands: { a: [{ id: 95, type: 'monopolio', turn: -1 }], b: [], c: [] } }
+  g = L.applyAction(g, 'a', { type: 'playDev', card: 'monopolio', res: 'la' })
+  assert.equal(g.hands.a.la, 3)
+  assert.equal(g.hands.b.la, 0)
+  assert.equal(g.losses.kind, 'monopolio')
+  assert.deepEqual(g.losses.cards, { b: { la: 3 } }, 'quem não tinha lã não aparece')
 })

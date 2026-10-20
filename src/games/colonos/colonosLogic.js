@@ -317,6 +317,8 @@ function moveRobber(game, pid, hex, victim, rand = Math.random) {
       ...next,
       hands: { ...next.hands, [victim]: { ...hand, [card]: hand[card] - 1 }, [pid]: { ...next.hands[pid], [card]: next.hands[pid][card] + 1 } },
       lastSteal: { by: pid, from: victim, res: card, turnNo: game.turnNo },
+      // Cartas que alguém perdeu sem ser por troca (para avisar no ecrã).
+      losses: { seq: (game.losses?.seq || 0) + 1, kind: 'ladrao', by: pid, cards: { [victim]: { [card]: 1 } } },
     }
     next = log(next, pid, `moveu o ladrão e roubou uma carta a @${victim}`)
   } else next = log(next, pid, 'moveu o ladrão')
@@ -392,13 +394,16 @@ function playDev(game, pid, action) {
       if (!RES.includes(r)) throw new Error('Escolhe um recurso.')
       let total = 0
       const hands = { ...next.hands }
+      const taken = {}
       for (const id of game.order) {
         if (id === pid) continue
         total += hands[id][r]
+        if (hands[id][r]) taken[id] = { [r]: hands[id][r] }
         hands[id] = { ...hands[id], [r]: 0 }
       }
       hands[pid] = { ...hands[pid], [r]: hands[pid][r] + total }
-      return log({ ...next, hands }, pid, `jogou Monopólio e levou ${total} de ${RES_NAME[r]}`)
+      const losses = { seq: (game.losses?.seq || 0) + 1, kind: 'monopolio', by: pid, res: r, cards: taken }
+      return log({ ...next, hands, losses }, pid, `jogou Monopólio e levou ${total} de ${RES_NAME[r]}`)
     }
     default:
       throw new Error('Carta inválida.')

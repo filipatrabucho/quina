@@ -198,6 +198,21 @@ export function ColonosTable({ game, meId, people, onAction, isOnline }) {
   const hand = game.hands[meId]
   const seated = game.order.includes(meId)
 
+  // Aviso quando perco cartas sem ser por troca (ladrão, Monopólio). Fica
+  // visível uns segundos e não aparece outra vez ao voltar à página.
+  const lossSeq = game.losses?.seq || 0
+  const [shownSeq, setShownSeq] = useState(lossSeq)
+  const [recentLoss, setRecentLoss] = useState(false)
+  useEffect(() => {
+    if (lossSeq <= shownSeq) return undefined
+    setShownSeq(lossSeq)
+    const L = game.losses
+    if (!L?.cards?.[meId] && L?.by !== meId) return undefined
+    setRecentLoss(true)
+    const t = setTimeout(() => setRecentLoss(false), 9000)
+    return () => clearTimeout(t)
+  }, [lossSeq]) // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     setMode(null)
     setRobberHex(null)
@@ -252,6 +267,21 @@ export function ColonosTable({ game, meId, people, onAction, isOnline }) {
     (kind === 'estrada' ? legalRoads(game, meId).length > 0 : kind === 'aldeia' ? legalSettlements(game, meId).length > 0 : kind === 'cidade' ? legalCities(game, meId).length > 0 : true)
 
   const fmt = (msg) => msg.replace(/@([\w-]+)/g, (_, id) => name(id))
+  const lost = recentLoss && game.losses?.cards?.[meId]
+  const lostText = (() => {
+    const L = game.losses
+    if (!recentLoss || !L) return ''
+    const list = (cards) => RES.filter((r) => cards?.[r]).map((r) => `${cards[r]} ${RES_NAME[r]}`).join(' e ')
+    if (L.kind === 'ladrao') {
+      if (L.by === meId) {
+        const [victim, cards] = Object.entries(L.cards)[0] || []
+        return victim ? `Roubaste ${list(cards)} a ${name(victim)}.` : ''
+      }
+      return lost ? `Saiu 7: ${name(L.by)} moveu o ladrão e roubou-te ${list(lost)}.` : ''
+    }
+    if (L.kind === 'monopolio' && lost) return `${name(L.by)} jogou a carta Monopólio e levou-te ${list(lost)}.`
+    return ''
+  })()
   const offer = game.offer
   const respondable = offer && offer.from !== meId && seated && !game.winner
 
@@ -274,6 +304,12 @@ export function ColonosTable({ game, meId, people, onAction, isOnline }) {
       </div>
 
       <aside className="colonos__side">
+        {lostText && (
+          <div className={`col-alert${lost ? ' col-alert--loss' : ''}`} role="status" data-testid="col-loss">
+            <span>{lostText}</span>
+            <button type="button" className="col-alert__close" onClick={() => setRecentLoss(false)} aria-label="Fechar">×</button>
+          </div>
+        )}
         <p className={`col-status${myTurn ? ' col-status--me' : ''}`} data-testid="col-status">{status}</p>
 
         <div className="col-players">
@@ -305,7 +341,7 @@ export function ColonosTable({ game, meId, people, onAction, isOnline }) {
         {seated && (
           <div className="col-hand" data-testid="col-hand">
             {RES.map((r) => (
-              <ResourceCard key={r} res={r} n={hand[r]} size="lg" dim={!hand[r]} pop={game.gains?.[meId]?.[r] ? game.gains[meId][r] : 0} />
+              <ResourceCard key={r} res={r} n={hand[r]} size="lg" dim={!hand[r]} pop={game.gains?.[meId]?.[r] ? game.gains[meId][r] : 0} loss={lost?.[r] || 0} lossKey={lossSeq} />
             ))}
           </div>
         )}
