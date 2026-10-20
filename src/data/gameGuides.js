@@ -142,6 +142,22 @@ export const GUIDES = {
     tips: ['Guarda os coringas para o fim.', 'Fica atento a quem tem só uma carta e usa as cartas especiais nesse jogador.'],
     faq: [['Posso jogar sozinho?', 'Sim, contra 1 a 3 bots.']],
   },
+  poker: {
+    intro:
+      "O Poker Texas Hold'em é a variante de poker mais jogada no mundo. Aqui jogas em formato torneio: todos começam com as mesmas fichas (a fingir), as blinds vão subindo e ganha quem ficar com todas as fichas. Joga contra bots ou monta uma mesa com até 6 amigos.",
+    rules: [
+      'Cada jogador recebe 2 cartas fechadas. Na mesa aparecem 5 cartas comunitárias: 3 no flop, 1 no turn e 1 no river.',
+      'Há uma ronda de apostas antes do flop e depois de cada fase. Podes desistir, passar (sem aposta), pagar ou aumentar.',
+      'Os dois jogadores à esquerda do dealer põem as blinds (apostas obrigatórias). Sobem de 6 em 6 mãos.',
+      'No fim, ganha a melhor mão de 5 cartas entre as tuas 2 e as 5 da mesa. Se todos os outros desistirem, ganhas sem mostrar.',
+      'Quem faz all-in só pode ganhar o que conseguiu cobrir; o resto vai para potes laterais.',
+    ],
+    tips: ['Joga poucas mãos antes do flop, mas joga-as com força.', 'A posição conta: agir depois dos outros dá-te mais informação.', 'Quando as blinds sobem, as fichas valem menos: não esperes demasiado.'],
+    faq: [
+      ['Qual é a ordem das mãos?', 'Da mais forte para a mais fraca: sequência de cor, póquer, full house, cor, sequência, trio, dois pares, par e carta alta.'],
+      ['É a dinheiro?', 'Não, as fichas são a fingir.'],
+    ],
+  },
   blackjack: {
     intro:
       'O Blackjack (ou 21) é o jogo de cartas de casino mais conhecido: tenta fazer uma mão mais perto de 21 do que a banca, sem passar. Joga sozinho contra a banca ou senta-te numa mesa com até 5 amigos. As fichas são a fingir, não há dinheiro envolvido.',

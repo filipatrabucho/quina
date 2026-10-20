@@ -35,6 +35,17 @@ export const GAMES = [
     beta: true,
   },
   {
+    key: 'poker',
+    to: '/poker',
+    title: 'Poker',
+    short: 'Poker',
+    description: "Torneio de Texas Hold'em: blinds a subir, all-ins e bluffs. Contra bots ou numa mesa com amigos, com fichas a fingir.",
+    tags: ['bot', 'online'],
+    players: '2 a 6',
+    badge: 'Beta',
+    beta: true,
+  },
+  {
     key: 'emojis',
     to: '/emoji-battle',
     title: 'Emoji Battle',

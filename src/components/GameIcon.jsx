@@ -215,6 +215,16 @@ function Art({ game }) {
           <text x="24" y="44.5" textAnchor="middle" fontSize="7.5" fill="#FFD23F">21</text>
         </g>
       )
+    case 'poker':
+      return (
+        <g>
+          <circle cx="16" cy="31" r="9" fill="#F2B53B" stroke="#fff" strokeWidth="2" strokeDasharray="3 2.6" />
+          <circle cx="16" cy="31" r="4.4" fill="#fff" fillOpacity="0.35" />
+          <rect x="20" y="9" width="17" height="24" rx="3" fill="#fff" transform="rotate(12 28 21)" />
+          <text x="28" y="25" textAnchor="middle" fontSize="13" fill="#15151C" transform="rotate(12 28 21)" fontFamily="Inter, sans-serif">♠</text>
+          <text x="23.5" y="17" fontSize="7" fontWeight="700" fill="#15151C" transform="rotate(12 28 21)" fontFamily="'Barlow Condensed', Inter, sans-serif">A</text>
+        </g>
+      )
     case 'bombas':
       return (
         <g>
