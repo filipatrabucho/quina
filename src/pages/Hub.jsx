@@ -10,7 +10,7 @@ import { useAuth } from '../hooks/useAuth.js'
 const MODE_LABEL = { online: 'Multiplayer', bot: 'vs Bot', solo: 'Solo', diario: 'Diário' }
 // Os jogos grandes do topo: os 3 primeiros desta lista que a pessoa pode ver
 // (o Bombas está em beta e só aparece aos testers).
-const FEATURED_PICKS = ['bombas', 'emojis', 'stop', 'palavras']
+const FEATURED_PICKS = ['sueca', 'bombas', 'emojis', 'stop', 'palavras']
 // Quantas miniaturas antes do anúncio a meio da grelha.
 const BEFORE_AD = 6
 

@@ -4026,3 +4026,77 @@ span.pcard { display: inline-block; }
 .bo-bar__tip b { color: var(--ink); }
 .bo-bar:hover .bo-bar__tip, .bo-bar:focus .bo-bar__tip { display: block; }
 .bo-bars__axis { display: flex; justify-content: space-between; font-size: 0.72rem; color: #77778A; }
+
+/* ---------- Sueca ---------- */
+.sk-wrap { width: 100%; max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.sk-score { display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%; }
+.sk-score__team { display: flex; flex-direction: column; align-items: center; min-width: 74px; padding: 6px 12px; border-radius: 12px; background: var(--white); border: 1px solid var(--stone-light); }
+.sk-score__team small { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone); }
+.sk-score__team b { font: 800 1.6rem var(--font-body); line-height: 1.1; }
+.sk-score__team--us { border-color: rgba(46, 197, 255, 0.55); }
+.sk-score__mid { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 0.78rem; color: var(--stone); text-align: center; }
+.sk-trump { font-size: 0.85rem; color: var(--ink); }
+.sk-red { color: #FF6B78; }
+.sk-table { position: relative; width: 100%; aspect-ratio: 16 / 10; min-height: 360px; }
+.sk-felt { position: absolute; inset: 13% 10%; border-radius: 50% / 45%; background: radial-gradient(ellipse at 50% 35%, #1F7A4D 0%, #14583A 65%, #0D3F29 100%); border: 10px solid #5A3A1E; box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.45), 0 18px 40px rgba(0, 0, 0, 0.5); }
+.sk-trick { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+.sk-trick__card { position: absolute; transform: translate(-50%, -50%); transition: transform 0.2s; animation: sk-in 0.22s ease-out; }
+@keyframes sk-in { from { opacity: 0; } to { opacity: 1; } }
+.sk-trick__card .pcard { width: 58px; height: 84px; box-shadow: -2px 4px 10px rgba(0, 0, 0, 0.45); }
+.sk-trick__card--bottom { transform: translate(-50%, -12%); }
+.sk-trick__card--top { transform: translate(-50%, -88%); }
+.sk-trick__card--left { transform: translate(-125%, -50%); }
+.sk-trick__card--right { transform: translate(25%, -50%); }
+.sk-trick__card--win .pcard { outline: 3px solid #FFD23F; outline-offset: 1px; }
+.sk-points { position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%); display: flex; gap: 12px; padding: 2px 12px; border-radius: 999px; background: rgba(0, 0, 0, 0.35); color: #fff; font-size: 0.8rem; white-space: nowrap; }
+.sk-points b { color: #FFD23F; }
+.sk-seat { position: absolute; display: flex; flex-direction: column; align-items: center; gap: 4px; z-index: 2; }
+.sk-seat--bottom { left: 50%; bottom: 0; transform: translateX(-50%); }
+.sk-seat--top { left: 50%; top: 0; transform: translateX(-50%); }
+.sk-seat--left { left: 0; top: 50%; transform: translateY(-50%); }
+.sk-seat--right { right: 0; top: 50%; transform: translateY(-50%); }
+.sk-seat--top .sk-backs { order: 2; }
+.sk-backs { display: flex; height: 30px; }
+.sk-back { width: 18px; height: 28px; border-radius: 3px; border: 1px solid rgba(255, 255, 255, 0.5); background: repeating-linear-gradient(45deg, #8E1F2B 0 3px, #B02A37 3px 6px); }
+.sk-back + .sk-back { margin-left: -11px; }
+.sk-plate { position: relative; display: flex; align-items: center; gap: 7px; padding: 4px 12px 4px 4px; border-radius: 999px; background: rgba(12, 12, 20, 0.92); border: 2px solid #2E2E3C; color: #fff; white-space: nowrap; }
+.sk-plate__info { display: flex; flex-direction: column; line-height: 1.15; }
+.sk-plate__info b { font-size: 0.84rem; max-width: 96px; overflow: hidden; text-overflow: ellipsis; }
+.sk-plate__info small { font-size: 0.7rem; color: var(--stone); }
+.sk-seat--turn .sk-plate { border-color: #FFD23F; box-shadow: 0 0 0 3px rgba(255, 210, 63, 0.25); }
+.sk-dealer { position: absolute; top: -8px; right: -8px; width: 20px; height: 20px; border-radius: 50%; background: #fff; color: #15151C; font: 800 0.7rem var(--font-body); display: flex; align-items: center; justify-content: center; }
+.sk-trump-card .pcard--small { width: 30px; height: 44px; }
+.sk-trump-card .pcard--small .pcard__suit { font-size: 0.9rem; }
+.sk-trump-card .pcard--small .pcard__corner--br { display: none; }
+.sk-hand { display: flex; justify-content: center; flex-wrap: nowrap; padding: 6px 4px 2px; max-width: 100%; }
+.sk-card { padding: 0; border: 0; background: none; cursor: default; transition: transform 0.12s; }
+.sk-card + .sk-card { margin-left: -18px; }
+.sk-card .pcard { box-shadow: -2px 4px 10px rgba(0, 0, 0, 0.45); }
+.sk-hand--turn .sk-card--legal { cursor: pointer; }
+.sk-hand--turn .sk-card--legal:hover, .sk-hand--turn .sk-card--legal:focus-visible { transform: translateY(-10px); }
+.sk-hand--turn .sk-card--legal .pcard { outline: 2px solid rgba(255, 210, 63, 0.7); }
+.sk-card:disabled { cursor: default; }
+.sk-status { margin: 0; min-height: 1.4em; text-align: center; }
+.sk-end { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 16px; border-radius: 12px; background: var(--white); border: 1px solid var(--stone-light); text-align: center; }
+.sk-end--win b { color: #2FBF71; }
+.sk-end--lose b { color: #FF6B6B; }
+.sk-end span { font-size: 0.88rem; color: var(--stone); }
+.sk-log { list-style: none; margin: 0; padding: 0; width: 100%; max-width: 620px; font-size: 0.82rem; color: var(--stone); }
+.sk-log li:first-child { color: var(--ink); }
+@media (max-width: 640px) {
+  .sk-table { aspect-ratio: 1 / 1; min-height: 320px; }
+  .sk-felt { inset: 16% 14%; border-width: 6px; }
+  .sk-trick__card .pcard { width: 44px; height: 64px; }
+  .sk-trick__card .pcard .pcard__corner--br { display: none; }
+  .sk-plate { padding-right: 8px; }
+  .sk-plate__info b { max-width: 58px; }
+  .sk-plate__info small { display: none; }
+  .sk-back { width: 13px; height: 20px; }
+  .sk-back + .sk-back { margin-left: -9px; }
+  .sk-backs { height: 22px; }
+  .sk-seat--left .sk-backs, .sk-seat--right .sk-backs { display: none; }
+  .sk-hand .pcard { width: 40px; height: 60px; }
+  .sk-hand .pcard .pcard__suit { font-size: 1rem; }
+  .sk-hand .pcard .pcard__corner--br { display: none; }
+  .sk-card + .sk-card { margin-left: -6px; }
+}

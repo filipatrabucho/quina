@@ -19,6 +19,7 @@ const THEMES = {
   bombas: '#2E7D4F',
   blackjack: '#14603C',
   poker: '#7A1F2B',
+  sueca: '#1E5AA8',
 }
 
 function Art({ game }) {
@@ -223,6 +224,20 @@ function Art({ game }) {
           <rect x="20" y="9" width="17" height="24" rx="3" fill="#fff" transform="rotate(12 28 21)" />
           <text x="28" y="25" textAnchor="middle" fontSize="13" fill="#15151C" transform="rotate(12 28 21)" fontFamily="Inter, sans-serif">♠</text>
           <text x="23.5" y="17" fontSize="7" fontWeight="700" fill="#15151C" transform="rotate(12 28 21)" fontFamily="'Barlow Condensed', Inter, sans-serif">A</text>
+        </g>
+      )
+    case 'sueca':
+      return (
+        <g fontFamily="'Barlow Condensed', Inter, sans-serif" fontWeight="700">
+          <rect x="7" y="13" width="15" height="22" rx="2.5" fill="#fff" transform="rotate(-16 14 24)" />
+          <text x="10.5" y="23" fontSize="9" fill="#15151C" transform="rotate(-16 14 24)">7</text>
+          <text x="11" y="31.5" fontSize="8" fill="#15151C" transform="rotate(-16 14 24)">♣</text>
+          <rect x="16.5" y="10" width="15" height="22" rx="2.5" fill="#fff" />
+          <text x="19.5" y="19.5" fontSize="9" fill="#D7263D">A</text>
+          <text x="20" y="28.5" fontSize="8" fill="#D7263D">♥</text>
+          <rect x="26" y="13" width="15" height="22" rx="2.5" fill="#fff" transform="rotate(16 33 24)" />
+          <text x="29.5" y="23" fontSize="9" fill="#15151C" transform="rotate(16 33 24)">K</text>
+          <text x="30" y="31.5" fontSize="8" fill="#15151C" transform="rotate(16 33 24)">♠</text>
         </g>
       )
     case 'bombas':

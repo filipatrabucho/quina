@@ -142,6 +142,29 @@ export const GUIDES = {
     tips: ['Guarda os coringas para o fim.', 'Fica atento a quem tem só uma carta e usa as cartas especiais nesse jogador.'],
     faq: [['Posso jogar sozinho?', 'Sim, contra 1 a 3 bots.']],
   },
+  sueca: {
+    intro:
+      'A Sueca é o jogo de cartas mais jogado em Portugal, nos cafés, nas férias e nas festas de família. Joga-se a 4, em duas equipas de 2: o teu parceiro senta-se à tua frente. Aqui podes jogar Sueca online grátis contra bots (sem precisar de conta) ou criar uma mesa e convidar os teus amigos; os lugares que faltarem ficam com bots.',
+    rules: [
+      'Usa-se um baralho de 40 cartas (sem os 8, 9 e 10) e cada jogador recebe 10 cartas.',
+      'A última carta de quem baralha fica virada para cima: é o trunfo dessa mão.',
+      'Quem está a seguir a quem baralhou começa. Se tiveres cartas do naipe que saiu, és obrigado a assistir; se não tiveres, podes cortar com trunfo ou largar outra carta.',
+      'Ganha a vaza o trunfo mais alto; se ninguém jogou trunfo, ganha a carta mais alta do naipe que saiu. A ordem é Ás, 7, Rei, Valete, Dama, 6, 5, 4, 3, 2.',
+      'No fim contam-se os pontos das vazas de cada equipa: Ás 11, 7 10, Rei 4, Valete 3 e Dama 2 (120 pontos no total).',
+      'Mais de 60 pontos vale 1 jogo, 91 ou mais vale 2 (capote) e fazer as 120 vale 4 (bandeira). Ganha a primeira equipa a chegar aos 4 jogos.',
+    ],
+    tips: [
+      'Quando o teu parceiro já está a ganhar a vaza, carrega pontos: joga o Ás ou o 7 desse naipe.',
+      'Não gastes trunfos em vazas sem pontos; guarda-os para cortar Ases e Setes.',
+      'Conta os trunfos que já saíram: assim sabes quando o teu Ás ou 7 de trunfo já é a carta mais alta.',
+    ],
+    faq: [
+      ['Preciso de conta para jogar Sueca?', 'Não para jogar contra os bots. Para criar uma mesa online com amigos, ganhar medalhas e aparecer no top precisas de uma conta grátis.'],
+      ['Posso jogar Sueca com só 2 ou 3 amigos?', 'Sim. Os lugares que faltarem ficam com bots, e com 2 pessoas podem escolher jogar na mesma equipa ou um contra o outro.'],
+      ['O que é a renúncia?', 'É não assistir ao naipe quando se tem cartas dele. Aqui não acontece: o jogo só te deixa jogar cartas permitidas.'],
+      ['O que é um capote e uma bandeira?', 'Capote é fazer 91 ou mais pontos numa mão (vale 2 jogos). Bandeira é fazer os 120 pontos todos (vale 4 jogos e ganha logo a partida).'],
+    ],
+  },
   poker: {
     intro:
       "O Poker Texas Hold'em é a variante de poker mais jogada no mundo. Aqui jogas em formato torneio: todos começam com as mesmas fichas (a fingir), as blinds vão subindo e ganha quem ficar com todas as fichas. Joga contra bots ou monta uma mesa com até 6 amigos.",

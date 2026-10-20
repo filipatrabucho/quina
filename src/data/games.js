@@ -1,6 +1,16 @@
 // Catálogo dos jogos (usado no início, no menu e nos cabeçalhos).
 export const GAMES = [
   {
+    key: 'sueca',
+    to: '/sueca',
+    title: 'Sueca',
+    short: 'Sueca',
+    description: 'O jogo de cartas mais português: 2 contra 2, trunfo, assistir e contar os pontos até aos 4 jogos. Contra bots ou com amigos.',
+    tags: ['online', 'bot'],
+    players: '1 a 4',
+    badge: 'Novo',
+  },
+  {
     key: 'colonos',
     to: '/colonos',
     title: 'Colonos',
