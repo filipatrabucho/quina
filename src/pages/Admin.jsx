@@ -328,10 +328,12 @@ function ago(d) {
 function Activity() {
   const [users, setUsers] = useState(null)
   const [plays, setPlays] = useState(null)
+  const [onlyFinished, setOnlyFinished] = useState(false)
   const [error, setError] = useState('')
+  const shown = (plays || []).filter((r) => !onlyFinished || r.kind === 'partida').slice(0, 40)
   const load = useCallback(() => {
     adminListUsers({ limit: 15 }).then((d) => setUsers(d.users), (e) => setError(e.message))
-    adminRecentPlays(30).then(setPlays, (e) => setError(e.message))
+    adminRecentPlays(60).then(setPlays, (e) => setError(e.message))
   }, [])
   useEffect(() => {
     load()
@@ -365,14 +367,20 @@ function Activity() {
         )}
       </section>
       <section className="bo-card" data-testid="bo-recent-plays">
-        <h2 className="bo-card__title">Últimos jogos jogados</h2>
+        <div className="bo-card__head">
+          <h2 className="bo-card__title">Últimos jogos jogados</h2>
+          <label className="bo-check">
+            <input type="checkbox" checked={onlyFinished} onChange={(e) => setOnlyFinished(e.target.checked)} data-testid="bo-only-finished" />
+            Só partidas acabadas
+          </label>
+        </div>
         {!plays ? (
           <p className="bo-empty">A carregar…</p>
-        ) : !plays.length ? (
-          <p className="bo-empty">Ainda ninguém acabou uma partida.</p>
+        ) : !shown.length ? (
+          <p className="bo-empty">{onlyFinished ? 'Ainda ninguém acabou uma partida.' : 'Ainda não há atividade.'}</p>
         ) : (
           <ul className="bo-feed">
-            {plays.map((r) => {
+            {shown.map((r) => {
               const g = gameByKey(r.game)
               return (
                 <li key={r.id}>
@@ -382,13 +390,16 @@ function Activity() {
                       <b>{g?.title || r.game}</b>
                       <small>
                         {r.username ? <Link to={`/u/${r.username}`}>{r.username}</Link> : `Convidado ${r.visitor.slice(-4)}`}
-                        {' · '}
-                        {r.mode === 'online' ? 'online' : 'sozinho/bots'}
+                        {r.kind !== 'abriu' && <>{' · '}{r.mode === 'online' ? 'online' : 'sozinho/bots'}</>}
                       </small>
                     </span>
                   </span>
                   <span className="bo-feed__end">
-                    <span className={`bo-result${r.won ? ' bo-result--win' : ''}`}>{r.won ? 'Ganhou' : 'Perdeu'}</span>
+                    {r.kind === 'abriu' ? (
+                      <span className="bo-result bo-result--open" title="Abriu o jogo (ainda não acabou nenhuma partida)">Abriu</span>
+                    ) : (
+                      <span className={`bo-result${r.won ? ' bo-result--win' : ''}`}>{r.won ? 'Ganhou' : 'Perdeu'}</span>
+                    )}
                     <time dateTime={r.created_at}>{ago(r.created_at)}</time>
                   </span>
                 </li>

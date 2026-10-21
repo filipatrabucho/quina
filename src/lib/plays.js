@@ -56,7 +56,7 @@ export function countGuestPlay() {
 
 // As chaves das partidas dizem o modo: as das salas levam o código da sala.
 export function modeOfKey(key) {
-  if (/-(bot|bots|solo)-/.test(key) || /^(snake|emojidia|fiada-solo|palavras-(?!duelo))/.test(key)) return 'solo'
+  if (/-(bot|bots|solo)-/.test(key) || /^(snake|emojidia|spider|freecell|fiada-solo|palavras-(?!duelo))/.test(key)) return 'solo'
   return 'online'
 }
 

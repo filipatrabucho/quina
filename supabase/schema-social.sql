@@ -557,19 +557,19 @@ end;
 $$;
 grant execute on function public.admin_play_stats(int) to authenticated;
 
--- Últimas partidas acabadas (com quem jogou, se tiver conta).
+-- Atividade mais recente: jogos abertos e partidas acabadas (com quem jogou, se tiver conta).
+drop function if exists public.admin_recent_plays(int);
 create or replace function public.admin_recent_plays(p_limit int default 30)
-returns table (id bigint, created_at timestamptz, game text, mode text, won boolean, user_id uuid, username text, avatar_url text, visitor text)
+returns table (id bigint, created_at timestamptz, kind text, game text, mode text, won boolean, user_id uuid, username text, avatar_url text, visitor text)
 language plpgsql stable security definer set search_path = public as $$
 begin
   if not exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin') then
     raise exception 'Só o admin pode ver estes números.';
   end if;
   return query
-    select gp.id, gp.created_at, gp.game, gp.mode, gp.won, gp.user_id, p.username, p.avatar_url, gp.visitor
+    select gp.id, gp.created_at, gp.kind, gp.game, gp.mode, gp.won, gp.user_id, p.username, p.avatar_url, gp.visitor
     from game_plays gp
     left join profiles p on p.id = gp.user_id
-    where gp.kind = 'partida'
     order by gp.created_at desc
     limit greatest(1, least(p_limit, 100));
 end;

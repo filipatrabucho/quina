@@ -4284,3 +4284,6 @@ span.pcard { display: inline-block; }
 .chess-clock--run { border-color: #FFD23F; }
 .chess-clock--run b { color: #FFD23F; }
 .chess-clock--low b { color: #FF5A67; }
+.bo-card__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.bo-check { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--stone); cursor: pointer; }
+.bo-result--open { background: rgba(46, 197, 255, 0.12); color: var(--cyan); }
