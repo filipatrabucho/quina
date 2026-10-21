@@ -18,7 +18,9 @@ import {
   createGroup as apiCreateGroup,
   getMyRole,
   deleteGroup as apiDeleteGroup,
+  listGameSettings,
 } from '../lib/social.js'
+import { applyGameSettings } from '../data/games.js'
 import { playNotify } from '../lib/sound.js'
 
 const POLL_MS = 8000
@@ -41,6 +43,23 @@ export function SocialProvider({ children }) {
   const [groups, setGroups] = useState([])
   const [role, setRole] = useState(null)
   const [roleLoaded, setRoleLoaded] = useState(false)
+  // Jogos em beta/produção mudados no backoffice (para toda a gente, com ou sem conta).
+  const [catalog, setCatalog] = useState({ version: 0, loaded: typeof window !== 'undefined' && !!window.__TG_GAMES__ })
+  const refreshCatalog = useCallback(
+    () =>
+      listGameSettings()
+        .then((rows) => {
+          applyGameSettings(Object.fromEntries(rows.map((r) => [r.game, r.beta])))
+          setCatalog((c) => ({ version: c.version + 1, loaded: true }))
+        })
+        .catch(() => setCatalog((c) => (c.loaded ? c : { ...c, loaded: true }))),
+    []
+  )
+  useEffect(() => {
+    refreshCatalog()
+    const t = setInterval(refreshCatalog, 60000)
+    return () => clearInterval(t)
+  }, [refreshCatalog])
   const panelRef = useRef(panel)
   panelRef.current = panel
   const seenMsgs = useRef(null) // ids de mensagens já tratadas (null = ainda não carregou)
@@ -257,6 +276,9 @@ export function SocialProvider({ children }) {
     role,
     roleLoaded: !authLoading && roleLoaded,
     canSeeBeta: role === 'admin' || role === 'tester',
+    catalogVersion: catalog.version,
+    catalogLoaded: catalog.loaded,
+    refreshCatalog,
     me,
     profileError,
     myId,

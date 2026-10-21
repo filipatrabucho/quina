@@ -342,3 +342,15 @@ export async function adminRecentPlays(limit = 30) {
   fail(error)
   return data
 }
+
+// ---- Jogos em beta ou em produção (backoffice) ----
+export async function listGameSettings() {
+  const { data, error } = await supabase.from('game_settings').select('game, beta, updated_at')
+  fail(error)
+  return data
+}
+
+export async function adminSetGameBeta(game, beta) {
+  const { error } = await supabase.rpc('admin_set_game_beta', { p_game: game, p_beta: beta })
+  fail(error)
+}

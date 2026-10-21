@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSocial } from '../social/SocialContext.jsx'
-import { adminListUsers, adminSetRole, adminStats, adminPlayStats, adminRecentPlays } from '../lib/social.js'
-import { GAMES, gameByKey } from '../data/games.js'
+import { adminListUsers, adminSetRole, adminStats, adminPlayStats, adminRecentPlays, adminSetGameBeta } from '../lib/social.js'
+import { GAMES, gameByKey, defaultBeta } from '../data/games.js'
 import Avatar from '../components/Avatar.jsx'
 import GameIcon from '../components/GameIcon.jsx'
 
@@ -150,27 +150,67 @@ function Users({ myId, onChanged }) {
   )
 }
 
-function Games({ stats }) {
+function Games({ stats, social }) {
+  const [busy, setBusy] = useState(null)
+  const [msg, setMsg] = useState({ error: '', info: '' })
   const byGame = Object.fromEntries((stats?.games || []).map((g) => [g.game, g]))
   const list = [...GAMES].sort((a, b) => (b.beta ? 1 : 0) - (a.beta ? 1 : 0) || (byGame[b.key]?.plays || 0) - (byGame[a.key]?.plays || 0))
+
+  const toggle = async (g) => {
+    const toBeta = !g.beta
+    const ok = window.confirm(
+      toBeta
+        ? `Pôr ${g.title} em beta?\n\nDeixa de aparecer no menu e na página inicial e só o admin e os testers o podem abrir.`
+        : `Pôr ${g.title} em produção?\n\nPassa a aparecer a toda a gente no menu e na página inicial.`,
+    )
+    if (!ok) return
+    setBusy(g.key)
+    setMsg({ error: '', info: '' })
+    try {
+      await adminSetGameBeta(g.key, toBeta)
+      await social.refreshCatalog()
+      setMsg({ error: '', info: toBeta ? `${g.title} está agora em beta.` : `${g.title} está agora em produção: já aparece a toda a gente.` })
+    } catch (e) {
+      setMsg({ error: e.message, info: '' })
+    } finally {
+      setBusy(null)
+    }
+  }
+
   return (
     <section className="bo-card">
       <p className="admin-note">
         Os jogos em <strong>beta</strong> só aparecem aos admins e testers: não estão no menu nem na página inicial para os outros, e não vão para o Google.
-        Para tirar um jogo de beta, diz-me qual e eu publico.
+        A mudança vale logo no site (até 1 minuto para quem já o tem aberto). O Google e o sitemap só a veem na próxima publicação do site.
       </p>
+      {msg.error && <p className="duel-error">{msg.error}</p>}
+      {msg.info && <p className="account-info" data-testid="bo-game-msg">{msg.info}</p>}
       <div className="bo-table-wrap">
         <table className="bo-table" data-testid="bo-games">
           <thead>
-            <tr><th>Jogo</th><th>Estado</th><th className="bo-num">Jogadores</th><th className="bo-num">Partidas</th></tr>
+            <tr><th>Jogo</th><th>Estado</th><th className="bo-num">Jogadores</th><th className="bo-num">Partidas</th><th className="bo-num">Mudar</th></tr>
           </thead>
           <tbody>
             {list.map((g) => (
-              <tr key={g.key}>
+              <tr key={g.key} data-game={g.key}>
                 <td><Link to={g.to} className="bo-user"><GameIcon game={g.key} size={30} /><b>{g.title}</b></Link></td>
-                <td>{g.beta ? <span className="admin-role">Beta</span> : <span className="bo-live">Público</span>}</td>
+                <td>
+                  {g.beta ? <span className="admin-role">Beta</span> : <span className="bo-live">Produção</span>}
+                  {g.beta !== defaultBeta(g.key) && <small className="bo-changed"> mudado no backoffice</small>}
+                </td>
                 <td className="bo-num">{byGame[g.key]?.players ?? 0}</td>
                 <td className="bo-num">{byGame[g.key]?.plays ?? 0}</td>
+                <td className="bo-num">
+                  <button
+                    type="button"
+                    className={`btn btn--small ${g.beta ? 'btn--primary' : 'btn--outline'}`}
+                    disabled={busy === g.key}
+                    onClick={() => toggle(g)}
+                    data-testid={`bo-toggle-${g.key}`}
+                  >
+                    {busy === g.key ? 'A guardar…' : g.beta ? 'Pôr em produção' : 'Pôr em beta'}
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -405,7 +445,7 @@ export default function Admin() {
       {tab === 'plays' && <Plays />}
       {tab === 'activity' && <Activity />}
       {tab === 'users' && <Users myId={s.myId} onChanged={loadStats} />}
-      {tab === 'games' && <Games stats={stats} />}
+      {tab === 'games' && <Games stats={stats} social={s} />}
     </main>
   )
 }

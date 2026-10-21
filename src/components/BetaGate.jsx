@@ -8,7 +8,7 @@ export default function BetaGate({ game, children }) {
   const s = useSocial()
   const info = gameByKey(game)
   if (!info?.beta || s?.canSeeBeta) return children
-  if (!s?.roleLoaded) return <p className="page-loading">A carregar…</p>
+  if (!s?.roleLoaded || !s?.catalogLoaded) return <p className="page-loading">A carregar…</p>
   return (
     <div className="beta-locked" data-testid="beta-locked">
       <GameIcon game={game} size={72} />

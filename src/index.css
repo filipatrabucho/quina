@@ -4112,3 +4112,4 @@ span.pcard { display: inline-block; }
 .bo-result { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 1px 7px; border-radius: 6px; background: rgba(154, 154, 171, 0.15); color: var(--stone); }
 .bo-result--win { background: rgba(47, 191, 113, 0.15); color: #2FBF71; }
 @media (max-width: 900px) { .bo-activity { grid-template-columns: 1fr; } }
+.bo-changed { display: block; font-size: 0.7rem; color: #77778A; }

@@ -54,4 +54,4 @@ export function seoFor(pathname) {
   return { path, ...(EXTRA[path] || { title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION }) }
 }
 
-export const PUBLIC_PATHS = ['/', ...GAMES.filter((g) => !g.beta).map((g) => g.to), '/sobre', '/contacto']
+export const publicPaths = () => ['/', ...GAMES.filter((g) => !g.beta).map((g) => g.to), '/sobre', '/contacto']

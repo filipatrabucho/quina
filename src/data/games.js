@@ -204,5 +204,14 @@ export const TAG_LABELS = { online: 'Multiplayer', bot: 'vs Bot', solo: 'Solo', 
 
 export const gameByKey = (key) => GAMES.find((g) => g.key === key)
 
+// Beta ou produção: o valor do código é o de partida; o backoffice pode mudá-lo
+// (tabela game_settings). Muda os objetos de GAMES no sítio para que todo o
+// site (menu, início, páginas) passe a ver o estado novo.
+const DEFAULT_BETA = Object.fromEntries(GAMES.map((g) => [g.key, !!g.beta]))
+export const defaultBeta = (key) => DEFAULT_BETA[key]
+export function applyGameSettings(settings) {
+  for (const g of GAMES) g.beta = settings && typeof settings[g.key] === 'boolean' ? settings[g.key] : DEFAULT_BETA[g.key]
+}
+
 // Os jogos em beta só aparecem ao admin e aos testers.
 export const visibleGames = (canSeeBeta) => GAMES.filter((g) => !g.beta || canSeeBeta)

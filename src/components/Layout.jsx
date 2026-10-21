@@ -117,6 +117,7 @@ const MenuIcon = () => (
 
 function SiteShell() {
   const { pathname } = useLocation()
+  useSeo(useSocial()?.catalogVersion)
   const game = useCurrentGame()
   const [drawer, setDrawer] = useState(false)
   const isHome = pathname === '/'
@@ -210,7 +211,6 @@ function SiteShell() {
 }
 
 export default function Layout() {
-  useSeo()
   useScrollToTopOnNavigate()
   return (
     <SocialProvider>

@@ -576,6 +576,30 @@ end;
 $$;
 grant execute on function public.admin_recent_plays(int) to authenticated;
 
+-- ---------- Jogos em beta ou em produção (mudado no backoffice) ----------
+-- Sem linha para um jogo, vale o que está no código (games.js).
+create table if not exists public.game_settings (
+  game text primary key check (game ~ '^[a-z0-9-]{1,30}$'),
+  beta boolean not null,
+  updated_at timestamptz not null default now(),
+  updated_by uuid references auth.users (id) on delete set null
+);
+alter table public.game_settings enable row level security;
+drop policy if exists "jogos: estado publico" on public.game_settings;
+create policy "jogos: estado publico" on public.game_settings for select using (true);
+
+create or replace function public.admin_set_game_beta(p_game text, p_beta boolean)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin') then
+    raise exception 'Só o admin pode mudar o estado dos jogos.';
+  end if;
+  insert into game_settings (game, beta, updated_at, updated_by) values (p_game, p_beta, now(), auth.uid())
+  on conflict (game) do update set beta = excluded.beta, updated_at = now(), updated_by = auth.uid();
+end;
+$$;
+grant execute on function public.admin_set_game_beta(text, boolean) to authenticated;
+
 -- Avisa a API do Supabase de que há funções e tabelas novas (sem isto pode
 -- dar "Could not find the function ... in the schema cache").
 notify pgrst, 'reload schema';

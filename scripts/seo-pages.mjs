@@ -4,13 +4,33 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { GAMES } from '../src/data/games.js'
-import { seoFor, SITE_URL, SITE_NAME, PUBLIC_PATHS } from '../src/data/seo.js'
+import { GAMES, applyGameSettings } from '../src/data/games.js'
+import { seoFor, SITE_URL, SITE_NAME, publicPaths } from '../src/data/seo.js'
 import { GUIDES } from '../src/data/gameGuides.js'
-import { render } from '../dist-ssr/entry-server.js'
+import { render, applyGameSettings as applySsrGameSettings } from '../dist-ssr/entry-server.js'
 
 const dist = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
+
+// Jogos em beta/produção escolhidos no backoffice (se o Supabase responder; senão
+// vale o que está no código). O HTML leva o mesmo estado para o browser.
+async function loadGameSettings() {
+  const url = process.env.VITE_SUPABASE_URL
+  const key = process.env.VITE_SUPABASE_ANON_KEY
+  if (!url || !key) return null
+  try {
+    const res = await fetch(`${url.replace(/\/+$/, '')}/rest/v1/game_settings?select=game,beta`, { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(8000) })
+    if (!res.ok) return null
+    return Object.fromEntries((await res.json()).map((r) => [r.game, r.beta]))
+  } catch {
+    return null
+  }
+}
+const gameSettings = await loadGameSettings()
+applyGameSettings(gameSettings)
+applySsrGameSettings(gameSettings)
+const changed = gameSettings ? Object.keys(gameSettings).length : 0
 let base = readFileSync(join(dist, 'index.html'), 'utf8')
+if (gameSettings) base = base.replace('</head>', `  <script>window.__TG_GAMES__=${JSON.stringify(gameSettings).replace(/</g, '\\u003c')}</script>\n  </head>`)
 
 // Google Analytics 4 (com o modo de consentimento: até a pessoa aceitar na
 // mensagem de cookies da Google, só são enviadas contagens sem cookies).
@@ -146,8 +166,8 @@ for (const p of paths) {
 }
 
 const today = new Date().toISOString().slice(0, 10)
-const urls = PUBLIC_PATHS.map(
+const urls = publicPaths().map(
   (p) => `  <url><loc>${SITE_URL}${p === '/' ? '/' : p}</loc><lastmod>${today}</lastmod><changefreq>${p === '/' || p === '/palavras' ? 'daily' : 'weekly'}</changefreq><priority>${p === '/' ? '1.0' : '0.8'}</priority></url>`
 )
 writeFileSync(join(dist, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`)
-console.log(`seo: ${paths.length + 1} páginas e sitemap com ${urls.length} endereços`)
+console.log(`seo: ${paths.length + 1} páginas e sitemap com ${urls.length} endereços${changed ? ` (${changed} jogos com estado do backoffice)` : ''}`)

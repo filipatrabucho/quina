@@ -15,7 +15,8 @@ function setMeta(selector, attr, value) {
 }
 
 // Atualiza o título, a descrição e o canonical quando se muda de página.
-export function useSeo() {
+// `catalogVersion` muda quando o backoffice põe um jogo em beta ou produção.
+export function useSeo(catalogVersion = 0) {
   const { pathname } = useLocation()
   useEffect(() => {
     const s = seoFor(pathname)
@@ -25,7 +26,9 @@ export function useSeo() {
     setMeta('meta[property="og:title"]', 'content', s.title)
     setMeta('meta[property="og:description"]', 'content', s.description)
     setMeta('meta[property="og:url"]', 'content', SITE_URL + s.path)
-    setMeta('meta[name="robots"]', 'content', s.noindex ? 'noindex, follow' : 'index, follow')
     trackPageView(pathname + window.location.search, s.title)
   }, [pathname])
+  useEffect(() => {
+    setMeta('meta[name="robots"]', 'content', seoFor(pathname).noindex ? 'noindex, follow' : 'index, follow')
+  }, [pathname, catalogVersion])
 }

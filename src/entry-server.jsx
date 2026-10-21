@@ -5,6 +5,8 @@ import { renderToString } from 'react-dom/server'
 import { StaticRouter } from 'react-router-dom/server'
 import App from './App.jsx'
 
+export { applyGameSettings } from './data/games.js'
+
 export function render(url) {
   return renderToString(
     <StrictMode>
