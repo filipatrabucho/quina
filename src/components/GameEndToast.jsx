@@ -5,7 +5,7 @@ import { shareMessage, whatsappUrl } from '../lib/share.js'
 import { track } from '../lib/analytics.js'
 
 // Jogos que já têm a sua própria partilha no fim.
-const OWN_SHARE = ['palavras', 'fiada']
+const OWN_SHARE = ['palavras', 'fiada', 'emojidia']
 
 // No fim de cada partida: partilhar o resultado e, para quem joga sem conta,
 // de vez em quando, um convite para criar conta.

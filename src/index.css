@@ -4113,3 +4113,41 @@ span.pcard { display: inline-block; }
 .bo-result--win { background: rgba(47, 191, 113, 0.15); color: #2FBF71; }
 @media (max-width: 900px) { .bo-activity { grid-template-columns: 1fr; } }
 .bo-changed { display: block; font-size: 0.7rem; color: #77778A; }
+
+/* ---------- Emoji do Dia ---------- */
+.ed { align-items: center; }
+.ed-num { color: var(--stone); font-size: 0.8em; margin-left: 4px; }
+.ed-progress { display: flex; gap: 8px; justify-content: center; }
+.ed-dot { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; background: var(--white); border: 1px solid var(--stone-light); font-weight: 700; font-size: 0.9rem; color: var(--stone); }
+.ed-dot--now { border-color: #FF7A59; color: var(--ink); }
+.ed-flash { margin: 0; padding: 6px 14px; border-radius: 10px; background: rgba(255, 70, 85, 0.12); color: var(--ink); animation: end-toast-in 0.2s ease-out; }
+.ed-flash--ok { background: rgba(47, 191, 113, 0.14); }
+.ed-done { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+.ed-done__squares { margin: 0; font-size: 2.2rem; letter-spacing: 0.1em; }
+.ed-done h3 { margin: 0; font: 800 1.5rem var(--font-display); }
+.ed-stats { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.ed-stats span { padding: 6px 12px; border-radius: 10px; background: var(--white); border: 1px solid var(--stone-light); font-size: 0.85rem; color: var(--stone); }
+.ed-stats b { color: var(--ink); font-size: 1rem; }
+.ed-more { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.ed-more__link { display: flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; border-radius: 12px; background: var(--white); border: 1px solid var(--stone-light); color: var(--ink); text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+.ed-more__link:hover { border-color: #FF7A59; }
+.pv-emojidia__e { font-size: 2.4rem; }
+
+/* Página inicial: Jogar já + desafio do dia */
+.home-quick { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: 12px; margin-bottom: 14px; }
+.quick-card { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; background: var(--white); border: 1px solid var(--stone-light); color: var(--ink); text-decoration: none; transition: transform 0.12s, border-color 0.12s; }
+.quick-card:hover { transform: translateY(-2px); border-color: #3A3A4A; }
+.quick-card__text { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.quick-card__text b { font: 800 1.15rem var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; }
+.quick-card__text small { font-size: 0.84rem; color: var(--stone); }
+.quick-card--play { background: linear-gradient(135deg, var(--azulejo) 0%, #B8202F 100%); border-color: transparent; }
+.quick-card--play .quick-card__text small { color: rgba(255, 255, 255, 0.85); }
+.quick-card--play:hover { border-color: transparent; filter: brightness(1.06); }
+.quick-card__icon { flex: none; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.18); color: #fff; }
+.quick-card--daily .game-icon { flex: none; border-radius: 12px; }
+.quick-card__cta { flex: none; padding: 7px 14px; border-radius: 999px; background: #E85D3A; color: #fff; font: 700 0.85rem var(--font-body); }
+.quick-card--done .quick-card__cta { background: var(--cream-deep); color: var(--ink); border: 1px solid var(--stone-light); }
+@media (max-width: 720px) {
+  .home-quick { grid-template-columns: 1fr; gap: 8px; }
+  .quick-card { padding: 12px 14px; }
+}

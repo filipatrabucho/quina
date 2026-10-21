@@ -20,6 +20,7 @@ const THEMES = {
   blackjack: '#14603C',
   poker: '#7A1F2B',
   sueca: '#1E5AA8',
+  emojidia: '#E85D3A',
 }
 
 function Art({ game }) {
@@ -224,6 +225,17 @@ function Art({ game }) {
           <rect x="20" y="9" width="17" height="24" rx="3" fill="#fff" transform="rotate(12 28 21)" />
           <text x="28" y="25" textAnchor="middle" fontSize="13" fill="#15151C" transform="rotate(12 28 21)" fontFamily="Inter, sans-serif">♠</text>
           <text x="23.5" y="17" fontSize="7" fontWeight="700" fill="#15151C" transform="rotate(12 28 21)" fontFamily="'Barlow Condensed', Inter, sans-serif">A</text>
+        </g>
+      )
+    case 'emojidia':
+      return (
+        <g>
+          <rect x="9" y="11" width="30" height="27" rx="4" fill="#fff" />
+          <rect x="9" y="11" width="30" height="8" rx="4" fill="#15151C" />
+          <rect x="9" y="15" width="30" height="4" fill="#15151C" />
+          <rect x="15" y="7" width="3" height="7" rx="1.5" fill="#15151C" />
+          <rect x="30" y="7" width="3" height="7" rx="1.5" fill="#15151C" />
+          <text x="24" y="34" textAnchor="middle" fontSize="14">🎬</text>
         </g>
       )
     case 'sueca':

@@ -181,7 +181,7 @@ create table if not exists public.player_stats (
 -- Lista de jogos (atualizada sempre que há jogos novos).
 alter table public.player_stats drop constraint if exists player_stats_game_check;
 alter table public.player_stats add constraint player_stats_game_check
-  check (game in ('palavras', 'fiada', 'quatro', 'galo', 'xadrez', 'memes', 'naval', 'stop', 'cartas', 'snake', 'memoria', 'noventa', 'verdades', 'frase', 'emojis', 'colonos', 'bombas', 'blackjack', 'poker', 'sueca'));
+  check (game in ('palavras', 'fiada', 'quatro', 'galo', 'xadrez', 'memes', 'naval', 'stop', 'cartas', 'snake', 'memoria', 'noventa', 'verdades', 'frase', 'emojis', 'colonos', 'bombas', 'blackjack', 'poker', 'sueca', 'emojidia'));
 alter table public.player_stats enable row level security;
 drop policy if exists "estatisticas: publicas" on public.player_stats;
 create policy "estatisticas: publicas" on public.player_stats for select using (true);
@@ -599,6 +599,15 @@ begin
 end;
 $$;
 grant execute on function public.admin_set_game_beta(text, boolean) to authenticated;
+
+-- Quantas pessoas acabaram hoje (dia de Lisboa) um jogo: público, só o número.
+create or replace function public.daily_players(p_game text)
+returns int language sql stable security definer set search_path = public as $$
+  select count(distinct coalesce(user_id::text, visitor))::int from game_plays
+  where kind = 'partida' and game = p_game
+    and created_at >= (date_trunc('day', now() at time zone 'Europe/Lisbon') at time zone 'Europe/Lisbon');
+$$;
+grant execute on function public.daily_players(text) to anon, authenticated;
 
 -- Avisa a API do Supabase de que há funções e tabelas novas (sem isto pode
 -- dar "Could not find the function ... in the schema cache").

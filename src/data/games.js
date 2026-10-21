@@ -1,6 +1,16 @@
 // Catálogo dos jogos (usado no início, no menu e nos cabeçalhos).
 export const GAMES = [
   {
+    key: 'emojidia',
+    to: '/emoji-do-dia',
+    title: 'Emoji do Dia',
+    short: 'Emoji do Dia',
+    description: 'Desafio diário: 5 filmes, séries e jogos escondidos em emojis, os mesmos para toda a gente. Partilha o resultado e volta amanhã.',
+    tags: ['diario', 'solo'],
+    players: '1',
+    badge: 'Novo',
+  },
+  {
     key: 'sueca',
     to: '/sueca',
     title: 'Sueca',

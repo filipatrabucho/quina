@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import GameShell from '../../components/GameShell.jsx'
 import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import Avatar from '../../components/Avatar.jsx'
@@ -147,8 +148,12 @@ function Table({ game, meId, people, onAction, now, children }) {
   )
 }
 
+const newBotGame = () => startGame(['tu', 'bot0', 'bot1', 'bot2'], ['bot0', 'bot1', 'bot2'], Date.now(), Math.random, { timed: false })
+
 function VsBots() {
-  const [game, setGame] = useState(null)
+  // "Jogar já" (página inicial) abre logo uma partida.
+  const [params] = useSearchParams()
+  const [game, setGame] = useState(() => (params.get('jogar') ? newBotGame() : null))
   const [error, setError] = useState('')
   const now = useNow()
   const people = (id) => (id === 'tu' ? { name: 'Tu' } : botPerson(id))
@@ -183,7 +188,7 @@ function VsBots() {
         <button
           className="share-btn"
           data-testid="sk-start"
-          onClick={() => setGame(startGame(['tu', 'bot0', 'bot1', 'bot2'], ['bot0', 'bot1', 'bot2'], Date.now(), Math.random, { timed: false }))}
+          onClick={() => setGame(newBotGame())}
         >
           Começar partida
         </button>

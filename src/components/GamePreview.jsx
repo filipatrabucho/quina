@@ -179,6 +179,13 @@ export default function GamePreview({ game }) {
           <span className="pv-bj__val">All-in!</span>
         </div>
       )
+    case 'emojidia':
+      return (
+        <div className="pv pv-poker pv-emojidia">
+          <span className="pv-emojidia__e">🦁👑🌅</span>
+          <span className="pv-bj__val">🟩🟨🟩🟥🟩</span>
+        </div>
+      )
     case 'sueca':
       return (
         <div className="pv pv-poker pv-sueca">

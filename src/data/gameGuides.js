@@ -142,6 +142,22 @@ export const GUIDES = {
     tips: ['Guarda os coringas para o fim.', 'Fica atento a quem tem só uma carta e usa as cartas especiais nesse jogador.'],
     faq: [['Posso jogar sozinho?', 'Sim, contra 1 a 3 bots.']],
   },
+  emojidia: {
+    intro:
+      'O Emoji do Dia é um desafio diário, como o Wordle: todos os dias há 5 filmes, séries, jogos ou personagens escondidos em emojis, e são os mesmos para toda a gente. Joga grátis, sem conta, compara o resultado com os teus amigos e volta amanhã para um desafio novo.',
+    rules: [
+      'Há 5 enigmas por dia. Escreve o nome do filme, série, jogo ou personagem (em português ou em inglês).',
+      'Tens 3 tentativas por enigma. À 3.ª tentativa aparece uma pista com a primeira letra de cada palavra.',
+      'Pequenos erros de escrita contam como certos.',
+      'No fim vês o teu resultado em quadrados: 🟩 à primeira, 🟨 à segunda, 🟧 à terceira e 🟥 falhado. Partilha-o sem estragar a surpresa a ninguém.',
+      'O desafio muda à meia-noite (hora de Portugal).',
+    ],
+    tips: ['Lê os emojis pela ordem: muitas vezes contam a história do filme.', 'Se não sabes o título em português, tenta em inglês.', 'Joga todos os dias para manter a sequência 🔥.'],
+    faq: [
+      ['Preciso de conta?', 'Não. Com conta grátis, as tuas partidas contam também para as medalhas e para o top.'],
+      ['Posso jogar o desafio de ontem?', 'Não, cada dia tem o seu. Se quiseres mais enigmas, joga o Emoji Battle sozinho ou com amigos.'],
+    ],
+  },
   sueca: {
     intro:
       'A Sueca é o jogo de cartas mais jogado em Portugal, nos cafés, nas férias e nas festas de família. Joga-se a 4, em duas equipas de 2: o teu parceiro senta-se à tua frente. Aqui podes jogar Sueca online grátis contra bots (sem precisar de conta) ou criar uma mesa e convidar os teus amigos; os lugares que faltarem ficam com bots.',

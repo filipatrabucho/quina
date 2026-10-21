@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { visibleGames } from '../data/games.js'
 import { useSocial } from '../social/SocialContext.jsx'
@@ -6,6 +7,8 @@ import GamePreview from '../components/GamePreview.jsx'
 import AdSlot from '../components/AdSlot.jsx'
 import { CATEGORIES, GameSearch } from '../components/Sidebar.jsx'
 import { useAuth } from '../hooks/useAuth.js'
+import { dayNumber, squares, solvedCount, todayResult, PER_DAY } from '../games/emojidia/emojiDia.js'
+import { dailyPlayers } from '../lib/plays.js'
 
 const MODE_LABEL = { online: 'Multiplayer', bot: 'vs Bot', solo: 'Solo', diario: 'Diário' }
 // Os jogos grandes do topo: os 3 primeiros desta lista que a pessoa pode ver
@@ -53,6 +56,44 @@ function Tile({ game }) {
   )
 }
 
+// Topo da página inicial: começar logo uma partida e o desafio de hoje.
+function QuickStart() {
+  const [done, setDone] = useState(null)
+  const [players, setPlayers] = useState(null)
+  const [n, setN] = useState(null)
+  // Só no browser (o dia e o resultado dependem de quem visita).
+  useEffect(() => {
+    setN(dayNumber())
+    setDone(todayResult())
+    dailyPlayers('emojidia').then(setPlayers)
+  }, [])
+  return (
+    <section className="home-quick" aria-label="Começar a jogar">
+      <Link to="/sueca?modo=bot&jogar=1" className="quick-card quick-card--play" data-testid="quick-play">
+        <span className="quick-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
+        </span>
+        <span className="quick-card__text">
+          <b>Jogar já</b>
+          <small>Uma partida de Sueca contra bots, sem conta e sem esperar.</small>
+        </span>
+      </Link>
+      <Link to="/emoji-do-dia" className={`quick-card quick-card--daily${done ? ' quick-card--done' : ''}`} data-testid="quick-daily">
+        <GameIcon game="emojidia" size={44} />
+        <span className="quick-card__text">
+          <b>Emoji do Dia{n ? ` #${n}` : ''}</b>
+          {done ? (
+            <small>Feito: {squares(done)} {solvedCount(done)}/{PER_DAY}. Volta amanhã!</small>
+          ) : (
+            <small>5 enigmas, os mesmos para toda a gente.{players > 0 ? ` ${players} ${players === 1 ? 'pessoa já jogou' : 'pessoas já jogaram'} hoje.` : ''}</small>
+          )}
+        </span>
+        <span className="quick-card__cta">{done ? 'Partilhar' : 'Jogar'}</span>
+      </Link>
+    </section>
+  )
+}
+
 export default function Hub() {
   const [params, setParams] = useSearchParams()
   const { user } = useAuth()
@@ -92,6 +133,8 @@ export default function Hub() {
           ))}
         </nav>
       </div>
+
+      {browsing && <QuickStart />}
 
       {!browsing && (
         <div className="home-filter">

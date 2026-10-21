@@ -56,6 +56,13 @@ export function countGuestPlay() {
 
 // As chaves das partidas dizem o modo: as das salas levam o código da sala.
 export function modeOfKey(key) {
-  if (/-(bot|bots|solo|duelo-solo)-/.test(key) || /^(snake|fiada-solo|palavras-(?!duelo))/.test(key)) return 'solo'
+  if (/-(bot|bots|solo)-/.test(key) || /^(snake|emojidia|fiada-solo|palavras-(?!duelo))/.test(key)) return 'solo'
   return 'online'
+}
+
+// Quantas pessoas já acabaram hoje este jogo (para mostrar no desafio diário).
+export async function dailyPlayers(game) {
+  if (!supabaseConfigured) return null
+  const { data, error } = await supabase.rpc('daily_players', { p_game: game })
+  return error ? null : data
 }
