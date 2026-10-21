@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSocial } from '../social/SocialContext.jsx'
-import { adminListUsers, adminSetRole, adminStats, adminPlayStats } from '../lib/social.js'
+import { adminListUsers, adminSetRole, adminStats, adminPlayStats, adminRecentPlays } from '../lib/social.js'
 import { GAMES, gameByKey } from '../data/games.js'
 import Avatar from '../components/Avatar.jsx'
 import GameIcon from '../components/GameIcon.jsx'
@@ -269,6 +269,98 @@ function Plays() {
   )
 }
 
+// "há 5 min", "há 3 h", "ontem 21:04", "12 out 18:30"
+function ago(d) {
+  const t = new Date(d)
+  const s = Math.max(0, (Date.now() - t.getTime()) / 1000)
+  if (s < 60) return 'agora mesmo'
+  if (s < 3600) return `há ${Math.floor(s / 60)} min`
+  if (s < 6 * 3600) return `há ${Math.floor(s / 3600)} h`
+  const hm = t.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })
+  const day = new Date(t).setHours(0, 0, 0, 0)
+  const today = new Date().setHours(0, 0, 0, 0)
+  if (day === today) return `hoje ${hm}`
+  if (today - day === 86400000) return `ontem ${hm}`
+  return `${t.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' })} ${hm}`
+}
+
+// Atividade: novas contas e últimas partidas (atualiza sozinha).
+function Activity() {
+  const [users, setUsers] = useState(null)
+  const [plays, setPlays] = useState(null)
+  const [error, setError] = useState('')
+  const load = useCallback(() => {
+    adminListUsers({ limit: 15 }).then((d) => setUsers(d.users), (e) => setError(e.message))
+    adminRecentPlays(30).then(setPlays, (e) => setError(e.message))
+  }, [])
+  useEffect(() => {
+    load()
+    const t = setInterval(load, 30000)
+    return () => clearInterval(t)
+  }, [load])
+  return (
+    <div className="bo-activity">
+      {error && <p className="duel-error">{error}</p>}
+      <section className="bo-card" data-testid="bo-new-users">
+        <h2 className="bo-card__title">Novos utilizadores</h2>
+        {!users ? (
+          <p className="bo-empty">A carregar…</p>
+        ) : !users.length ? (
+          <p className="bo-empty">Ainda não há contas.</p>
+        ) : (
+          <ul className="bo-feed">
+            {users.map((u) => (
+              <li key={u.user_id}>
+                <Link to={`/u/${u.username}`} className="bo-user">
+                  <Avatar src={u.avatar_url} seed={u.user_id} name={u.username} size={30} />
+                  <span>
+                    <b>{u.username}</b>
+                    <small>{PROVIDER[u.provider] || u.provider} · {u.plays} {Number(u.plays) === 1 ? 'partida' : 'partidas'}</small>
+                  </span>
+                </Link>
+                <time dateTime={u.created_at}>{ago(u.created_at)}</time>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+      <section className="bo-card" data-testid="bo-recent-plays">
+        <h2 className="bo-card__title">Últimos jogos jogados</h2>
+        {!plays ? (
+          <p className="bo-empty">A carregar…</p>
+        ) : !plays.length ? (
+          <p className="bo-empty">Ainda ninguém acabou uma partida.</p>
+        ) : (
+          <ul className="bo-feed">
+            {plays.map((r) => {
+              const g = gameByKey(r.game)
+              return (
+                <li key={r.id}>
+                  <span className="bo-user">
+                    <GameIcon game={r.game} size={30} />
+                    <span>
+                      <b>{g?.title || r.game}</b>
+                      <small>
+                        {r.username ? <Link to={`/u/${r.username}`}>{r.username}</Link> : `Convidado ${r.visitor.slice(-4)}`}
+                        {' · '}
+                        {r.mode === 'online' ? 'online' : 'sozinho/bots'}
+                      </small>
+                    </span>
+                  </span>
+                  <span className="bo-feed__end">
+                    <span className={`bo-result${r.won ? ' bo-result--win' : ''}`}>{r.won ? 'Ganhou' : 'Perdeu'}</span>
+                    <time dateTime={r.created_at}>{ago(r.created_at)}</time>
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </section>
+    </div>
+  )
+}
+
 // Backoffice: utilizadores, testers e jogos (só para o admin).
 export default function Admin() {
   const s = useSocial()
@@ -306,10 +398,12 @@ export default function Admin() {
       </div>
       <div className="bo-tabs" role="tablist">
         <button type="button" role="tab" aria-selected={tab === 'plays'} className={`bo-tab${tab === 'plays' ? ' bo-tab--on' : ''}`} onClick={() => setTab('plays')} data-testid="bo-tab-plays">Quem jogou</button>
+        <button type="button" role="tab" aria-selected={tab === 'activity'} className={`bo-tab${tab === 'activity' ? ' bo-tab--on' : ''}`} onClick={() => setTab('activity')} data-testid="bo-tab-activity">Atividade</button>
         <button type="button" role="tab" aria-selected={tab === 'users'} className={`bo-tab${tab === 'users' ? ' bo-tab--on' : ''}`} onClick={() => setTab('users')}>Utilizadores e testers</button>
         <button type="button" role="tab" aria-selected={tab === 'games'} className={`bo-tab${tab === 'games' ? ' bo-tab--on' : ''}`} onClick={() => setTab('games')}>Jogos</button>
       </div>
       {tab === 'plays' && <Plays />}
+      {tab === 'activity' && <Activity />}
       {tab === 'users' && <Users myId={s.myId} onChanged={loadStats} />}
       {tab === 'games' && <Games stats={stats} />}
     </main>

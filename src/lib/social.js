@@ -336,3 +336,9 @@ export async function adminPlayStats(days = 30) {
   fail(error)
   return data
 }
+
+export async function adminRecentPlays(limit = 30) {
+  const { data, error } = await supabase.rpc('admin_recent_plays', { p_limit: limit })
+  fail(error)
+  return data
+}

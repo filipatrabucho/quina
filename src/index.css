@@ -4100,3 +4100,15 @@ span.pcard { display: inline-block; }
   .sk-hand .pcard .pcard__corner--br { display: none; }
   .sk-card + .sk-card { margin-left: -6px; }
 }
+.bo-activity { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.bo-activity > .duel-error { grid-column: 1 / -1; }
+.bo-card__title { margin: 0; font: 700 1rem var(--font-body); color: #fff; }
+.bo-feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.bo-feed li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid #1E1E28; }
+.bo-feed li:last-child { border-bottom: 0; }
+.bo-feed time { flex: none; font-size: 0.78rem; color: #77778A; white-space: nowrap; }
+.bo-feed small a { color: var(--stone); }
+.bo-feed__end { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.bo-result { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; padding: 1px 7px; border-radius: 6px; background: rgba(154, 154, 171, 0.15); color: var(--stone); }
+.bo-result--win { background: rgba(47, 191, 113, 0.15); color: #2FBF71; }
+@media (max-width: 900px) { .bo-activity { grid-template-columns: 1fr; } }
