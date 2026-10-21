@@ -16,4 +16,6 @@ export function shareMessage({ game, won, detail }) {
   return { title, text: `${line} no Tuga Games. Consegues fazer melhor?`, url }
 }
 
-export const whatsappUrl = ({ text, url }) => `https://wa.me/?text=${encodeURIComponent(`${text} ${url}`)}`
+// O wa.me estraga os emojis (aparecem como �) quando passa pela página de
+// redirecionamento; o api.whatsapp.com/send mantém-nos.
+export const whatsappUrl = ({ text, url }) => `https://api.whatsapp.com/send?text=${encodeURIComponent(`${text} ${url}`)}`
