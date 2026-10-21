@@ -4151,3 +4151,20 @@ span.pcard { display: inline-block; }
   .home-quick { grid-template-columns: 1fr; gap: 8px; }
   .quick-card { padding: 12px 14px; }
 }
+
+/* ---------- Bisca (usa a mesa da Sueca) ---------- */
+.bc-stock { position: absolute; left: 9%; top: 50%; transform: translateY(-50%); width: 92px; height: 90px; }
+.bc-stock .pcard { width: 52px; height: 76px; box-shadow: -2px 4px 10px rgba(0, 0, 0, 0.45); }
+.bc-stock__trump { position: absolute; left: 34px; top: 7px; transform: rotate(90deg); }
+.bc-stock__pile { position: absolute; left: 0; top: 7px; }
+.bc-stock__n { position: absolute; left: -2px; top: -12px; padding: 0 7px; border-radius: 999px; background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 0.75rem; }
+.bc-table--2 { aspect-ratio: 16 / 9; }
+.bc-hand .sk-card + .sk-card { margin-left: 10px; }
+.bc-hand .pcard { width: 76px; height: 110px; }
+.bc-swap { align-self: center; border-color: #FFD23F; color: #FFD23F; }
+@media (max-width: 640px) {
+  .bc-stock { left: 20%; top: 68%; transform: translateY(-50%) scale(0.72); }
+  .bc-table--2 { aspect-ratio: 1 / 1; }
+  .bc-hand .pcard { width: 64px; height: 92px; }
+  .bc-hand .pcard .pcard__corner--br { display: block; }
+}

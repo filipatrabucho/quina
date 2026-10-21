@@ -186,6 +186,17 @@ export default function GamePreview({ game }) {
           <span className="pv-bj__val">🟩🟨🟩🟥🟩</span>
         </div>
       )
+    case 'bisca':
+      return (
+        <div className="pv pv-poker pv-bisca">
+          <div className="pv-bj__row">
+            {[['A', '♦'], ['7', '♣'], ['K', '♦']].map(([r, s]) => (
+              <span key={r} className={`pv-card${s === '♦' ? ' pv-card--red' : ''}`}>{r}<i>{s}</i></span>
+            ))}
+          </div>
+          <span className="pv-bj__val">Trunfo ♦</span>
+        </div>
+      )
     case 'sueca':
       return (
         <div className="pv pv-poker pv-sueca">

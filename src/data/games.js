@@ -11,6 +11,16 @@ export const GAMES = [
     badge: 'Novo',
   },
   {
+    key: 'bisca',
+    to: '/bisca',
+    title: 'Bisca',
+    short: 'Bisca',
+    description: 'O clássico português de 3 cartas: compra do monte, trunfo virado e troca do 2. Um contra um ou dois contra dois, com bots ou amigos.',
+    tags: ['online', 'bot'],
+    players: '1 a 4',
+    badge: 'Novo',
+  },
+  {
     key: 'sueca',
     to: '/sueca',
     title: 'Sueca',

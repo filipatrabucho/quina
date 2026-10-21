@@ -158,6 +158,29 @@ export const GUIDES = {
       ['Posso jogar o desafio de ontem?', 'Não, cada dia tem o seu. Se quiseres mais enigmas, joga o Emoji Battle sozinho ou com amigos.'],
     ],
   },
+  bisca: {
+    intro:
+      'A Bisca é um dos jogos de cartas mais tradicionais de Portugal, jogada há gerações em cafés e reuniões de família. Aqui jogas a Bisca de 3 online e grátis: um contra um ou dois contra dois, contra bots (sem precisar de conta) ou numa mesa com os teus amigos.',
+    rules: [
+      'Usa-se o baralho de 40 cartas (sem os 8, 9 e 10). Cada jogador recebe 3 cartas e o resto fica no monte.',
+      'A carta virada por baixo do monte é o trunfo. É a última carta a ser comprada.',
+      'Depois de cada vaza, quem a ganhou compra uma carta do monte primeiro e depois os outros, para todos ficarem outra vez com 3.',
+      'Enquanto houver cartas no monte podes jogar qualquer carta. Quando o monte acaba, passa a ser obrigatório assistir ao naipe que saiu.',
+      'Ganha a vaza o trunfo mais alto ou, sem trunfos, a carta mais alta do naipe que saiu. A ordem é Ás, 7, Rei, Valete, Dama, 6, 5, 4, 3, 2.',
+      'Quem tiver o 2 de trunfo pode trocá-lo pela carta de trunfo virada, enquanto houver monte.',
+      'Pontos: Ás 11, 7 10, Rei 4, Valete 3, Dama 2 (120 por mão). Mais de 60 vale 1 jogo, 91 ou mais 2 (capote) e 120 vale 4 (bandeira). Ganha quem chegar primeiro a 4 jogos.',
+    ],
+    tips: [
+      'Não gastes trunfos em vazas sem pontos: guarda-os para apanhar Ases e Setes.',
+      'Lembra-te das cartas que já saíram, sobretudo no fim, quando o monte acaba e é preciso assistir.',
+      'Se tiveres o 2 de trunfo e a carta virada for alta (Ás ou 7), troca-a logo.',
+    ],
+    faq: [
+      ['Preciso de conta para jogar Bisca?', 'Não para jogar contra os bots. Para jogar online com amigos, ganhar medalhas e aparecer no top precisas de uma conta grátis.'],
+      ['Qual é a diferença entre a Bisca e a Sueca?', 'Na Bisca cada um tem só 3 cartas e vai comprando do monte, e enquanto há monte não é preciso assistir. Na Sueca dão-se as 10 cartas logo e é sempre obrigatório assistir.'],
+      ['Posso jogar a dois?', 'Sim: um contra um, contra um bot ou contra um amigo. Também dá para 2 contra 2.'],
+    ],
+  },
   sueca: {
     intro:
       'A Sueca é o jogo de cartas mais jogado em Portugal, nos cafés, nas férias e nas festas de família. Joga-se a 4, em duas equipas de 2: o teu parceiro senta-se à tua frente. Aqui podes jogar Sueca online grátis contra bots (sem precisar de conta) ou criar uma mesa e convidar os teus amigos; os lugares que faltarem ficam com bots.',
