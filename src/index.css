@@ -4231,3 +4231,51 @@ span.pcard { display: inline-block; }
   .dm-player__info b { font-size: 0.78rem; max-width: 70px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .dm-role { display: none; }
 }
+
+/* ---------- Solitários (FreeCell, Spider) ---------- */
+.sol { width: 100%; max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+.sol-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
+.sol-bar__info { display: flex; gap: 12px; align-items: baseline; font-size: 0.88rem; color: var(--stone); }
+.sol-bar__info b { color: var(--ink); font-size: 1rem; }
+.sol-bar__btns { display: flex; gap: 6px; flex-wrap: wrap; }
+.sol-bar__btns { align-items: center; }
+.sol-bar__btns .mode-btn, .sol-bar__btns .share-btn { width: auto; min-width: 0; margin: 0; padding: 7px 12px; font-size: 0.82rem; flex: none; }
+.sol-select { appearance: auto; }
+.sol-board { width: 100%; padding: 12px; border-radius: 16px; background: radial-gradient(ellipse at 50% 20%, #1F7A4D 0%, #14583A 65%, #0D3F29 100%); border: 6px solid #5A3A1E; display: flex; flex-direction: column; gap: 14px; box-sizing: border-box; }
+.sol-grid { display: grid; grid-template-columns: repeat(8, var(--cw)); gap: var(--gap); justify-content: center; }
+.sol-grid--10 { grid-template-columns: repeat(10, var(--cw)); }
+.sol-col { position: relative; width: var(--cw); min-height: var(--ch); }
+.sol-col > .sol-card { position: absolute; left: 0; }
+.sol-slot { width: var(--cw); height: var(--ch); border-radius: 7px; border: 2px dashed rgba(255, 255, 255, 0.25); display: flex; align-items: center; justify-content: center; position: relative; cursor: pointer; box-sizing: border-box; }
+.sol-slot > .sol-card { position: absolute; inset: -2px; }
+.sol-slot__suit { font-size: calc(var(--cw) * 0.45); color: rgba(255, 255, 255, 0.25); }
+.sol-slot--found { border-color: rgba(255, 210, 63, 0.35); }
+.sol-card { width: var(--cw); height: var(--ch); border-radius: max(4px, calc(var(--cw) * 0.09)); background: #fff; border: 1px solid #C9C9D1; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); color: #15151C; position: relative; cursor: pointer; user-select: none; box-sizing: border-box; overflow: hidden; }
+.sol-card--red { color: #D7263D; }
+.sol-card__corner { position: absolute; top: 2px; left: 3px; display: flex; align-items: baseline; gap: 1px; font: 700 max(10px, calc(var(--cw) * 0.24)) / 1 var(--font-body); }
+.sol-card__corner i { font-style: normal; font-size: 0.9em; }
+.sol-card__mid { position: absolute; left: 50%; top: 58%; transform: translate(-50%, -50%); font-size: calc(var(--cw) * 0.5); line-height: 1; }
+.sol-card--down { background: repeating-linear-gradient(45deg, #8E1F2B 0 4px, #B02A37 4px 8px); border: 2px solid #fff; cursor: default; }
+.sol-card--sel { outline: 3px solid #FFD23F; outline-offset: -1px; box-shadow: 0 0 0 3px rgba(255, 210, 63, 0.35); }
+.sol-cols--shake { animation: sol-shake 0.25s; }
+@keyframes sol-shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+.sol-win { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px; border-radius: 14px; background: var(--white); border: 1px solid var(--success); text-align: center; }
+.sol-win h3 { margin: 0; font: 800 1.5rem var(--font-display); color: var(--success); }
+.sol-win p { margin: 0; color: var(--stone); }
+.sol-tip { margin: 0; }
+.sp-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.sp-stock { position: relative; display: flex; align-items: center; gap: 10px; padding: 0; border: 0; background: none; color: #fff; cursor: pointer; min-height: calc(var(--ch) * 0.7); padding-left: calc(var(--cw) * 0.7 + 30px); font: 700 0.85rem var(--font-body); }
+.sp-stock .sol-card { position: absolute; top: 0; width: calc(var(--cw) * 0.7); height: calc(var(--ch) * 0.7); }
+.sp-stock b { position: relative; }
+.sp-stock--off { opacity: 0.6; }
+.sp-stock:disabled { cursor: default; opacity: 0.6; }
+.sp-done { display: flex; gap: 2px; }
+.sp-done i { font-style: normal; font-size: 1.1rem; color: rgba(255, 255, 255, 0.2); }
+.sp-done i.on { color: #FFD23F; }
+@media (max-width: 640px) {
+  .sol-board { padding: 6px; border-width: 4px; border-radius: 12px; gap: 10px; }
+  .sol-card__mid { display: none; }
+  .sol-card__corner { left: 2px; top: 1px; gap: 0; letter-spacing: -0.04em; font-size: max(9px, calc(var(--cw) * 0.27)); }
+  .sp-done i { font-size: 0.9rem; }
+}
+.pv-sol { align-items: flex-start; gap: 4px; }

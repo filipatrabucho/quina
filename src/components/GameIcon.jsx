@@ -22,6 +22,8 @@ const THEMES = {
   sueca: '#1E5AA8',
   bisca: '#8E2A1E',
   domino: '#2D3142',
+  spider: '#3B2A6B',
+  freecell: '#0F6B5C',
   emojidia: '#E85D3A',
 }
 
@@ -238,6 +240,28 @@ function Art({ game }) {
           <rect x="15" y="7" width="3" height="7" rx="1.5" fill="#15151C" />
           <rect x="30" y="7" width="3" height="7" rx="1.5" fill="#15151C" />
           <text x="24" y="34" textAnchor="middle" fontSize="14">🎬</text>
+        </g>
+      )
+    case 'spider':
+      return (
+        <g>
+          <rect x="7" y="9" width="15" height="21" rx="2.5" fill="#fff" />
+          <rect x="12" y="15" width="15" height="21" rx="2.5" fill="#fff" stroke="#3B2A6B" strokeWidth="0.8" />
+          <text x="15" y="25" fontSize="8" fontWeight="700" fill="#15151C" fontFamily="Inter, sans-serif">K♠</text>
+          <circle cx="33" cy="27" r="4.2" fill="#15151C" />
+          <circle cx="33" cy="21.5" r="2.6" fill="#15151C" />
+          <path d="M29 24l-4-3M29 27l-5 0M29 30l-4 3M37 24l4-3M37 27l5 0M37 30l4 3M30 21l-3-4M36 21l3-4" stroke="#15151C" strokeWidth="1.3" strokeLinecap="round" />
+          <line x1="33" y1="8" x2="33" y2="19" stroke="#fff" strokeWidth="0.8" />
+        </g>
+      )
+    case 'freecell':
+      return (
+        <g fontFamily="Inter, sans-serif" fontWeight="700">
+          {[8, 18.5, 29].map((x) => <rect key={x} x={x} y="8" width="10" height="13" rx="2" fill="none" stroke="#fff" strokeWidth="1.2" strokeDasharray="2 1.6" />)}
+          <rect x="13" y="22" width="15" height="20" rx="2.5" fill="#fff" />
+          <text x="15.5" y="31" fontSize="8" fill="#D7263D">A♥</text>
+          <rect x="22" y="25" width="15" height="17" rx="2.5" fill="#fff" stroke="#0F6B5C" strokeWidth="0.8" />
+          <text x="24.5" y="34" fontSize="8" fill="#15151C">2♠</text>
         </g>
       )
     case 'domino':

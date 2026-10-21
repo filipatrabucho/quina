@@ -181,7 +181,7 @@ create table if not exists public.player_stats (
 -- Lista de jogos (atualizada sempre que há jogos novos).
 alter table public.player_stats drop constraint if exists player_stats_game_check;
 alter table public.player_stats add constraint player_stats_game_check
-  check (game in ('palavras', 'fiada', 'quatro', 'galo', 'xadrez', 'memes', 'naval', 'stop', 'cartas', 'snake', 'memoria', 'noventa', 'verdades', 'frase', 'emojis', 'colonos', 'bombas', 'blackjack', 'poker', 'sueca', 'emojidia', 'bisca', 'domino'));
+  check (game in ('palavras', 'fiada', 'quatro', 'galo', 'xadrez', 'memes', 'naval', 'stop', 'cartas', 'snake', 'memoria', 'noventa', 'verdades', 'frase', 'emojis', 'colonos', 'bombas', 'blackjack', 'poker', 'sueca', 'emojidia', 'bisca', 'domino', 'spider', 'freecell'));
 alter table public.player_stats enable row level security;
 drop policy if exists "estatisticas: publicas" on public.player_stats;
 create policy "estatisticas: publicas" on public.player_stats for select using (true);

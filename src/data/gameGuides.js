@@ -158,6 +158,50 @@ export const GUIDES = {
       ['Posso jogar o desafio de ontem?', 'Não, cada dia tem o seu. Se quiseres mais enigmas, joga o Emoji Battle sozinho ou com amigos.'],
     ],
   },
+  spider: {
+    intro:
+      'O Spider é um dos solitários mais jogados no mundo, o mesmo que vinha nos computadores com Windows. Aqui jogas Spider Solitário online e grátis, no computador ou no telemóvel, com 1 naipe (fácil), 2 naipes (médio) ou 4 naipes (difícil). Podes desfazer as jogadas que quiseres e o jogo fica guardado se fechares a página.',
+    rules: [
+      'Joga-se com 104 cartas (dois baralhos). Há 10 colunas na mesa e o resto fica no monte.',
+      'Podes pôr uma carta em cima de outra com um valor acima, de qualquer naipe: um 7 em cima de um 8, um Valete em cima de uma Dama.',
+      'Só podes mudar várias cartas de uma vez se forem do mesmo naipe e estiverem seguidas.',
+      'Numa coluna vazia podes pôr qualquer carta ou sequência.',
+      'Quando não tiveres jogadas, dá mais 10 cartas do monte (uma por coluna). Para isso nenhuma coluna pode estar vazia.',
+      'Cada sequência completa do Rei ao Ás do mesmo naipe sai da mesa. Ganhas quando saírem as 8.',
+    ],
+    tips: [
+      'Tenta esvaziar uma coluna cedo: dá muito jeito para arrumar sequências.',
+      'Quando puderes escolher, junta cartas do mesmo naipe.',
+      'Antes de dar cartas do monte, faz todas as jogadas que conseguires.',
+    ],
+    faq: [
+      ['Preciso de conta?', 'Não. Com conta grátis, as vitórias contam para as medalhas e para o top.'],
+      ['Posso desfazer?', 'Sim, quantas vezes quiseres, com o botão Desfazer.'],
+      ['Qual é a diferença entre 1, 2 e 4 naipes?', 'Com mais naipes é mais difícil fazer sequências do mesmo naipe. Começa com 1 naipe se nunca jogaste.'],
+    ],
+  },
+  freecell: {
+    intro:
+      'O FreeCell é o solitário de estratégia que ficou famoso no Windows. Aqui jogas FreeCell online e grátis, com as mesmas distribuições numeradas (o Jogo #1 é sempre o mesmo), desfazer ilimitado e o jogo guardado se fechares a página. Quase todos os jogos têm solução: é tudo uma questão de planear.',
+    rules: [
+      'Todas as 52 cartas estão à vista, em 8 colunas.',
+      'Nas colunas só podes pôr uma carta em cima de outra de cor diferente e com um valor acima (por exemplo, um 7♥ em cima de um 8♠).',
+      'As 4 células livres guardam uma carta cada, temporariamente.',
+      'Numa coluna vazia podes pôr qualquer carta.',
+      'O objetivo é levar todas as cartas para as 4 fundações, uma por naipe, do Ás ao Rei.',
+      'Podes mudar várias cartas seguidas de uma vez se tiveres células livres e colunas vazias suficientes.',
+    ],
+    tips: [
+      'Liberta primeiro os Ases e os 2, que costumam estar enterrados.',
+      'Não enchas as células livres sem necessidade: são a tua margem de manobra.',
+      'Uma coluna vazia vale mais do que uma célula livre.',
+    ],
+    faq: [
+      ['Todos os jogos têm solução?', 'Quase todos: dos 32 000 jogos clássicos, só um (o #11982) não tem solução conhecida.'],
+      ['Posso repetir o mesmo jogo?', 'Sim, com o botão Recomeçar. Cada jogo tem um número e é sempre igual.'],
+      ['Preciso de conta?', 'Não. Com conta grátis, as vitórias contam para as medalhas e para o top.'],
+    ],
+  },
   domino: {
     intro:
       'O Dominó é o jogo de pedras que toda a gente conhece, das mesas de café às férias em família. Aqui jogas Dominó online grátis com as 28 pedras do duplo seis: a 2 ou 3 jogadores com monte para comprar, ou a 4 em equipas de dois. Contra bots (sem conta) ou numa mesa com os teus amigos.',
