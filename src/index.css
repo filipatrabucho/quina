@@ -4279,3 +4279,8 @@ span.pcard { display: inline-block; }
   .sp-done i { font-size: 0.9rem; }
 }
 .pv-sol { align-items: flex-start; gap: 4px; }
+.chess-clock { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; max-width: min(520px, 100%); margin: 0 auto; padding: 6px 12px; border-radius: 10px; background: var(--white); border: 1px solid var(--stone-light); color: var(--stone); font-size: 0.85rem; box-sizing: border-box; }
+.chess-clock b { font: 700 1.25rem var(--font-mono, monospace); color: var(--ink); font-variant-numeric: tabular-nums; }
+.chess-clock--run { border-color: #FFD23F; }
+.chess-clock--run b { color: #FFD23F; }
+.chess-clock--low b { color: #FF5A67; }
