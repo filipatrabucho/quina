@@ -21,6 +21,7 @@ const THEMES = {
   poker: '#7A1F2B',
   sueca: '#1E5AA8',
   bisca: '#8E2A1E',
+  domino: '#2D3142',
   emojidia: '#E85D3A',
 }
 
@@ -237,6 +238,16 @@ function Art({ game }) {
           <rect x="15" y="7" width="3" height="7" rx="1.5" fill="#15151C" />
           <rect x="30" y="7" width="3" height="7" rx="1.5" fill="#15151C" />
           <text x="24" y="34" textAnchor="middle" fontSize="14">🎬</text>
+        </g>
+      )
+    case 'domino':
+      return (
+        <g transform="rotate(-20 24 24)">
+          <rect x="16" y="7" width="16" height="34" rx="3.5" fill="#FBF7EC" stroke="#C9BFA6" />
+          <line x1="18.5" y1="24" x2="29.5" y2="24" stroke="#B8AE96" strokeWidth="1.2" />
+          {[[20, 11], [28, 11], [24, 15.5], [20, 20], [28, 20], [24, 28], [24, 36]].map(([cx, cy]) => (
+            <circle key={cx + '-' + cy} cx={cx} cy={cy} r="1.9" fill="#15151C" />
+          ))}
         </g>
       )
     case 'bisca':

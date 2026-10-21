@@ -158,6 +158,28 @@ export const GUIDES = {
       ['Posso jogar o desafio de ontem?', 'Não, cada dia tem o seu. Se quiseres mais enigmas, joga o Emoji Battle sozinho ou com amigos.'],
     ],
   },
+  domino: {
+    intro:
+      'O Dominó é o jogo de pedras que toda a gente conhece, das mesas de café às férias em família. Aqui jogas Dominó online grátis com as 28 pedras do duplo seis: a 2 ou 3 jogadores com monte para comprar, ou a 4 em equipas de dois. Contra bots (sem conta) ou numa mesa com os teus amigos.',
+    rules: [
+      'Cada jogador recebe 7 pedras. A 2 ou 3 jogadores, as que sobram ficam no monte; a 4 joga-se em equipas e não há monte.',
+      'Na primeira mão começa quem tem o duplo mais alto. Nas seguintes começa quem ganhou a mão anterior.',
+      'Na tua vez encostas uma pedra a uma das pontas da corrente: o número tem de ser igual.',
+      'Se nenhuma pedra encaixar, compras do monte até poderes jogar. Sem monte, passas a vez.',
+      'A mão acaba quando alguém fica sem pedras (dominó) ou quando ninguém consegue jogar (jogo fechado). No jogo fechado ganha quem tiver menos pontos na mão.',
+      'Quem ganha a mão soma os pontos das pedras que ficaram aos adversários. Ganha a partida quem chegar primeiro a 100 pontos.',
+    ],
+    tips: [
+      'Livra-te cedo das pedras pesadas (como o 6-6 ou o 6-5): se o jogo fechar, contam contra ti.',
+      'Tenta deixar nas pontas números de que tens mais pedras.',
+      'Repara nos números que os adversários não conseguiram jogar: é sinal de que não os têm.',
+    ],
+    faq: [
+      ['Preciso de conta para jogar Dominó?', 'Não para jogar contra os bots. Para jogar online com amigos, ganhar medalhas e aparecer no top precisas de uma conta grátis.'],
+      ['Posso jogar a 4 em equipas?', 'Sim. Na mesa de 4 jogas com um parceiro contra outra equipa; os lugares que faltarem ficam com bots.'],
+      ['O que é o jogo fechado?', 'É quando nenhum jogador consegue encaixar uma pedra. A mão acaba e ganha quem tiver menos pontos nas pedras que lhe ficaram.'],
+    ],
+  },
   bisca: {
     intro:
       'A Bisca é um dos jogos de cartas mais tradicionais de Portugal, jogada há gerações em cafés e reuniões de família. Aqui jogas a Bisca de 3 online e grátis: um contra um ou dois contra dois, contra bots (sem precisar de conta) ou numa mesa com os teus amigos.',

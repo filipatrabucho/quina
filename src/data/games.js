@@ -21,6 +21,16 @@ export const GAMES = [
     badge: 'Novo',
   },
   {
+    key: 'domino',
+    to: '/domino',
+    title: 'Dominó',
+    short: 'Dominó',
+    description: 'O dominó de sempre, com as 28 pedras do duplo seis: a 2 ou 3 com monte para comprar, ou a 4 em equipas. Contra bots ou com amigos.',
+    tags: ['online', 'bot'],
+    players: '1 a 4',
+    badge: 'Novo',
+  },
+  {
     key: 'sueca',
     to: '/sueca',
     title: 'Sueca',

@@ -31,6 +31,7 @@ const BlackjackGame = lazy(() => import('./games/blackjack/BlackjackGame.jsx'))
 const PokerGame = lazy(() => import('./games/poker/PokerGame.jsx'))
 const SuecaGame = lazy(() => import('./games/sueca/SuecaGame.jsx'))
 const BiscaGame = lazy(() => import('./games/bisca/BiscaGame.jsx'))
+const DominoGame = lazy(() => import('./games/domino/DominoGame.jsx'))
 const EmojiDiaGame = lazy(() => import('./games/emojidia/EmojiDiaGame.jsx'))
 
 const page = (el) => <Suspense fallback={<p className="page-loading">A carregar…</p>}>{el}</Suspense>
@@ -61,6 +62,7 @@ export default function App() {
         <Route path="blackjack" element={game('blackjack', <BlackjackGame />)} />
         <Route path="poker" element={game('poker', <PokerGame />)} />
         <Route path="emoji-do-dia" element={game('emojidia', <EmojiDiaGame />)} />
+        <Route path="domino" element={game('domino', <DominoGame />)} />
         <Route path="bisca" element={game('bisca', <BiscaGame />)} />
         <Route path="sueca" element={game('sueca', <SuecaGame />)} />
         <Route path="emoji-battle" element={game('emojis', <EmojisGame />)} />

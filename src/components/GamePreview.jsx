@@ -1,4 +1,5 @@
 import GameIcon from './GameIcon.jsx'
+import Tile from '../games/domino/Tile.jsx'
 
 // Pré-visualizações desenhadas de cada jogo, para as miniaturas da página inicial.
 const L = (letters, states) =>
@@ -184,6 +185,14 @@ export default function GamePreview({ game }) {
         <div className="pv pv-poker pv-emojidia">
           <span className="pv-emojidia__e">🦁👑🌅</span>
           <span className="pv-bj__val">🟩🟨🟩🟥🟩</span>
+        </div>
+      )
+    case 'domino':
+      return (
+        <div className="pv pv-domino">
+          <Tile l={6} r={6} vertical />
+          <Tile l={6} r={3} />
+          <Tile l={3} r={1} />
         </div>
       )
     case 'bisca':

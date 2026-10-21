@@ -19,6 +19,7 @@ const EXTRA = {
 const GAME_SEO = {
   emojidia: ['Emoji do Dia: desafio diário de adivinhar filmes pelos emojis', 'Todos os dias, 5 filmes, séries e jogos escondidos em emojis, os mesmos para toda a gente. Joga grátis, sem conta, e partilha o teu resultado com os amigos.'],
   bisca: ['Bisca online grátis: jogo de cartas português', 'Joga Bisca online grátis em português: 3 cartas, trunfo virado e troca do 2. Um contra um ou 2 contra 2, contra bots (sem conta) ou com amigos.'],
+  domino: ['Dominó online grátis: joga contra bots ou com amigos', 'Joga Dominó online grátis em português, com as 28 pedras do duplo seis: a 2 ou 3 jogadores com monte, ou a 4 em equipas. Contra bots (sem conta) ou com amigos.'],
   sueca: ['Sueca online grátis: jogo de cartas com amigos ou bots', 'Joga Sueca online grátis em português: 2 contra 2, com trunfo e as regras de sempre. Contra bots, sem conta, ou numa mesa com amigos.'],
   galo: ['Jogo do Galo online grátis (Tic Tac Toe)', null],
   quatro: ['4 em Linha online grátis (Connect 4)', null],
