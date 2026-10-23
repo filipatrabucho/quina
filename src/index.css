@@ -4287,3 +4287,20 @@ span.pcard { display: inline-block; }
 .bo-card__head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .bo-check { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--stone); cursor: pointer; }
 .bo-result--open { background: rgba(46, 197, 255, 0.12); color: var(--cyan); }
+
+/* Continuar a jogar + app no telemóvel */
+.home-continue { margin-bottom: 14px; }
+.home-continue h2 { margin: 0 0 8px; font: 700 0.8rem var(--font-body); text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone); }
+.home-continue__list { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+.home-continue__item { flex: none; display: flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; border-radius: 999px; background: var(--white); border: 1px solid var(--stone-light); color: var(--ink); text-decoration: none; font-weight: 600; font-size: 0.88rem; }
+.home-continue__item:hover { border-color: #3A3A4A; }
+.home-continue__item .game-icon { border-radius: 50%; }
+.app-promo { position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; padding: 12px 40px 12px 16px; border-radius: 14px; background: linear-gradient(135deg, rgba(46, 197, 255, 0.12), rgba(255, 70, 85, 0.08)); border: 1px solid rgba(46, 197, 255, 0.3); }
+.app-promo__text { display: flex; flex-direction: column; gap: 2px; }
+.app-promo__text small { color: var(--stone); font-size: 0.82rem; }
+.app-promo__actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-start; }
+.app-promo__close { position: absolute; top: 6px; right: 8px; border: 0; background: none; color: var(--stone); font-size: 1.3rem; cursor: pointer; }
+.reminder, .install { display: inline-flex; flex-direction: column; gap: 4px; max-width: 280px; }
+.reminder__err { color: var(--danger); font-size: 0.75rem; }
+.install__help { color: var(--stone); font-size: 0.78rem; }
+.ed-app { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }

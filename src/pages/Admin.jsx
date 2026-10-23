@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSocial } from '../social/SocialContext.jsx'
-import { adminListUsers, adminSetRole, adminStats, adminPlayStats, adminRecentPlays, adminSetGameBeta } from '../lib/social.js'
+import { adminListUsers, adminSetRole, adminStats, adminPlayStats, adminRecentPlays, adminSetGameBeta, adminRetention } from '../lib/social.js'
 import { GAMES, gameByKey, defaultBeta } from '../data/games.js'
 import Avatar from '../components/Avatar.jsx'
 import GameIcon from '../components/GameIcon.jsx'
@@ -250,6 +250,59 @@ function DayBars({ days, period }) {
   )
 }
 
+const pct = (n, base) => (base ? `${Math.round((100 * n) / base)}%` : '–')
+
+// Quem volta: por browser, com ou sem os browsers dos admins e testers.
+function Retention({ period }) {
+  const [noStaff, setNoStaff] = useState(true)
+  const [r, setR] = useState(null)
+  const [error, setError] = useState('')
+  useEffect(() => {
+    setError('')
+    adminRetention(period, noStaff).then(setR, (e) => setError(e.message))
+  }, [period, noStaff])
+  return (
+    <section className="bo-card" data-testid="bo-retention">
+      <div className="bo-card__head">
+        <h2 className="bo-card__title">Quem volta</h2>
+        <label className="bo-check">
+          <input type="checkbox" checked={noStaff} onChange={(e) => setNoStaff(e.target.checked)} data-testid="bo-no-staff" />
+          Sem admins e testers{r ? ` (${r.staff_browsers} browsers)` : ''}
+        </label>
+      </div>
+      {error && <p className="duel-error">{error}</p>}
+      <div className="bo-stats">
+        <Stat label="Pessoas" value={r?.people} hint="browsers diferentes" />
+        <Stat label="Novas" value={r?.new} hint="primeira visita no período" />
+        <Stat label="Voltaram" value={r?.returning} hint={r ? `vieram em 2 ou mais dias · ${r.reminders} com lembrete diário` : 'vieram em 2 ou mais dias'} />
+        <Stat label="No dia seguinte" value={r ? pct(r.d1, r.d1_base) : null} hint={r ? `${r.d1} de ${r.d1_base} novas · na 1.ª semana: ${pct(r.d7, r.d7_base)} (${r.d7}/${r.d7_base})` : null} />
+      </div>
+      {r?.cohorts?.length > 0 && (
+        <div className="bo-table-wrap">
+          <table className="bo-table" data-testid="bo-cohorts">
+            <thead>
+              <tr><th>Primeira visita</th><th className="bo-num">Novas</th><th className="bo-num">Voltaram no dia seguinte</th><th className="bo-num">Voltaram (qualquer dia)</th></tr>
+            </thead>
+            <tbody>
+              {r.cohorts.slice(0, 14).map((c) => (
+                <tr key={c.day}>
+                  <td>{dayLabel(c.day)}</td>
+                  <td className="bo-num">{c.new}</td>
+                  <td className="bo-num">{c.d1} <small>{pct(c.d1, c.new)}</small></td>
+                  <td className="bo-num">{c.again} <small>{pct(c.again, c.new)}</small></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <p className="admin-note" style={{ margin: 0 }}>
+        Conta-se por browser (o mesmo telemóvel ou computador). Quem joga em dois aparelhos conta duas vezes. "Na 1.ª semana" só conta quem chegou há pelo menos 7 dias.
+      </p>
+    </section>
+  )
+}
+
 function Plays() {
   const [period, setPeriod] = useState(30)
   const [data, setData] = useState(null)
@@ -283,6 +336,7 @@ function Plays() {
         <Stat label="Sem conta / com conta" value={t ? `${t.guest_players} / ${t.account_players}` : null} hint="pessoas que jogaram" />
       </div>
       {data && <DayBars days={data.days} period={period} />}
+      <Retention period={period} />
       <div className="bo-table-wrap">
         <table className="bo-table" data-testid="bo-plays-table">
           <thead>

@@ -5,6 +5,7 @@ import { recordResultOnce } from '../../lib/social.js'
 import { dailyPlayers } from '../../lib/plays.js'
 import { whatsappUrl } from '../../lib/share.js'
 import { track } from '../../lib/analytics.js'
+import { ReminderToggle, InstallButton } from '../../components/AppPromo.jsx'
 import { CATEGORIES, PUZZLES } from '../emojis/puzzles.js'
 import { checkGuess, hintFor } from '../emojis/emojisLogic.js'
 import { PER_DAY, MAX_TRIES, STATE_KEY, DAYS_KEY, load, lisbonDay, dayNumber, puzzlesOfDay, squares, solvedCount, shareText, msToNextDay, streakOf, SQUARE } from './emojiDia.js'
@@ -78,7 +79,12 @@ function Done({ n, results, players }) {
           WhatsApp
         </a>
       </div>
-      <p className="modal-note">Novo desafio daqui a <b data-testid="ed-next">{fmtCountdown(left)}</b>. Enquanto esperas:</p>
+      <p className="modal-note">Novo desafio daqui a <b data-testid="ed-next">{fmtCountdown(left)}</b>.</p>
+      <div className="ed-app">
+        <ReminderToggle />
+        <InstallButton />
+      </div>
+      <p className="modal-note">Enquanto esperas:</p>
       <div className="ed-more">
         <Link to="/emoji-battle" className="ed-more__link"><GameIcon game="emojis" size={28} /> Emoji Battle</Link>
         <Link to="/palavras" className="ed-more__link"><GameIcon game="palavras" size={28} /> Palavras do dia</Link>

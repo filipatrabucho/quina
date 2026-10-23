@@ -8,7 +8,7 @@ const GUEST_PLAYS_KEY = 'tg-partidas-convidado'
 
 export const GAME_FINISHED = 'tg-game-finished'
 
-function visitorId() {
+export function visitorId() {
   try {
     let id = localStorage.getItem(VISITOR_KEY)
     if (!id) {
@@ -65,4 +65,22 @@ export async function dailyPlayers(game) {
   if (!supabaseConfigured) return null
   const { data, error } = await supabase.rpc('daily_players', { p_game: game })
   return error ? null : data
+}
+
+// Jogos abertos recentemente neste browser (para "Continuar a jogar").
+const RECENT_KEY = 'tg-recentes'
+export function rememberGame(game) {
+  try {
+    const list = JSON.parse(localStorage.getItem(RECENT_KEY) || '[]').filter((k) => k !== game)
+    localStorage.setItem(RECENT_KEY, JSON.stringify([game, ...list].slice(0, 6)))
+  } catch {
+    // sem localStorage não há lista
+  }
+}
+export function recentGames() {
+  try {
+    return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]')
+  } catch {
+    return []
+  }
 }

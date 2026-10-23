@@ -3,10 +3,13 @@ import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import { applyGameSettings } from './data/games.js'
+import { registerServiceWorker } from './lib/app.js'
 import './index.css'
 
 // Estado beta/produção com que o build desenhou as páginas (igual ao do HTML).
 if (window.__TG_GAMES__) applyGameSettings(window.__TG_GAMES__)
+// Instalar como app e lembretes (só na versão publicada).
+registerServiceWorker()
 
 const root = document.getElementById('root')
 const app = (

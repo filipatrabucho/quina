@@ -15,7 +15,7 @@ import { useSocial } from '../social/SocialContext.jsx'
 import { useSeo } from '../hooks/useSeo.js'
 import CookieBar, { openCookieBar } from './CookieBar.jsx'
 import GameEndToast from './GameEndToast.jsx'
-import { logOpen } from '../lib/plays.js'
+import { logOpen, rememberGame } from '../lib/plays.js'
 
 function AccountChip() {
   const { user, loading } = useAuth()
@@ -126,7 +126,10 @@ function SiteShell() {
 
   // Conta quem abre cada jogo (uma vez por sessão), com ou sem conta.
   useEffect(() => {
-    if (game) logOpen(game.key)
+    if (game) {
+      logOpen(game.key)
+      rememberGame(game.key)
+    }
   }, [game?.key]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Fecha o menu do telemóvel ao mudar de página e com a tecla Esc.

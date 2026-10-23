@@ -609,6 +609,84 @@ returns int language sql stable security definer set search_path = public as $$
 $$;
 grant execute on function public.daily_players(text) to anon, authenticated;
 
+-- ---------- Lembretes (notificações no telemóvel/computador) ----------
+-- Guarda as subscrições de quem pediu o lembrete diário. Só a função agendada
+-- (com a chave de serviço) as lê; o site só pode juntar ou tirar a sua.
+create table if not exists public.push_subscriptions (
+  endpoint text primary key check (endpoint ~ '^https://' and length(endpoint) < 1000),
+  p256dh text not null check (length(p256dh) < 200),
+  auth text not null check (length(auth) < 100),
+  visitor text check (visitor is null or visitor ~ '^[A-Za-z0-9_-]{6,40}$'),
+  user_id uuid references auth.users (id) on delete set null,
+  created_at timestamptz not null default now(),
+  last_sent timestamptz
+);
+alter table public.push_subscriptions enable row level security;
+
+create or replace function public.save_push_subscription(p_endpoint text, p_p256dh text, p_auth text, p_visitor text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  insert into push_subscriptions (endpoint, p256dh, auth, visitor, user_id)
+  values (p_endpoint, p_p256dh, p_auth, p_visitor, auth.uid())
+  on conflict (endpoint) do update set p256dh = excluded.p256dh, auth = excluded.auth, visitor = excluded.visitor, user_id = coalesce(excluded.user_id, push_subscriptions.user_id);
+end;
+$$;
+grant execute on function public.save_push_subscription(text, text, text, text) to anon, authenticated;
+
+create or replace function public.delete_push_subscription(p_endpoint text)
+returns void language sql security definer set search_path = public as $$
+  delete from push_subscriptions where endpoint = p_endpoint;
+$$;
+grant execute on function public.delete_push_subscription(text) to anon, authenticated;
+
+-- Quem volta: por browser (visitante). Exclui, se pedido, os browsers onde
+-- já entrou um admin ou tester. Dias contados na hora de Lisboa.
+create or replace function public.admin_retention(p_days int default 30, p_exclude_staff boolean default true)
+returns json language plpgsql stable security definer set search_path = public as $$
+declare
+  today date := (now() at time zone 'Europe/Lisbon')::date;
+  since date := today - greatest(1, least(p_days, 365));
+begin
+  if not exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin') then
+    raise exception 'Só o admin pode ver estes números.';
+  end if;
+  return (
+    with staff_visitors as (
+      select distinct gp.visitor from game_plays gp join staff s on s.user_id = gp.user_id
+    ),
+    days as (
+      select distinct gp.visitor, (gp.created_at at time zone 'Europe/Lisbon')::date as d
+      from game_plays gp
+      where not (p_exclude_staff and gp.visitor in (select visitor from staff_visitors))
+    ),
+    firsts as (select visitor, min(d) as first_day from days group by visitor),
+    cohort as (
+      select f.visitor, f.first_day,
+        exists (select 1 from days x where x.visitor = f.visitor and x.d = f.first_day + 1) as d1,
+        exists (select 1 from days x where x.visitor = f.visitor and x.d between f.first_day + 1 and f.first_day + 7) as d7,
+        exists (select 1 from days x where x.visitor = f.visitor and x.d > f.first_day) as again
+      from firsts f where f.first_day >= since
+    )
+    select json_build_object(
+      'people', (select count(distinct visitor) from days where d >= since),
+      'new', (select count(*) from cohort),
+      'returning', (select count(*) from (select visitor from days where d >= since group by visitor having count(*) >= 2) r),
+      'd1_base', (select count(*) from cohort where first_day < today),
+      'd1', (select count(*) from cohort where first_day < today and d1),
+      'd7_base', (select count(*) from cohort where first_day <= today - 7),
+      'd7', (select count(*) from cohort where first_day <= today - 7 and d7),
+      'staff_browsers', (select count(*) from staff_visitors),
+      'reminders', (select count(*) from push_subscriptions),
+      'cohorts', (select coalesce(json_agg(c order by c.day desc), '[]'::json) from (
+        select first_day as day, count(*) as new, count(*) filter (where d1) as d1, count(*) filter (where again) as again
+        from cohort group by first_day
+      ) c)
+    )
+  );
+end;
+$$;
+grant execute on function public.admin_retention(int, boolean) to authenticated;
+
 -- Avisa a API do Supabase de que há funções e tabelas novas (sem isto pode
 -- dar "Could not find the function ... in the schema cache").
 notify pgrst, 'reload schema';

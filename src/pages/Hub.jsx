@@ -8,7 +8,8 @@ import AdSlot from '../components/AdSlot.jsx'
 import { CATEGORIES, GameSearch } from '../components/Sidebar.jsx'
 import { useAuth } from '../hooks/useAuth.js'
 import { dayNumber, squares, solvedCount, todayResult, PER_DAY } from '../games/emojidia/emojiDia.js'
-import { dailyPlayers } from '../lib/plays.js'
+import { dailyPlayers, recentGames } from '../lib/plays.js'
+import AppPromo from '../components/AppPromo.jsx'
 
 const MODE_LABEL = { online: 'Multiplayer', bot: 'vs Bot', solo: 'Solo', diario: 'Diário' }
 // Os jogos grandes do topo: os 3 primeiros desta lista que a pessoa pode ver
@@ -94,6 +95,27 @@ function QuickStart() {
   )
 }
 
+// Os últimos jogos que esta pessoa abriu (só no browser).
+function ContinuePlaying({ games }) {
+  const [keys, setKeys] = useState([])
+  useEffect(() => setKeys(recentGames()), [])
+  const list = keys.map((k) => games.find((g) => g.key === k)).filter(Boolean).slice(0, 5)
+  if (!list.length) return null
+  return (
+    <section className="home-continue" aria-label="Continuar a jogar" data-testid="continue-playing">
+      <h2>Continuar a jogar</h2>
+      <div className="home-continue__list">
+        {list.map((g) => (
+          <Link key={g.key} to={g.to} className="home-continue__item">
+            <GameIcon game={g.key} size={32} />
+            <span>{g.title}</span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 export default function Hub() {
   const [params, setParams] = useSearchParams()
   const { user } = useAuth()
@@ -135,6 +157,8 @@ export default function Hub() {
       </div>
 
       {browsing && <QuickStart />}
+      {browsing && <ContinuePlaying games={games} />}
+      {browsing && <AppPromo />}
 
       {!browsing && (
         <div className="home-filter">

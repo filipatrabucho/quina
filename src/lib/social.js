@@ -354,3 +354,10 @@ export async function adminSetGameBeta(game, beta) {
   const { error } = await supabase.rpc('admin_set_game_beta', { p_game: game, p_beta: beta })
   fail(error)
 }
+
+// Quem volta (por browser), para o backoffice.
+export async function adminRetention(days = 30, excludeStaff = true) {
+  const { data, error } = await supabase.rpc('admin_retention', { p_days: days, p_exclude_staff: excludeStaff })
+  fail(error)
+  return data
+}
