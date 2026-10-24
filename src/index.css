@@ -4304,3 +4304,35 @@ span.pcard { display: inline-block; }
 .reminder__err { color: var(--danger); font-size: 0.75rem; }
 .install__help { color: var(--stone); font-size: 0.78rem; }
 .ed-app { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+
+/* Foco Discord: CTA da página inicial e página /jogos-para-discord */
+.home-quick { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1.15fr); }
+.quick-card--discord { background: linear-gradient(135deg, #5865F2 0%, #3C45C5 100%); border-color: transparent; }
+.quick-card--discord .quick-card__text small { color: rgba(255, 255, 255, 0.88); }
+.quick-card--discord:hover { border-color: transparent; filter: brightness(1.07); }
+.quick-card--play { background: var(--white); border-color: var(--stone-light); }
+.quick-card--play .quick-card__icon { background: var(--azulejo); }
+.quick-card--play .quick-card__text small { color: var(--stone); }
+.quick-card--play:hover { border-color: #3A3A4A; filter: none; }
+@media (max-width: 1100px) { .home-quick { grid-template-columns: 1fr 1fr; } .quick-card--discord { grid-column: 1 / -1; } }
+@media (max-width: 720px) { .home-quick { grid-template-columns: 1fr; } }
+.dc-steps { list-style: none; margin: 18px 0 8px; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.dc-steps li { display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 14px; background: var(--white); border: 1px solid var(--stone-light); }
+.dc-steps__n { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: #5865F2; color: #fff; font-weight: 800; font-size: 0.9rem; }
+.dc-steps small { color: var(--stone); font-size: 0.84rem; line-height: 1.4; }
+.dc-games { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 6px; }
+.dc-game { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 14px; background: var(--white); border: 1px solid var(--stone-light); }
+.dc-game .game-icon { flex: none; border-radius: 10px; }
+.dc-game__text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.dc-game__text small { color: var(--stone); font-size: 0.78rem; }
+.dc-game__text p { margin: 2px 0 0; font-size: 0.86rem; color: var(--stone); }
+.dc-game .btn { flex: none; }
+.dc-faq details { padding: 10px 14px; border-radius: 12px; background: var(--white); border: 1px solid var(--stone-light); margin-bottom: 8px; }
+.dc-faq summary { cursor: pointer; font-weight: 600; }
+.dc-faq p { margin: 8px 0 0; color: var(--stone); }
+.dc-solo { color: var(--stone); }
+@media (max-width: 720px) {
+  .dc-steps { grid-template-columns: 1fr 1fr; }
+  .dc-game { flex-wrap: wrap; }
+  .dc-game .btn { width: 100%; }
+}

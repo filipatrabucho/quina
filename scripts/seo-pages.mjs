@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { GAMES, applyGameSettings } from '../src/data/games.js'
 import { seoFor, SITE_URL, SITE_NAME, publicPaths } from '../src/data/seo.js'
 import { GUIDES } from '../src/data/gameGuides.js'
+import { DISCORD_PATH, DISCORD_FAQ } from '../src/data/discordPage.js'
 import { render, applyGameSettings as applySsrGameSettings } from '../dist-ssr/entry-server.js'
 
 const dist = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
@@ -77,6 +78,13 @@ if (/^ca-pub-\d+$/.test(adsClient)) {
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
 function jsonLd(s) {
+  if (s.path === DISCORD_PATH) {
+    return {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: DISCORD_FAQ.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })),
+    }
+  }
   if (s.path === '/') {
     return {
       '@context': 'https://schema.org',
@@ -119,7 +127,7 @@ function fallback(s) {
   const links = GAMES.filter((g) => !g.beta)
     .map((g) => `<li><a href="${g.to}">${esc(g.title)}</a>: ${esc(g.description)}</li>`)
     .join('')
-  const h1 = s.game ? `${esc(s.game.title)} online grátis` : 'Jogos online grátis em português'
+  const h1 = s.game ? `${esc(s.game.title)} online grátis` : s.path === DISCORD_PATH ? 'Jogos para jogar no Discord com amigos' : 'Mini-jogos para jogar com amigos no Discord'
   const g = s.game && GUIDES[s.game.key]
   const guide = g
     ? `<h2>Como jogar ${esc(s.game.title)}</h2><p>${esc(g.intro)}</p><h3>Regras</h3><ul>${g.rules.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>` +
@@ -158,7 +166,7 @@ function page(path) {
 }
 
 writeFileSync(join(dist, 'index.html'), page('/'))
-const paths = [...GAMES.map((g) => g.to), '/conta', '/sobre', '/contacto']
+const paths = [...GAMES.map((g) => g.to), DISCORD_PATH, '/conta', '/sobre', '/contacto']
 for (const p of paths) {
   const dir = join(dist, p)
   mkdirSync(dir, { recursive: true })

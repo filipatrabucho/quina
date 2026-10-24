@@ -37,6 +37,13 @@ const ICONS = {
     </>
   ),
   friends: <path d="M4 5h16v11H9l-5 4z" />,
+  // comando de jogo (para os jogos no Discord)
+  discord: (
+    <>
+      <path d="M7 7h10a4 4 0 0 1 4 4v3.5a2.5 2.5 0 0 1-4.6 1.4L15 14H9l-1.4 1.9A2.5 2.5 0 0 1 3 14.5V11a4 4 0 0 1 4-4z" />
+      <path d="M8 10v3M6.5 11.5h3M15 11h.01M17 12.5h.01" />
+    </>
+  ),
   admin: (
     <>
       <path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z" />
@@ -134,6 +141,10 @@ export default function Sidebar({ onNavigate }) {
           <Icon name="home" />
           <span className="side-link__label">Início</span>
         </Link>
+        <Link to="/jogos-para-discord" className={`side-link${location.pathname === '/jogos-para-discord' ? ' side-link--on' : ''}`} onClick={onNavigate} title="Jogos para o Discord" data-testid="side-discord">
+          <Icon name="discord" />
+          <span className="side-link__label">Para o Discord</span>
+        </Link>
         {CATEGORIES.map((c) => (
           <Link key={c.key} to={`/?cat=${c.key}`} className={`side-link side-link--cat${cat === c.key ? ' side-link--on' : ''}`} onClick={onNavigate}>
             <Icon name={c.icon} />
@@ -163,7 +174,7 @@ export default function Sidebar({ onNavigate }) {
             <MedalBadge medal={medalByKey.lenda} size={52} title="" />
             <MedalBadge medal={medalByKey.popular} size={40} title="" />
           </div>
-          <p>Joga com amigos, ganha troféus e sobe no top.</p>
+          <p>Joga com o teu grupo do Discord, ganha troféus e sobe no top.</p>
           <Link to="/conta?modo=criar" className="btn btn--primary btn--small side-promo__btn" onClick={onNavigate}>
             Criar conta grátis
           </Link>

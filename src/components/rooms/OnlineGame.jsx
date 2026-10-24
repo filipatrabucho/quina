@@ -81,6 +81,7 @@ function InviteBox({ code, gameTitle }) {
       <button className="share-btn" onClick={copy}>
         {copied ? 'Copiado! ✓' : 'Copiar link de convite'}
       </button>
+      <p className="modal-note">Cola o link no chat do Discord (ou no WhatsApp): quem abrir entra logo nesta sala.</p>
       <InviteFriends title={`${gameTitle}, sala ${code}`} url={link} />
     </>
   )

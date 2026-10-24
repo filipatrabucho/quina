@@ -158,7 +158,7 @@ function SiteShell() {
           </Link>
           {isHome && (
             <h1 className="topbar__title">
-              Jogos online grátis <span>Escolhe um e começa já.</span>
+              Mini-jogos para jogar com amigos no Discord <span>Ou sozinho, contra bots.</span>
             </h1>
           )}
           <div className="topbar__actions">

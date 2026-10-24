@@ -1,7 +1,7 @@
 {
   "name": "Tuga Games PT",
   "short_name": "Tuga Games",
-  "description": "Jogos online grátis em português, sozinho ou com amigos.",
+  "description": "Mini-jogos grátis para jogar com amigos no Discord, ou sozinho contra bots.",
   "lang": "pt-PT",
   "start_url": "/",
   "display": "standalone",

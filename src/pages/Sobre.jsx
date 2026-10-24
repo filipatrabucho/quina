@@ -9,8 +9,8 @@ export default function Sobre() {
       <span className="eyebrow">Tuga Games PT</span>
       <h1>Sobre nós</h1>
       <p className="info-page__lead">
-        O Tuga Games PT é um site de mini-jogos online grátis, feito em Portugal e todo em português de Portugal. A ideia é simples:
-        abrir o browser e jogar logo, sozinho, contra o computador ou com os amigos, sem instalar nada. Sozinho ou contra bots jogas logo, sem conta; para jogar online com amigos, guardar vitórias e subir no top crias uma conta grátis num minuto (com email, Google ou Discord).
+        O Tuga Games PT é um site de mini-jogos online grátis, feito em Portugal e todo em português de Portugal, pensado para jogar com
+        amigos numa chamada de Discord: cria-se uma sala, cola-se o link no chat e joga-se no browser, sem instalar nada. Sozinho ou contra bots jogas logo, sem conta; para jogar online com amigos, guardar vitórias e subir no top crias uma conta grátis num minuto (com email, Google ou Discord).
       </p>
 
       <h2>O que podes jogar</h2>

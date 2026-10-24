@@ -14,7 +14,7 @@ import AppPromo from '../components/AppPromo.jsx'
 const MODE_LABEL = { online: 'Multiplayer', bot: 'vs Bot', solo: 'Solo', diario: 'Diário' }
 // Os jogos grandes do topo: os 3 primeiros desta lista que a pessoa pode ver
 // (o Bombas está em beta e só aparece aos testers).
-const FEATURED_PICKS = ['sueca', 'bombas', 'emojis', 'stop', 'palavras']
+const FEATURED_PICKS = ['emojis', 'stop', 'memes', 'sueca', 'palavras']
 // Quantas miniaturas antes do anúncio a meio da grelha.
 const BEFORE_AD = 6
 
@@ -70,13 +70,22 @@ function QuickStart() {
   }, [])
   return (
     <section className="home-quick" aria-label="Começar a jogar">
+      <Link to="/jogos-para-discord" className="quick-card quick-card--discord" data-testid="quick-discord">
+        <span className="quick-card__icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M20.3 4.4A19.6 19.6 0 0 0 15.4 3l-.6 1.3a18 18 0 0 0-5.6 0L8.6 3a19.6 19.6 0 0 0-4.9 1.4C.6 9 -.3 13.6.1 18a19.8 19.8 0 0 0 6 3l1.3-2.1c-.7-.3-1.4-.6-2-1l.5-.4a14 14 0 0 0 12.2 0l.5.4c-.6.4-1.3.7-2 1l1.3 2.1a19.7 19.7 0 0 0 6-3c.5-5.1-.8-9.6-3.6-13.6zM8.3 15.3c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.2 1.1 2.1 2.4c0 1.3-.9 2.4-2.1 2.4zm7.4 0c-1.2 0-2.1-1.1-2.1-2.4s.9-2.4 2.1-2.4 2.2 1.1 2.1 2.4c0 1.3-.9 2.4-2.1 2.4z" /></svg>
+        </span>
+        <span className="quick-card__text">
+          <b>Jogar com amigos no Discord</b>
+          <small>Cria uma sala, cola o link no chat e joguem todos durante a chamada.</small>
+        </span>
+      </Link>
       <Link to="/sueca?modo=bot&jogar=1" className="quick-card quick-card--play" data-testid="quick-play">
         <span className="quick-card__icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor"><path d="M8 5v14l11-7z" /></svg>
         </span>
         <span className="quick-card__text">
-          <b>Jogar já</b>
-          <small>Uma partida de Sueca contra bots, sem conta e sem esperar.</small>
+          <b>Jogar já sozinho</b>
+          <small>Sueca contra bots, sem conta e sem esperar.</small>
         </span>
       </Link>
       <Link to="/emoji-do-dia" className={`quick-card quick-card--daily${done ? ' quick-card--done' : ''}`} data-testid="quick-daily">
@@ -189,16 +198,16 @@ export default function Hub() {
         <h2>Sobre o Tuga Games</h2>
         <div className="home-about__cols">
           <div>
+            <h3>Feito para chamadas de Discord</h3>
+            <p>Estão em chamada? Cria uma sala, cola o link no chat e joguem todos ao mesmo tempo, enquanto falam. <Link to="/jogos-para-discord">Ver os jogos para o Discord</Link>.</p>
+          </div>
+          <div>
             <h3>Sem instalar nada</h3>
-            <p>Todos os jogos abrem no browser, no computador ou no telemóvel. Não há downloads nem aplicações.</p>
+            <p>Todos os jogos abrem no browser, no computador ou no telemóvel. Não há downloads, aplicações nem bots para adicionar ao servidor.</p>
           </div>
           <div>
-            <h3>Joga com amigos</h3>
-            <p>Cria uma sala, envia o link e começa a jogar. Também podes adicionar amigos e convidá-los pelo site.</p>
-          </div>
-          <div>
-            <h3>Ganha troféus</h3>
-            <p>Cada vitória conta para as tuas medalhas e para o top de jogadores de cada jogo.</p>
+            <h3>Também sozinho</h3>
+            <p>Sem ninguém online? Joga contra bots, faz o Emoji do Dia ou um solitário. Cada vitória conta para as medalhas e para o top.</p>
           </div>
         </div>
         <div className="home-about__links">
