@@ -4336,3 +4336,31 @@ span.pcard { display: inline-block; }
   .dc-game { flex-wrap: wrap; }
   .dc-game .btn { width: 100%; }
 }
+
+/* Publicidade própria (afiliados) enquanto não há AdSense */
+.ad-slot__live { width: 100%; display: flex; justify-content: center; }
+/* sem anúncio: fica com a largura toda (o AdSense precisa dela) mas sem altura */
+.ad-slot__live--empty { height: 0; overflow: hidden; }
+.ad-slot { position: relative; }
+.house-ad { position: relative; width: 100%; display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: 'emoji body cta' 'note note note'; align-items: center; gap: 4px 14px; padding: 12px 16px 8px; border-radius: 12px; text-decoration: none; color: #fff; box-sizing: border-box; border: 1px solid rgba(255, 255, 255, 0.08); transition: transform 0.12s, filter 0.12s; }
+.house-ad:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.house-ad--ig { background: linear-gradient(120deg, #2A1206 0%, #5A2208 55%, #FF5400 140%); }
+.house-ad--amazon { background: linear-gradient(120deg, #131A22 0%, #232F3E 60%, #3A4A5E 120%); }
+.house-ad__emoji { grid-area: emoji; font-size: 2rem; }
+.house-ad__body { grid-area: body; display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.house-ad__brand { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.75; }
+.house-ad__body b { font-size: 0.98rem; line-height: 1.2; }
+.house-ad__text { font-size: 0.8rem; opacity: 0.8; }
+.house-ad__cta { grid-area: cta; padding: 8px 14px; border-radius: 999px; font: 700 0.82rem var(--font-body); white-space: nowrap; background: #FF5400; color: #fff; }
+.house-ad--amazon .house-ad__cta { background: #FF9900; color: #131A22; }
+.house-ad__note { grid-area: note; font-size: 0.62rem; opacity: 0.55; }
+/* coluna lateral (160 de largura, alta) */
+.house-ad--rail { width: 160px; min-height: 600px; grid-template-columns: 1fr; grid-template-areas: 'emoji' 'body' 'cta' 'note'; align-content: center; justify-items: center; text-align: center; gap: 14px; padding: 18px 12px; }
+.house-ad--rail .house-ad__emoji { font-size: 3.2rem; }
+.house-ad--rail .house-ad__body b { font-size: 1.1rem; }
+.house-ad--rail .house-ad__cta { white-space: normal; }
+@media (max-width: 760px) {
+  .house-ad--banner { grid-template-columns: auto 1fr; grid-template-areas: 'emoji body' 'cta cta' 'note note'; gap: 6px 12px; }
+  .house-ad--banner .house-ad__cta { text-align: center; }
+  .house-ad__emoji { font-size: 1.6rem; }
+}
