@@ -15,6 +15,7 @@ import { useSocial } from '../social/SocialContext.jsx'
 import { useSeo } from '../hooks/useSeo.js'
 import CookieBar, { openCookieBar } from './CookieBar.jsx'
 import GameEndToast from './GameEndToast.jsx'
+import FeedbackModal, { openFeedback } from './Feedback.jsx'
 import { logOpen, rememberGame } from '../lib/plays.js'
 
 function AccountChip() {
@@ -189,6 +190,9 @@ function SiteShell() {
             <nav className="site-footer__links">
               <Link to="/sobre">Sobre</Link>
               <Link to="/contacto">Contacto</Link>
+              <button type="button" className="site-footer__link-btn" onClick={openFeedback} data-testid="footer-feedback">
+                Dar feedback
+              </button>
               <Link to="/conta">Conta</Link>
               <a href="/privacidade.html">Privacidade</a>
               <a href="/termos.html">Termos</a>
@@ -208,6 +212,7 @@ function SiteShell() {
 
       <CookieBar />
       <GameEndToast />
+      <FeedbackModal />
       <ChatDock />
     </div>
   )

@@ -245,15 +245,16 @@ export function socialUrl(network, value) {
 }
 
 // ---- Top de jogadores de cada jogo ----
+// Jogos em que o top é pela melhor pontuação (e não pelas vitórias).
+export const SCORE_GAMES = ['snake']
+
 export async function getTopPlayers(game, limit = 3) {
-  const { data, error } = await supabase
-    .from('player_stats')
-    .select('user_id, wins, plays')
-    .eq('game', game)
-    .gt('wins', 0)
-    .order('wins', { ascending: false })
-    .order('plays', { ascending: true })
-    .limit(limit)
+  const byScore = SCORE_GAMES.includes(game)
+  let q = supabase.from('player_stats').select('user_id, wins, plays, best_score').eq('game', game)
+  q = byScore
+    ? q.gt('best_score', 0).order('best_score', { ascending: false }).order('updated_at', { ascending: true })
+    : q.gt('wins', 0).order('wins', { ascending: false }).order('plays', { ascending: true })
+  const { data, error } = await q.limit(limit)
   fail(error)
   if (!data.length) return []
   const profiles = await getProfilesByIds(data.map((x) => x.user_id))
@@ -360,4 +361,19 @@ export async function adminRetention(days = 30, excludeStaff = true) {
   const { data, error } = await supabase.rpc('admin_retention', { p_days: days, p_exclude_staff: excludeStaff })
   fail(error)
   return data
+}
+
+// ---- Feedback dos utilizadores ----
+export async function sendFeedback(kind, message, page) {
+  const { error } = await supabase.rpc('send_feedback', { p_kind: kind, p_message: message, p_page: page })
+  fail(error)
+}
+export async function adminListFeedback(status = null) {
+  const { data, error } = await supabase.rpc('admin_list_feedback', { p_status: status, p_limit: 200 })
+  fail(error)
+  return data
+}
+export async function adminSetFeedbackStatus(id, status) {
+  const { error } = await supabase.rpc('admin_set_feedback_status', { p_id: id, p_status: status })
+  fail(error)
 }

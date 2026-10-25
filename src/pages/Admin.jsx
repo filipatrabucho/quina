@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSocial } from '../social/SocialContext.jsx'
-import { adminListUsers, adminSetRole, adminStats, adminPlayStats, adminRecentPlays, adminSetGameBeta, adminRetention } from '../lib/social.js'
+import { adminListUsers, adminSetRole, adminStats, adminPlayStats, adminRecentPlays, adminSetGameBeta, adminRetention, adminListFeedback, adminSetFeedbackStatus } from '../lib/social.js'
+import { FEEDBACK_KINDS } from '../components/Feedback.jsx'
 import { GAMES, gameByKey, defaultBeta } from '../data/games.js'
 import Avatar from '../components/Avatar.jsx'
 import GameIcon from '../components/GameIcon.jsx'
@@ -466,6 +467,77 @@ function Activity() {
   )
 }
 
+const FEEDBACK_STATUS = [
+  { key: null, label: 'Todos' },
+  { key: 'novo', label: 'Novos' },
+  { key: 'lido', label: 'Lidos' },
+  { key: 'feito', label: 'Feitos' },
+]
+const KIND_LABEL = Object.fromEntries(FEEDBACK_KINDS.map((k) => [k.key, k.label]))
+
+// Feedback dos utilizadores (opiniões, sugestões, erros, ideias de jogos).
+function FeedbackList() {
+  const [filter, setFilter] = useState('novo')
+  const [list, setList] = useState(null)
+  const [error, setError] = useState('')
+  const load = useCallback(() => adminListFeedback(filter).then(setList, (e) => setError(e.message)), [filter])
+  useEffect(() => {
+    setList(null)
+    load()
+  }, [load])
+  const mark = async (id, status) => {
+    try {
+      await adminSetFeedbackStatus(id, status)
+      load()
+    } catch (e) {
+      setError(e.message)
+    }
+  }
+  return (
+    <section className="bo-card" data-testid="bo-feedback">
+      <div className="bo-filters">
+        {FEEDBACK_STATUS.map((f) => (
+          <button key={f.label} type="button" className={`home-cat${filter === f.key ? ' home-cat--active' : ''}`} onClick={() => setFilter(f.key)}>{f.label}</button>
+        ))}
+      </div>
+      {error && <p className="duel-error">{error}</p>}
+      {!list ? (
+        <p className="bo-empty">A carregar…</p>
+      ) : !list.length ? (
+        <p className="bo-empty">Sem feedback {filter === 'novo' ? 'novo' : 'aqui'}.</p>
+      ) : (
+        <ul className="bo-feedback">
+          {list.map((f) => (
+            <li key={f.id} className={`bo-fb bo-fb--${f.status}`}>
+              <div className="bo-fb__head">
+                {f.username ? (
+                  <Link to={`/u/${f.username}`} className="bo-user">
+                    <Avatar src={f.avatar_url} seed={f.user_id} name={f.username} size={28} />
+                    <span><b>{f.username}</b><small>{f.email}</small></span>
+                  </Link>
+                ) : (
+                  <span className="bo-user"><b>Conta apagada</b></span>
+                )}
+                <span className="admin-role">{KIND_LABEL[f.kind] || f.kind}</span>
+                <time dateTime={f.created_at}>{ago(f.created_at)}</time>
+              </div>
+              <p className="bo-fb__msg">{f.message}</p>
+              <div className="bo-fb__foot">
+                {f.page && <small>Página: {f.page}</small>}
+                <span className="bo-fb__btns">
+                  {f.status !== 'lido' && <button type="button" className="mode-btn mode-btn--small" onClick={() => mark(f.id, 'lido')}>Marcar como lido</button>}
+                  {f.status !== 'feito' && <button type="button" className="mode-btn mode-btn--small" onClick={() => mark(f.id, 'feito')}>Feito</button>}
+                  {f.status !== 'novo' && <button type="button" className="link-btn" onClick={() => mark(f.id, 'novo')}>Voltar a novo</button>}
+                </span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+}
+
 // Backoffice: utilizadores, testers e jogos (só para o admin).
 export default function Admin() {
   const s = useSocial()
@@ -504,11 +576,13 @@ export default function Admin() {
       <div className="bo-tabs" role="tablist">
         <button type="button" role="tab" aria-selected={tab === 'plays'} className={`bo-tab${tab === 'plays' ? ' bo-tab--on' : ''}`} onClick={() => setTab('plays')} data-testid="bo-tab-plays">Quem jogou</button>
         <button type="button" role="tab" aria-selected={tab === 'activity'} className={`bo-tab${tab === 'activity' ? ' bo-tab--on' : ''}`} onClick={() => setTab('activity')} data-testid="bo-tab-activity">Atividade</button>
+        <button type="button" role="tab" aria-selected={tab === 'feedback'} className={`bo-tab${tab === 'feedback' ? ' bo-tab--on' : ''}`} onClick={() => setTab('feedback')} data-testid="bo-tab-feedback">Feedback</button>
         <button type="button" role="tab" aria-selected={tab === 'users'} className={`bo-tab${tab === 'users' ? ' bo-tab--on' : ''}`} onClick={() => setTab('users')}>Utilizadores e testers</button>
         <button type="button" role="tab" aria-selected={tab === 'games'} className={`bo-tab${tab === 'games' ? ' bo-tab--on' : ''}`} onClick={() => setTab('games')}>Jogos</button>
       </div>
       {tab === 'plays' && <Plays />}
       {tab === 'activity' && <Activity />}
+      {tab === 'feedback' && <FeedbackList />}
       {tab === 'users' && <Users myId={s.myId} onChanged={loadStats} />}
       {tab === 'games' && <Games stats={stats} social={s} />}
     </main>

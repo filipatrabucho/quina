@@ -4364,3 +4364,21 @@ span.pcard { display: inline-block; }
   .house-ad--banner .house-ad__cta { text-align: center; }
   .house-ad__emoji { font-size: 1.6rem; }
 }
+.snake-score__who { margin-left: 6px; font-size: 0.75rem; color: #FFD23F; max-width: 90px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: middle; }
+
+/* Feedback */
+.feedback-modal { max-width: 520px; }
+.feedback-form { display: flex; flex-direction: column; gap: 10px; }
+.feedback-kinds { display: flex; gap: 6px; flex-wrap: wrap; }
+.feedback-form textarea { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 10px; border: 1.5px solid var(--stone-light); background: var(--cream-deep); color: var(--ink); font: inherit; resize: vertical; min-height: 120px; }
+.feedback-form textarea:focus { outline: none; border-color: var(--azulejo); }
+.feedback-count { align-self: flex-end; color: #77778A; font-size: 0.72rem; margin-top: -6px; }
+.bo-feedback { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.bo-fb { padding: 12px 14px; border-radius: 12px; background: var(--cream-deep); border: 1px solid var(--stone-light); border-left: 3px solid var(--azulejo); }
+.bo-fb--lido { border-left-color: #77778A; }
+.bo-fb--feito { border-left-color: var(--success); opacity: 0.8; }
+.bo-fb__head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bo-fb__head time { margin-left: auto; font-size: 0.78rem; color: #77778A; }
+.bo-fb__msg { margin: 10px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.bo-fb__foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; color: #77778A; }
+.bo-fb__btns { display: flex; gap: 6px; align-items: center; margin-left: auto; }

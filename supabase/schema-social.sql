@@ -183,6 +183,8 @@ alter table public.player_stats drop constraint if exists player_stats_game_chec
 alter table public.player_stats add constraint player_stats_game_check
   check (game in ('palavras', 'fiada', 'quatro', 'galo', 'xadrez', 'memes', 'naval', 'stop', 'cartas', 'snake', 'memoria', 'noventa', 'verdades', 'frase', 'emojis', 'colonos', 'bombas', 'blackjack', 'poker', 'sueca', 'emojidia', 'bisca', 'domino', 'spider', 'freecell'));
 alter table public.player_stats enable row level security;
+-- Melhor pontuação (jogos com pontos, como a Snake): o top destes jogos é por pontos.
+alter table public.player_stats add column if not exists best_score int;
 drop policy if exists "estatisticas: publicas" on public.player_stats;
 create policy "estatisticas: publicas" on public.player_stats for select using (true);
 
@@ -230,10 +232,12 @@ begin
     return earned; -- convidados (sem conta) não acumulam estatísticas
   end if;
 
-  insert into player_stats as ps (user_id, game, plays, wins, streak, best_streak)
-  values (uid, p_game, 1, case when p_won then 1 else 0 end, case when p_won then 1 else 0 end, case when p_won then 1 else 0 end)
+  insert into player_stats as ps (user_id, game, plays, wins, streak, best_streak, best_score)
+  values (uid, p_game, 1, case when p_won then 1 else 0 end, case when p_won then 1 else 0 end, case when p_won then 1 else 0 end,
+          case when p_game = 'snake' and p_detail ~ '^[0-9]{1,6}$' then p_detail::int end)
   on conflict (user_id, game) do update set
     plays = ps.plays + 1,
+    best_score = case when p_game = 'snake' and p_detail ~ '^[0-9]{1,6}$' then greatest(coalesce(ps.best_score, 0), p_detail::int) else ps.best_score end,
     wins = ps.wins + case when p_won then 1 else 0 end,
     streak = case when p_won then ps.streak + 1 else 0 end,
     best_streak = greatest(ps.best_streak, case when p_won then ps.streak + 1 else 0 end),
@@ -686,6 +690,66 @@ begin
 end;
 $$;
 grant execute on function public.admin_retention(int, boolean) to authenticated;
+
+-- ---------- Feedback dos utilizadores (opiniões e sugestões) ----------
+create table if not exists public.feedback (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references auth.users (id) on delete cascade,
+  kind text not null check (kind in ('sugestao', 'erro', 'jogo', 'opiniao')),
+  message text not null check (length(trim(message)) between 3 and 2000),
+  page text check (page is null or length(page) <= 200),
+  status text not null default 'novo' check (status in ('novo', 'lido', 'feito')),
+  created_at timestamptz not null default now()
+);
+create index if not exists feedback_created_idx on public.feedback (created_at desc);
+alter table public.feedback enable row level security;
+drop policy if exists "feedback: ver o meu" on public.feedback;
+create policy "feedback: ver o meu" on public.feedback for select using (user_id = auth.uid());
+
+-- Enviar (só com conta; no máximo 10 por dia, para evitar abusos).
+create or replace function public.send_feedback(p_kind text, p_message text, p_page text default null)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if auth.uid() is null or not exists (select 1 from profiles where id = auth.uid()) then
+    raise exception 'Para enviar feedback precisas de uma conta.';
+  end if;
+  if (select count(*) from feedback where user_id = auth.uid() and created_at > now() - interval '1 day') >= 10 then
+    raise exception 'Já enviaste muito feedback hoje. Obrigado! Tenta outra vez amanhã.';
+  end if;
+  insert into feedback (user_id, kind, message, page) values (auth.uid(), p_kind, trim(p_message), left(p_page, 200));
+end;
+$$;
+grant execute on function public.send_feedback(text, text, text) to authenticated;
+
+create or replace function public.admin_list_feedback(p_status text default null, p_limit int default 100)
+returns table (id bigint, created_at timestamptz, kind text, message text, page text, status text, user_id uuid, username text, avatar_url text, email text)
+language plpgsql stable security definer set search_path = public, auth as $$
+begin
+  if not exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin') then
+    raise exception 'Só o admin pode ver o feedback.';
+  end if;
+  return query
+    select f.id, f.created_at, f.kind, f.message, f.page, f.status, f.user_id, p.username, p.avatar_url, u.email::text
+    from feedback f
+    left join profiles p on p.id = f.user_id
+    left join auth.users u on u.id = f.user_id
+    where p_status is null or f.status = p_status
+    order by f.created_at desc
+    limit greatest(1, least(p_limit, 500));
+end;
+$$;
+grant execute on function public.admin_list_feedback(text, int) to authenticated;
+
+create or replace function public.admin_set_feedback_status(p_id bigint, p_status text)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin') then
+    raise exception 'Só o admin pode mudar o feedback.';
+  end if;
+  update feedback set status = p_status where id = p_id;
+end;
+$$;
+grant execute on function public.admin_set_feedback_status(bigint, text) to authenticated;
 
 -- Avisa a API do Supabase de que há funções e tabelas novas (sem isto pode
 -- dar "Could not find the function ... in the schema cache").

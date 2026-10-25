@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { gameBreak } from '../../lib/ads.js'
 import GameShell from '../../components/GameShell.jsx'
-import { recordResultOnce } from '../../lib/social.js'
+import { recordResultOnce, getTopPlayers, STATS_CHANGED } from '../../lib/social.js'
 import { SIZE, newGame, step, turn, speedFor } from './snakeLogic.js'
 
 const BEST_KEY = 'quina-snake-best'
@@ -55,6 +55,28 @@ function draw(canvas, state) {
   e.forEach(([ox, oy]) => eye(ox, oy))
 }
 
+// Recorde do site: o 1.º do top 3 (melhor pontuação com conta). Atualiza sozinho.
+function useSiteRecord() {
+  const [rec, setRec] = useState(null)
+  useEffect(() => {
+    let alive = true
+    const load = () =>
+      getTopPlayers('snake', 1)
+        .then((l) => alive && setRec(l[0] ? { score: l[0].best_score, name: l[0].profile.username } : null))
+        .catch(() => {})
+    load()
+    const onStats = (e) => e.detail?.game === 'snake' && setTimeout(load, 400)
+    window.addEventListener(STATS_CHANGED, onStats)
+    const t = setInterval(() => document.visibilityState === 'visible' && load(), 30000)
+    return () => {
+      alive = false
+      window.removeEventListener(STATS_CHANGED, onStats)
+      clearInterval(t)
+    }
+  }, [])
+  return rec
+}
+
 function SnakeBoard() {
   const canvasRef = useRef(null)
   const [walls, setWalls] = useState(true)
@@ -65,6 +87,8 @@ function SnakeBoard() {
   stateRef.current = state
   const touch = useRef(null)
   const modeKey = walls ? 'paredes' : 'livre'
+  const record = useSiteRecord()
+  const mine = Math.max(best[modeKey] || 0, status === 'over' ? state.score : 0)
 
   useEffect(() => {
     if (canvasRef.current) draw(canvasRef.current, state)
@@ -147,7 +171,11 @@ function SnakeBoard() {
     <div className="game-panel snake">
       <div className="snake-top">
         <span className="snake-score" data-testid="snake-score">Pontos <b>{state.score}</b></span>
-        <span className="snake-score">Recorde <b>{Math.max(best[modeKey] || 0, status === 'over' ? state.score : 0)}</b></span>
+        <span className="snake-score" data-testid="snake-record" title={record ? `Recorde do site, de ${record.name}` : 'Ainda não há recorde do site'}>
+          Recorde <b>{record ? record.score : '–'}</b>
+          {record && <small className="snake-score__who">{record.name}</small>}
+        </span>
+        <span className="snake-score snake-score--mine" data-testid="snake-mine">O teu melhor <b>{mine}</b></span>
         <div className="snake-walls">
           {[true, false].map((w) => (
             <button

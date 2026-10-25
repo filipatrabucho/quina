@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { GUIDES } from '../data/gameGuides.js'
-import { getTopPlayers, STATS_CHANGED } from '../lib/social.js'
+import { getTopPlayers, STATS_CHANGED, SCORE_GAMES } from '../lib/social.js'
 import { supabase } from '../lib/supabaseClient.js'
 import Avatar from './Avatar.jsx'
 
@@ -51,7 +51,9 @@ function TopPlayers({ game }) {
     }
   }, [game.key])
   if (top === null) return <p className="game-top__empty">A carregar…</p>
-  if (!top.length) return <p className="game-top__empty">Ainda ninguém ganhou com conta. Cria conta e sê o primeiro do top!</p>
+  if (!top.length) {
+    return <p className="game-top__empty">{SCORE_GAMES.includes(game.key) ? 'Ainda não há recordes de contas. Cria conta e sê o primeiro do top!' : 'Ainda ninguém ganhou com conta. Cria conta e sê o primeiro do top!'}</p>
+  }
   return (
     <ol className="game-top" data-testid="game-top">
       {top.map((x, i) => (
@@ -59,7 +61,11 @@ function TopPlayers({ game }) {
           <span className="game-top__pos">{i + 1}</span>
           <Avatar src={x.profile.avatar_url} seed={x.profile.id} name={x.profile.username} size={30} />
           <Link to={`/u/${x.profile.username}`} className="game-top__name">{x.profile.username}</Link>
-          <span className="game-top__wins"><b>{x.wins}</b> {x.wins === 1 ? 'vitória' : 'vitórias'}</span>
+          {SCORE_GAMES.includes(game.key) ? (
+            <span className="game-top__wins"><b>{x.best_score}</b> {x.best_score === 1 ? 'ponto' : 'pontos'}</span>
+          ) : (
+            <span className="game-top__wins"><b>{x.wins}</b> {x.wins === 1 ? 'vitória' : 'vitórias'}</span>
+          )}
         </li>
       ))}
     </ol>

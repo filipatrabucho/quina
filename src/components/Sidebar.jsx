@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { visibleGames } from '../data/games.js'
 import { useSocial } from '../social/SocialContext.jsx'
+import { openFeedback } from './Feedback.jsx'
 import { useAuth } from '../hooks/useAuth.js'
 import { medalByKey } from '../data/medals.js'
 import MedalBadge from '../social/MedalBadge.jsx'
@@ -37,6 +38,12 @@ const ICONS = {
     </>
   ),
   friends: <path d="M4 5h16v11H9l-5 4z" />,
+  feedback: (
+    <>
+      <path d="M4 5h16v11H9l-5 4z" />
+      <path d="M8 9h8M8 12h5" />
+    </>
+  ),
   // comando de jogo (para os jogos no Discord)
   discord: (
     <>
@@ -159,6 +166,19 @@ export default function Sidebar({ onNavigate }) {
             {s.totalUnread > 0 && <em className="side-badge">{s.totalUnread}</em>}
           </button>
         )}
+        <button
+          type="button"
+          className="side-link"
+          onClick={() => {
+            onNavigate?.()
+            openFeedback()
+          }}
+          title="Dar feedback"
+          data-testid="side-feedback"
+        >
+          <Icon name="feedback" />
+          <span className="side-link__label">Dar feedback</span>
+        </button>
         {s?.role === 'admin' && (
           <Link to="/admin" className={`side-link${location.pathname === '/admin' ? ' side-link--on' : ''}`} onClick={onNavigate} title="Backoffice" data-testid="side-admin">
             <Icon name="admin" />
