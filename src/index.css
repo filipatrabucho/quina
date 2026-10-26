@@ -3790,7 +3790,8 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
 .bo-stat span { font-size: 0.8rem; color: var(--stone); }
 .bo-stat b { font: 800 1.7rem var(--font-body); color: #fff; }
 .bo-stat small { font-size: 0.75rem; color: #77778A; }
-.bo-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--stone-light); }
+.bo-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--stone-light); overflow-x: auto; scrollbar-width: none; }
+.bo-tab { white-space: nowrap; }
 .bo-tab { padding: 10px 14px; border: 0; background: none; color: var(--stone); font: 600 0.92rem var(--font-body); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
 .bo-tab--on { color: #fff; border-bottom-color: var(--azulejo); }
 .bo-card { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 14px; background: var(--white); border: 1px solid var(--stone-light); }
@@ -4488,4 +4489,30 @@ span.pcard { display: inline-block; }
   .promo-card__art .pv { transform: scale(1.1); }
   .promo-card__body { padding: 0 16px 16px; }
   .promo-card h2 { font-size: 1.4rem; }
+}
+
+/* Backoffice: ranking dos jogos */
+.rank-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.rank-row { display: grid; grid-template-columns: 34px minmax(140px, 1.1fr) minmax(80px, 2fr) 70px 64px; align-items: center; gap: 12px; padding: 7px 6px; border-bottom: 1px solid #1E1E28; }
+.rank-row:hover { background: #17171F; }
+.rank-row--zero { opacity: 0.5; }
+.rank-pos { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 800 0.85rem var(--font-body); color: var(--stone); background: #1E1E28; }
+.rank-pos--1 { background: #FFC93C; color: #2A1E00; }
+.rank-pos--2 { background: #C9CED8; color: #1E2230; }
+.rank-pos--3 { background: #D08A4E; color: #2A1400; }
+.rank-game span { flex-direction: row !important; align-items: center; gap: 6px; }
+.rank-game small { font-size: 0.65rem !important; text-transform: uppercase; font-weight: 700; padding: 1px 5px; border-radius: 5px; background: rgba(255, 210, 63, 0.15); color: #FFD23F !important; }
+.rank-bar { height: 10px; border-radius: 5px; background: #1E1E28; overflow: hidden; }
+.rank-bar i { display: block; height: 100%; border-radius: 5px; background: var(--azulejo); min-width: 2px; }
+.rank-row--zero .rank-bar i { min-width: 0; }
+.rank-val { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.1; }
+.rank-val b { font: 800 1rem var(--font-body); color: #fff; font-variant-numeric: tabular-nums; }
+.rank-val small { font-size: 0.72rem; color: #77778A; }
+.rank-trend-cell { text-align: right; }
+.rank-trend { font-size: 0.75rem; font-weight: 700; color: var(--stone); white-space: nowrap; }
+.rank-trend--up { color: #2FBF71; }
+.rank-trend--down { color: #FF6B6B; }
+@media (max-width: 640px) {
+  .rank-row { grid-template-columns: 30px minmax(0, 1fr) 56px 52px; gap: 8px; }
+  .rank-bar { grid-column: 2 / -1; grid-row: 2; height: 6px; }
 }

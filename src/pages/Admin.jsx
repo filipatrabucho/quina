@@ -398,6 +398,96 @@ function Plays() {
   )
 }
 
+// Ranking dos jogos mais jogados, com a tendência face ao período anterior.
+const RANK_METRICS = [
+  { key: 'plays', label: 'Partidas', hint: 'partidas acabadas' },
+  { key: 'players', label: 'Pessoas', hint: 'pessoas diferentes que jogaram' },
+  { key: 'opened', label: 'Abriram', hint: 'pessoas que abriram o jogo' },
+]
+const RANK_PERIODS = [7, 30, 90, 365]
+function Ranking() {
+  const [period, setPeriod] = useState(30)
+  const [metric, setMetric] = useState('plays')
+  const [now, setNow] = useState(null)
+  const [prev, setPrev] = useState(null) // partidas por jogo no período anterior
+  const [error, setError] = useState('')
+  useEffect(() => {
+    setError('')
+    setNow(null)
+    setPrev(null)
+    adminPlayStats(period).then((d) => {
+      setNow(d)
+      // Partidas somam-se: anterior = (últimos 2N dias) - (últimos N dias). Só até 1 ano.
+      if (period * 2 <= 365) {
+        adminPlayStats(period * 2).then((d2) => {
+          const cur = Object.fromEntries(d.games.map((g) => [g.game, g.plays]))
+          setPrev(Object.fromEntries(d2.games.map((g) => [g.game, g.plays - (cur[g.game] || 0)])))
+        }, () => {})
+      }
+    }, (e) => setError(e.message))
+  }, [period])
+  const byGame = Object.fromEntries((now?.games || []).map((g) => [g.game, g]))
+  const val = (k) => Number(byGame[k]?.[metric] || 0)
+  const rows = [...GAMES].map((g) => ({ g, v: val(g.key) })).sort((a, b) => b.v - a.v || a.g.title.localeCompare(b.g.title))
+  const total = rows.reduce((s, r) => s + r.v, 0)
+  const max = Math.max(1, rows[0]?.v || 0)
+  const m = RANK_METRICS.find((x) => x.key === metric)
+  const trend = (k) => {
+    if (!prev || metric !== 'plays') return null
+    const before = prev[k] || 0
+    const after = val(k)
+    if (!before && !after) return null
+    if (!before) return <span className="rank-trend rank-trend--up" title="Sem partidas no período anterior">novo</span>
+    const pct = Math.round(((after - before) / before) * 100)
+    if (pct === 0) return <span className="rank-trend" title={`${before} no período anterior`}>=</span>
+    return <span className={`rank-trend rank-trend--${pct > 0 ? 'up' : 'down'}`} title={`${before} no período anterior`}>{pct > 0 ? '▲' : '▼'} {Math.abs(pct)}%</span>
+  }
+  let pos = 0
+  return (
+    <section className="bo-card" data-testid="bo-ranking">
+      <div className="bo-toolbar">
+        <div className="bo-filters" role="group" aria-label="Ordenar por">
+          {RANK_METRICS.map((x) => (
+            <button key={x.key} type="button" className={`home-cat${metric === x.key ? ' home-cat--active' : ''}`} onClick={() => setMetric(x.key)} data-testid={`rank-metric-${x.key}`}>{x.label}</button>
+          ))}
+        </div>
+        <div className="bo-filters" role="group" aria-label="Período" style={{ marginLeft: 'auto' }}>
+          {RANK_PERIODS.map((p) => (
+            <button key={p} type="button" className={`home-cat${period === p ? ' home-cat--active' : ''}`} onClick={() => setPeriod(p)} data-testid={`rank-period-${p}`}>
+              {p === 365 ? '1 ano' : `${p} dias`}
+            </button>
+          ))}
+        </div>
+      </div>
+      <p className="admin-note" style={{ margin: 0 }}>
+        Ordenado por <b>{m.hint}</b> nos últimos {period === 365 ? '12 meses' : `${period} dias`} (com e sem conta).
+        {metric === 'plays' && period * 2 <= 365 && ' A seta compara com os ' + period + ' dias anteriores.'}
+      </p>
+      {error && <p className="duel-error">{error}</p>}
+      {!now && !error && <p className="bo-empty">A carregar…</p>}
+      {now && (
+        <ol className="rank-list" data-testid="rank-list">
+          {rows.map(({ g, v }, i) => {
+            if (v > 0) pos = i + 1
+            return (
+              <li key={g.key} className={`rank-row${v ? '' : ' rank-row--zero'}`} data-game={g.key}>
+                <span className={`rank-pos${v && pos <= 3 ? ` rank-pos--${pos}` : ''}`}>{v ? pos : '–'}</span>
+                <Link to={g.to} className="bo-user rank-game">
+                  <GameIcon game={g.key} size={30} />
+                  <span><b>{g.title}</b>{g.beta && <small>beta</small>}</span>
+                </Link>
+                <span className="rank-bar" aria-hidden="true"><i style={{ width: `${(v / max) * 100}%` }} /></span>
+                <span className="rank-val"><b>{v}</b><small>{total ? `${Math.round((v / total) * 100)}%` : ''}</small></span>
+                <span className="rank-trend-cell">{trend(g.key)}</span>
+              </li>
+            )
+          })}
+        </ol>
+      )}
+    </section>
+  )
+}
+
 // "há 5 min", "há 3 h", "ontem 21:04", "12 out 18:30"
 function ago(d) {
   const t = new Date(d)
@@ -609,12 +699,14 @@ export default function Admin() {
       </div>
       <div className="bo-tabs" role="tablist">
         <button type="button" role="tab" aria-selected={tab === 'plays'} className={`bo-tab${tab === 'plays' ? ' bo-tab--on' : ''}`} onClick={() => setTab('plays')} data-testid="bo-tab-plays">Quem jogou</button>
+        <button type="button" role="tab" aria-selected={tab === 'ranking'} className={`bo-tab${tab === 'ranking' ? ' bo-tab--on' : ''}`} onClick={() => setTab('ranking')} data-testid="bo-tab-ranking">Ranking</button>
         <button type="button" role="tab" aria-selected={tab === 'activity'} className={`bo-tab${tab === 'activity' ? ' bo-tab--on' : ''}`} onClick={() => setTab('activity')} data-testid="bo-tab-activity">Atividade</button>
         <button type="button" role="tab" aria-selected={tab === 'feedback'} className={`bo-tab${tab === 'feedback' ? ' bo-tab--on' : ''}`} onClick={() => setTab('feedback')} data-testid="bo-tab-feedback">Feedback</button>
         <button type="button" role="tab" aria-selected={tab === 'users'} className={`bo-tab${tab === 'users' ? ' bo-tab--on' : ''}`} onClick={() => setTab('users')}>Utilizadores e testers</button>
         <button type="button" role="tab" aria-selected={tab === 'games'} className={`bo-tab${tab === 'games' ? ' bo-tab--on' : ''}`} onClick={() => setTab('games')}>Jogos</button>
       </div>
       {tab === 'plays' && <Plays />}
+      {tab === 'ranking' && <Ranking />}
       {tab === 'activity' && <Activity />}
       {tab === 'feedback' && <FeedbackList />}
       {tab === 'users' && <Users myId={s.myId} onChanged={loadStats} />}
