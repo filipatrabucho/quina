@@ -1,6 +1,18 @@
 // Catálogo dos jogos (usado no início, no menu e nos cabeçalhos).
 export const GAMES = [
   {
+    key: 'impostor',
+    to: '/impostor',
+    title: 'O Impostor',
+    short: 'Impostor',
+    description: 'Dedução social numa nave: faz as tarefas e descobre quem é o impostor antes que seja tarde. De 4 a 10, com amigos na chamada ou com bots.',
+    tags: ['online', 'bot'],
+    players: '4 a 10',
+    badge: 'Beta',
+    beta: true,
+    wide: true,
+  },
+  {
     key: 'emojidia',
     to: '/emoji-do-dia',
     title: 'Emoji do Dia',

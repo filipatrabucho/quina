@@ -26,6 +26,7 @@ const GAME_SEO = {
   bisca: ['Bisca online grátis: jogo de cartas português', 'Joga Bisca online grátis em português: 3 cartas, trunfo virado e troca do 2. Um contra um ou 2 contra 2, contra bots (sem conta) ou com amigos.'],
   spider: ['Spider Solitário online grátis (1, 2 ou 4 naipes)', 'Joga Spider Solitário online grátis em português: 1, 2 ou 4 naipes, desfazer ilimitado e o jogo fica guardado. No computador ou no telemóvel, sem instalar nada.'],
   freecell: ['FreeCell online grátis: o solitário clássico', 'Joga FreeCell online grátis em português, com as distribuições numeradas clássicas, desfazer ilimitado e o jogo guardado. No computador ou no telemóvel, sem instalar nada.'],
+  impostor: ['O Impostor: jogo de dedução social online com amigos no Discord', 'Joga O Impostor online grátis em português: tripulantes, tarefas e um impostor escondido. De 4 a 10 jogadores, numa chamada de Discord com amigos ou contra bots.'],
   domino: ['Dominó online grátis: joga contra bots ou com amigos', 'Joga Dominó online grátis em português, com as 28 pedras do duplo seis: a 2 ou 3 jogadores com monte, ou a 4 em equipas. Contra bots (sem conta) ou com amigos.'],
   sueca: ['Sueca online grátis: jogo de cartas com amigos ou bots', 'Joga Sueca online grátis em português: 2 contra 2, com trunfo e as regras de sempre. Contra bots, sem conta, ou numa mesa com amigos durante a chamada de Discord.'],
   galo: ['Jogo do Galo online grátis (Tic Tac Toe)', null],

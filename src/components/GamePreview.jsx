@@ -1,5 +1,6 @@
 import GameIcon from './GameIcon.jsx'
 import Tile from '../games/domino/Tile.jsx'
+import Astro from '../games/impostor/Astro.jsx'
 
 // Pré-visualizações desenhadas de cada jogo, para as miniaturas da página inicial.
 const L = (letters, states) =>
@@ -194,6 +195,14 @@ export default function GamePreview({ game }) {
           {(game === 'spider' ? [['K', '♠'], ['Q', '♠'], ['J', '♠'], ['10', '♠']] : [['K', '♣'], ['Q', '♥'], ['J', '♠'], ['10', '♦']]).map(([r, s], i) => (
             <span key={r} className={`pv-card pv-card--sm${s === '♥' || s === '♦' ? ' pv-card--red' : ''}`} style={{ marginTop: i * 12 }}>{r}<i>{s}</i></span>
           ))}
+        </div>
+      )
+    case 'impostor':
+      return (
+        <div className="pv pv-impostor">
+          <Astro color="#2F80ED" size={34} />
+          <Astro color="#E5243B" size={44} />
+          <Astro color="#2FBF71" size={34} />
         </div>
       )
     case 'domino':

@@ -202,6 +202,29 @@ export const GUIDES = {
       ['Preciso de conta?', 'Não. Com conta grátis, as vitórias contam para as medalhas e para o top.'],
     ],
   },
+  impostor: {
+    intro:
+      'O Impostor é um jogo de dedução social para 4 a 10 jogadores, ideal para jogar com amigos numa chamada de Discord. Estão todos numa nave: a maioria são tripulantes que fazem tarefas, mas 1 ou 2 são impostores que os eliminam às escondidas. Quando aparece um corpo, há reunião: falam, desconfiam uns dos outros e votam em quem expulsar. Também dá para jogar sozinho contra bots, sem conta.',
+    rules: [
+      'No início cada um fica a saber o seu papel: tripulante ou impostor. Com 8 ou mais jogadores há 2 impostores.',
+      'Os tripulantes andam pela nave e fazem as suas tarefas (pequenos desafios nos ícones amarelos). Se a barra de tarefas da tripulação encher, a tripulação ganha.',
+      'Os impostores fingem que fazem tarefas e podem eliminar quem estiver perto, com um tempo de espera entre cada vez.',
+      'Quem encontra um corpo pode reportar. Cada jogador também pode carregar uma vez no botão de emergência do Refeitório.',
+      'Na reunião todos falam e votam. Quem tiver mais votos é expulso; em caso de empate ninguém sai.',
+      'A tripulação ganha se expulsar todos os impostores. Os impostores ganham quando forem tantos como os tripulantes vivos.',
+      'Quem morre fica como fantasma: os tripulantes fantasmas ainda podem fazer tarefas.',
+    ],
+    tips: [
+      'Os tripulantes veem pouco à volta: andar em grupo protege, mas é mais lento a fazer as tarefas.',
+      'Repara em quem diz que fez uma tarefa mas a barra não mexeu.',
+      'Como impostor, não mates à frente de ninguém e aparece nas reuniões com uma história.',
+    ],
+    faq: [
+      ['Preciso de conta para jogar O Impostor?', 'Não para jogar contra os bots. Para criar uma sala com os teus amigos precisas de uma conta grátis.'],
+      ['Quantas pessoas podem jogar?', 'De 4 a 10. Se forem menos, completa a sala com bots.'],
+      ['Como falamos nas reuniões?', 'O jogo foi pensado para jogar numa chamada (Discord, WhatsApp, etc.): falam lá e votam aqui.'],
+    ],
+  },
   domino: {
     intro:
       'O Dominó é o jogo de pedras que toda a gente conhece, das mesas de café às férias em família. Aqui jogas Dominó online grátis com as 28 pedras do duplo seis: a 2 ou 3 jogadores com monte para comprar, ou a 4 em equipas de dois. Contra bots (sem conta) ou numa mesa com os teus amigos.',

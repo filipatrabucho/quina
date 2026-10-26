@@ -25,6 +25,7 @@ const THEMES = {
   spider: '#3B2A6B',
   freecell: '#0F6B5C',
   emojidia: '#E85D3A',
+  impostor: '#3B3F8F',
 }
 
 function Art({ game }) {
@@ -298,6 +299,18 @@ function Art({ game }) {
           <rect x="26" y="13" width="15" height="22" rx="2.5" fill="#fff" transform="rotate(16 33 24)" />
           <text x="29.5" y="23" fontSize="9" fill="#15151C" transform="rotate(16 33 24)">K</text>
           <text x="30" y="31.5" fontSize="8" fill="#15151C" transform="rotate(16 33 24)">♠</text>
+        </g>
+      )
+    case 'impostor':
+      return (
+        <g>
+          <line x1="24" y1="11" x2="24" y2="5" stroke="#14141C" strokeWidth="2" />
+          <circle cx="24" cy="5" r="2.8" fill="#FFC93C" stroke="#14141C" strokeWidth="1.5" />
+          <circle cx="24" cy="26" r="14" fill="#E5243B" stroke="#14141C" strokeWidth="2" />
+          <rect x="14" y="18" width="20" height="10" rx="5" fill="#BFE7FF" stroke="#14141C" strokeWidth="1.8" />
+          <circle cx="19.5" cy="23" r="2" fill="#14141C" />
+          <circle cx="28.5" cy="23" r="2" fill="#14141C" />
+          <text x="37" y="15" fontSize="11" fontWeight="900" fill="#FFC93C">?</text>
         </g>
       )
     case 'bombas':
