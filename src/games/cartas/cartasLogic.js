@@ -84,7 +84,16 @@ export function currentPlayer(game) {
   return game.order[game.turn]
 }
 
-export function playCard(game, playerId, cardId, chosenColor) {
+export const isNumber = (card) => /^\d$/.test(card.value)
+
+// Cartas que podem ir juntas com esta (mesmo número, de qualquer cor).
+export function sameNumber(hand, card) {
+  if (!isNumber(card)) return []
+  return hand.filter((c) => c.id !== card.id && c.value === card.value)
+}
+
+// extraIds: outras cartas com o mesmo número, jogadas logo a seguir (a última fica em cima e manda na cor).
+export function playCard(game, playerId, cardId, chosenColor, extraIds = []) {
   if (game.winner) throw new Error('A partida já acabou.')
   if (currentPlayer(game) !== playerId) throw new Error('Não é a tua vez.')
   const hand = game.hands[playerId]
@@ -94,14 +103,24 @@ export function playCard(game, playerId, cardId, chosenColor) {
   const top = game.discard[game.discard.length - 1]
   if (!canPlay(card, top, game.color)) throw new Error('Essa carta não serve.')
   if (isWild(card) && !COLORS.includes(chosenColor)) throw new Error('Escolhe uma cor.')
+  const extras = []
+  for (const id of extraIds || []) {
+    const c = hand.find((x) => x.id === id)
+    if (!c || id === cardId || extras.includes(c)) throw new Error('Não tens essa carta.')
+    if (!isNumber(card) || c.value !== card.value) throw new Error('Só podes juntar cartas com o mesmo número.')
+    extras.push(c)
+  }
+  const played = [card, ...extras]
+  const last = played[played.length - 1]
+  const ids = new Set(played.map((c) => c.id))
 
   let next = {
     ...game,
-    hands: { ...game.hands, [playerId]: hand.filter((c) => c.id !== cardId) },
-    discard: [...game.discard, card],
-    color: isWild(card) ? chosenColor : card.color,
+    hands: { ...game.hands, [playerId]: hand.filter((c) => !ids.has(c.id)) },
+    discard: [...game.discard, ...played],
+    color: isWild(card) ? chosenColor : last.color,
     drawnThisTurn: null,
-    lastAction: { by: playerId, type: 'jogou', card },
+    lastAction: { by: playerId, type: 'jogou', card: last, count: played.length },
   }
   if (next.hands[playerId].length === 0) {
     return { ...next, winner: playerId, score: { ...game.score, [playerId]: (game.score[playerId] || 0) + 1 } }
@@ -170,13 +189,26 @@ export function botMove(game, botId) {
   if (playable.length) {
     const rank = (c) => (isWild(c) ? 0 : ['+2', 'saltar', 'inverter'].includes(c.value) ? 3 : 2) + (c.color === game.color ? 0.5 : 0)
     const card = [...playable].sort((a, b) => rank(b) - rank(a))[0]
+    // Com várias do mesmo número joga-as todas; fica em cima a da cor de que tem mais.
+    const same = sameNumber(hand, card)
+    if (same.length) {
+      const left = hand.filter((c) => c.value !== card.value)
+      const count = (col) => left.filter((x) => x.color === col).length
+      const all = [card, ...same]
+      const topCard = all.reduce((a, b) => (count(b.color) > count(a.color) ? b : a), card)
+      // a primeira tem de servir na mesa; a última fica em cima
+      const opener = topCard !== card ? card : same.find((c) => canPlay(c, top, game.color)) || card
+      const middle = all.filter((c) => c !== opener && c !== topCard)
+      const seq = opener === topCard ? [opener, ...middle] : [opener, ...middle, topCard]
+      return { type: 'play', cardId: opener.id, extra: seq.slice(1).map((c) => c.id) }
+    }
     return { type: 'play', cardId: card.id, color: isWild(card) ? bestColor : undefined }
   }
   return game.drawnThisTurn != null ? { type: 'pass' } : { type: 'draw' }
 }
 
 export function applyMove(game, playerId, move) {
-  if (move.type === 'play') return playCard(game, playerId, move.cardId, move.color)
+  if (move.type === 'play') return playCard(game, playerId, move.cardId, move.color, move.extra)
   if (move.type === 'draw') return drawCard(game, playerId)
   if (move.type === 'pass') return passTurn(game, playerId)
   throw new Error('Ação desconhecida.')

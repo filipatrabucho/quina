@@ -322,3 +322,37 @@ test('cartas coloridas: baralho, jogar, +2, inverter, comprar e ganhar', () => {
     assert.equal(total, 108, 'nenhuma carta se perde')
   }
 })
+
+test('cartas coloridas: várias cartas com o mesmo número de uma vez', () => {
+  let g = cartas.startGame(['a', 'b'])
+  g = { ...g, discard: [{ id: 900, color: 'r', value: '5' }], color: 'r', turn: 0, direction: 1, drawnThisTurn: null, hands: {
+    a: [{ id: 1, color: 'b', value: '5' }, { id: 2, color: 'g', value: '5' }, { id: 3, color: 'y', value: '7' }, { id: 4, color: 'y', value: '5' }],
+    b: [{ id: 10, color: 'g', value: '1' }],
+  } }
+  assert.throws(() => cartas.playCard(g, 'a', 1, undefined, [3]), /mesmo número/)
+  assert.throws(() => cartas.playCard(g, 'a', 1, undefined, [99]), /Não tens/)
+  assert.throws(() => cartas.playCard(g, 'a', 3, undefined, []), /não serve/) // a primeira tem de servir
+  const n = cartas.playCard(g, 'a', 1, undefined, [2, 4])
+  assert.deepEqual(n.hands.a.map((c) => c.id), [3])
+  assert.deepEqual(n.discard.slice(-3).map((c) => c.id), [1, 2, 4])
+  assert.equal(n.color, 'y') // manda a última
+  assert.equal(n.lastAction.count, 3)
+  assert.equal(cartas.currentPlayer(n), 'b')
+  // ficar sem cartas ao jogar várias ganha
+  const w = cartas.playCard({ ...g, hands: { ...g.hands, a: [{ id: 1, color: 'b', value: '5' }, { id: 2, color: 'g', value: '5' }] } }, 'a', 2, undefined, [1])
+  assert.equal(w.winner, 'a')
+  // só números
+  const act = { ...g, discard: [{ id: 900, color: 'r', value: '+2' }], hands: { ...g.hands, a: [{ id: 5, color: 'r', value: '+2' }, { id: 6, color: 'b', value: '+2' }] } }
+  assert.throws(() => cartas.playCard(act, 'a', 5, undefined, [6]), /mesmo número/)
+  // o bot junta as do mesmo número e deixa em cima a cor de que tem mais
+  const m = cartas.botMove(g, 'a')
+  const after = cartas.applyMove(g, 'a', m)
+  assert.deepEqual(after.hands.a.map((c) => c.id), [3])
+  assert.equal(after.color, 'y')
+  // jogos inteiros só com bots continuam a acabar
+  for (let k = 0; k < 30; k++) {
+    let x = cartas.startGame(['a', 'b', 'c'])
+    for (let t = 0; t < 3000 && !x.winner; t++) { const p = cartas.currentPlayer(x); x = cartas.applyMove(x, p, cartas.botMove(x, p)) }
+    assert.ok(x.winner, 'o jogo acaba')
+  }
+})

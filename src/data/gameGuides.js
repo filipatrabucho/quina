@@ -135,6 +135,7 @@ export const GUIDES = {
       'Cada jogador começa com 7 cartas.',
       'Joga uma carta da mesma cor ou com o mesmo número ou símbolo da carta da mesa.',
       'Se não tiveres nenhuma, compra uma do baralho; se servir, podes jogá-la logo.',
+      'Se tiveres várias cartas com o mesmo número (de qualquer cor), podes jogá-las todas de uma vez: a primeira tem de servir e a última fica em cima e manda na cor.',
       'Saltar: o próximo perde a vez. Inverter: muda o sentido do jogo. Mais dois: o próximo compra 2 cartas.',
       'Muda a cor e Mais quatro servem em qualquer altura e escolhes a cor seguinte.',
       'Ganha quem ficar sem cartas primeiro.',

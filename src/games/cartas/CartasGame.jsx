@@ -4,12 +4,12 @@ import GameShell from '../../components/GameShell.jsx'
 import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import Avatar from '../../components/Avatar.jsx'
 import { recordResultOnce } from '../../lib/social.js'
-import { COLORS, COLOR_NAMES, canPlay, currentPlayer, startGame, applyMove, botMove, rematch, cartasOnline } from './cartasLogic.js'
+import { COLORS, COLOR_NAMES, canPlay, sameNumber, currentPlayer, startGame, applyMove, botMove, rematch, cartasOnline } from './cartasLogic.js'
 
 const SYMBOL = { saltar: '⊘', inverter: '⇄', '+2': '+2', cor: '', '+4': '+4' }
 const LABEL = { saltar: 'Saltar', inverter: 'Inverter', '+2': 'Mais dois', cor: 'Muda a cor', '+4': 'Mais quatro' }
 
-export function Card({ card, onClick, playable, small, back, testid }) {
+export function Card({ card, onClick, playable, small, back, testid, selected, order, addable }) {
   if (back) {
     return (
       <button className={`card card--back${small ? ' card--small' : ''}`} onClick={onClick} disabled={!onClick} data-testid={testid} aria-label="Baralho">
@@ -21,7 +21,7 @@ export function Card({ card, onClick, playable, small, back, testid }) {
   const sym = SYMBOL[card.value] ?? card.value
   return (
     <button
-      className={`card card--${wild ? 'wild' : card.color}${playable ? ' card--playable' : ''}${small ? ' card--small' : ''}`}
+      className={`card card--${wild ? 'wild' : card.color}${playable ? ' card--playable' : ''}${small ? ' card--small' : ''}${selected ? ' card--selected' : ''}${addable ? ' card--addable' : ''}`}
       onClick={onClick}
       disabled={!onClick}
       aria-label={`${wild ? '' : COLOR_NAMES[card.color] + ' '}${LABEL[card.value] || card.value}`}
@@ -30,6 +30,7 @@ export function Card({ card, onClick, playable, small, back, testid }) {
       <span className="card__corner">{sym || '★'}</span>
       <span className="card__oval">{wild ? <span className="card__wheel" /> : null}<b>{sym}</b></span>
       <span className="card__corner card__corner--br">{sym || '★'}</span>
+      {order != null && <span className="card__order">{order}</span>}
     </button>
   )
 }
@@ -51,6 +52,7 @@ function ColorPicker({ onPick, onCancel }) {
 // Mesa: adversários em cima, baralho e pilha ao centro, a minha mão em baixo.
 function Table({ game, meId, people, onMove, isOnline }) {
   const [picking, setPicking] = useState(null) // carta coringa à espera da cor
+  const [sel, setSel] = useState([]) // várias cartas com o mesmo número (a 1.ª serve na mesa; a última fica em cima)
   const myTurn = !game.winner && currentPlayer(game) === meId
   const top = game.discard[game.discard.length - 1]
   const hand = game.hands[meId] || []
@@ -87,10 +89,25 @@ function Table({ game, meId, people, onMove, isOnline }) {
     )
   }
 
+  useEffect(() => {
+    if (!myTurn) setSel([])
+  }, [myTurn])
+  const selCards = sel.map((id) => hand.find((c) => c.id === id)).filter(Boolean)
+  const addable = (c) => selCards.length > 0 && !sel.includes(c.id) && c.value === selCards[0].value
   const play = (card) => {
+    if (sel.length) {
+      if (card.id === sel[0]) return setSel([])
+      if (sel.includes(card.id)) return setSel(sel.filter((id) => id !== card.id))
+      if (addable(card)) return setSel([...sel, card.id])
+    }
     if (!usable(card)) return
     if (card.color === null) setPicking(card)
+    else if (sameNumber(hand, card).length) setSel([card.id])
     else onMove({ type: 'play', cardId: card.id })
+  }
+  const playSelected = () => {
+    onMove({ type: 'play', cardId: sel[0], extra: sel.slice(1) })
+    setSel([])
   }
 
   return (
@@ -122,16 +139,42 @@ function Table({ game, meId, people, onMove, isOnline }) {
       </p>
       {last && !game.winner && (
         <p className="naval-log">
-          {name(last.by)} {last.type === 'jogou' ? `jogou ${last.card.color ? COLOR_NAMES[last.card.color] + ' ' : ''}${LABEL[last.card.value]?.toLowerCase() || last.card.value}` : last.type === 'comprou' ? 'comprou uma carta' : 'passou'}
+          {name(last.by)} {last.type === 'jogou' ? (last.count > 1 ? `jogou ${last.count} cartas com o ${last.card.value} (fica ${COLOR_NAMES[last.card.color]})` : `jogou ${last.card.color ? COLOR_NAMES[last.card.color] + ' ' : ''}${LABEL[last.card.value]?.toLowerCase() || last.card.value}`) : last.type === 'comprou' ? 'comprou uma carta' : 'passou'}
         </p>
       )}
 
       <div className={`cards-hand${myTurn ? ' cards-hand--turn' : ''}`} data-testid="cards-hand">
         {myTurn && <span className="cards-seat__badge cards-hand__badge">A tua vez</span>}
-        {hand.map((c) => (
-          <Card key={c.id} card={c} playable={usable(c)} onClick={usable(c) ? () => play(c) : undefined} testid={`card-${c.id}`} />
-        ))}
+        {hand.map((c) => {
+          const k = sel.indexOf(c.id)
+          const clickable = sel.length ? k >= 0 || addable(c) : usable(c)
+          return (
+            <Card
+              key={c.id}
+              card={c}
+              playable={!sel.length && usable(c)}
+              selected={k >= 0}
+              order={k >= 0 && sel.length > 1 ? k + 1 : null}
+              addable={addable(c)}
+              onClick={clickable ? () => play(c) : undefined}
+              testid={`card-${c.id}`}
+            />
+          )
+        })}
       </div>
+      {sel.length > 0 && (
+        <div className="cards-multi" data-testid="cards-multi">
+          <span>
+            {sel.length === 1
+              ? `Tens mais ${selCards[0] ? sameNumber(hand, selCards[0]).length : 0} com o ${selCards[0]?.value}: toca nelas para as juntar.`
+              : `${sel.length} cartas com o ${selCards[0]?.value}. A última que escolheste fica em cima e manda na cor.`}
+          </span>
+          <button className="share-btn" onClick={playSelected} data-testid="cards-play-multi">
+            {sel.length === 1 ? 'Jogar só esta' : `Jogar ${sel.length} cartas`}
+          </button>
+          <button className="link-btn" onClick={() => setSel([])}>Cancelar</button>
+        </div>
+      )}
       {myTurn && game.drawnThisTurn != null && (
         <button className="mode-btn" onClick={() => onMove({ type: 'pass' })} data-testid="cards-pass">Passar</button>
       )}
@@ -234,6 +277,7 @@ const HELP = (
   <>
     <p>Joga uma carta da mesma cor ou com o mesmo número/símbolo da carta da mesa. Se não tiveres nenhuma, compra uma do baralho.</p>
     <p><strong>⊘ Saltar</strong>: o próximo perde a vez. <strong>⇄ Inverter</strong>: muda o sentido. <strong>+2</strong>: o próximo compra 2 e perde a vez.</p>
+    <p>Se tiveres <strong>várias cartas com o mesmo número</strong> (de qualquer cor), podes jogá-las todas de uma vez: a primeira tem de servir na mesa e a última que escolheres fica em cima e manda na cor.</p>
     <p><strong>Muda a cor</strong> e <strong>+4</strong> servem em qualquer altura e escolhes a cor seguinte. Ganha quem ficar sem cartas primeiro.</p>
   </>
 )

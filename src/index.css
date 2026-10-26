@@ -4516,3 +4516,11 @@ span.pcard { display: inline-block; }
   .rank-row { grid-template-columns: 30px minmax(0, 1fr) 56px 52px; gap: 8px; }
   .rank-bar { grid-column: 2 / -1; grid-row: 2; height: 6px; }
 }
+
+/* Cartas Coloridas: várias cartas com o mesmo número */
+.card--selected { cursor: pointer; transform: translateY(-18px); box-shadow: 0 0 0 3px #2FBF71, 0 12px 20px rgba(0, 0, 0, 0.5); }
+.card--addable { cursor: pointer; transform: translateY(-8px); box-shadow: 0 0 0 3px rgba(47, 191, 113, 0.55), 0 8px 16px rgba(0, 0, 0, 0.45); animation: card-addable 1.2s ease-in-out infinite; }
+@keyframes card-addable { 50% { box-shadow: 0 0 0 3px rgba(47, 191, 113, 1), 0 8px 16px rgba(0, 0, 0, 0.45); } }
+.card__order { position: absolute; top: -9px; right: -9px; width: 22px; height: 22px; border-radius: 50%; background: #2FBF71; color: #04210F; font: 800 0.75rem/22px var(--font-body); text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); }
+.cards-multi { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 14px; padding: 10px 12px; border-radius: 12px; background: rgba(47, 191, 113, 0.12); border: 1px solid rgba(47, 191, 113, 0.45); font-size: 0.9rem; text-align: center; }
+@media (prefers-reduced-motion: reduce) { .card--addable { animation: none; } }
