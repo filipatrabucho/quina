@@ -20,7 +20,7 @@ import {
   deleteGroup as apiDeleteGroup,
   listGameSettings,
 } from '../lib/social.js'
-import { applyGameSettings } from '../data/games.js'
+import { applyGameSettings, settingsFromRows } from '../data/games.js'
 import { playNotify } from '../lib/sound.js'
 
 const POLL_MS = 8000
@@ -49,7 +49,7 @@ export function SocialProvider({ children }) {
     () =>
       listGameSettings()
         .then((rows) => {
-          applyGameSettings(Object.fromEntries(rows.map((r) => [r.game, r.beta])))
+          applyGameSettings(settingsFromRows(rows))
           setCatalog((c) => ({ version: c.version + 1, loaded: true }))
         })
         .catch(() => setCatalog((c) => (c.loaded ? c : { ...c, loaded: true }))),

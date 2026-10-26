@@ -271,9 +271,16 @@ export const gameByKey = (key) => GAMES.find((g) => g.key === key)
 // site (menu, início, páginas) passe a ver o estado novo.
 const DEFAULT_BETA = Object.fromEntries(GAMES.map((g) => [g.key, !!g.beta]))
 export const defaultBeta = (key) => DEFAULT_BETA[key]
+// settings: { jogo: { beta, promoted } } (ou só true/false, o formato antigo).
 export function applyGameSettings(settings) {
-  for (const g of GAMES) g.beta = settings && typeof settings[g.key] === 'boolean' ? settings[g.key] : DEFAULT_BETA[g.key]
+  for (const g of GAMES) {
+    const s = settings?.[g.key]
+    const beta = typeof s === 'boolean' ? s : s?.beta
+    g.beta = typeof beta === 'boolean' ? beta : DEFAULT_BETA[g.key]
+    g.promoted = !!(s && typeof s === 'object' && s.promoted)
+  }
 }
+export const settingsFromRows = (rows) => Object.fromEntries(rows.map((r) => [r.game, { beta: r.beta, promoted: !!r.promoted }]))
 
 // Os jogos em beta só aparecem ao admin e aos testers.
 export const visibleGames = (canSeeBeta) => GAMES.filter((g) => !g.beta || canSeeBeta)

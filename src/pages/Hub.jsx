@@ -104,6 +104,27 @@ function QuickStart() {
   )
 }
 
+// Jogos promovidos no backoffice: em destaque no topo da página inicial.
+function Promoted({ games }) {
+  if (!games.length) return null
+  return (
+    <section className={`home-promo${games.length > 1 ? ' home-promo--multi' : ''}`} aria-label="Em destaque" data-testid="home-promo">
+      {games.map((g) => (
+        <Link key={g.key} to={g.to} className={`promo-card gtile--${g.key}`} data-testid={`promo-${g.key}`}>
+          <div className="promo-card__art" aria-hidden="true"><GamePreview game={g.key} /></div>
+          <div className="promo-card__body">
+            <span className="promo-card__kicker">⭐ Em destaque{g.beta ? ' · Beta' : ''}</span>
+            <h2><GameIcon game={g.key} size={36} />{g.title}</h2>
+            <p>{g.description}</p>
+            <span className="promo-card__meta">{playersLabel(g.players)} · {g.tags.map((t) => MODE_LABEL[t]).join(' · ')}</span>
+            <span className="btn btn--primary promo-card__cta">Jogar agora</span>
+          </div>
+        </Link>
+      ))}
+    </section>
+  )
+}
+
 // Os últimos jogos que esta pessoa abriu (só no browser).
 function ContinuePlaying({ games }) {
   const [keys, setKeys] = useState([])
@@ -165,6 +186,7 @@ export default function Hub() {
         </nav>
       </div>
 
+      {browsing && <Promoted games={games.filter((g) => g.promoted)} />}
       {browsing && <QuickStart />}
       {browsing && <ContinuePlaying games={games} />}
       {browsing && <AppPromo />}

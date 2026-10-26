@@ -346,9 +346,16 @@ export async function adminRecentPlays(limit = 30) {
 
 // ---- Jogos em beta ou em produção (backoffice) ----
 export async function listGameSettings() {
-  const { data, error } = await supabase.from('game_settings').select('game, beta, updated_at')
+  let { data, error } = await supabase.from('game_settings').select('game, beta, promoted, updated_at')
+  // Antes de correr o SQL novo ainda não há a coluna promoted.
+  if (error) ({ data, error } = await supabase.from('game_settings').select('game, beta, updated_at'))
   fail(error)
   return data
+}
+
+export async function adminSetGamePromoted(game, promoted) {
+  const { error } = await supabase.rpc('admin_set_game_promoted', { p_game: game, p_promoted: promoted })
+  fail(error)
 }
 
 export async function adminSetGameBeta(game, beta) {

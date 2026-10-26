@@ -4,7 +4,7 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { GAMES, applyGameSettings } from '../src/data/games.js'
+import { GAMES, applyGameSettings, settingsFromRows } from '../src/data/games.js'
 import { seoFor, SITE_URL, SITE_NAME, publicPaths } from '../src/data/seo.js'
 import { GUIDES } from '../src/data/gameGuides.js'
 import { DISCORD_PATH, DISCORD_FAQ } from '../src/data/discordPage.js'
@@ -19,9 +19,11 @@ async function loadGameSettings() {
   const key = process.env.VITE_SUPABASE_ANON_KEY
   if (!url || !key) return null
   try {
-    const res = await fetch(`${url.replace(/\/+$/, '')}/rest/v1/game_settings?select=game,beta`, { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(8000) })
+    const get = (cols) => fetch(`${url.replace(/\/+$/, '')}/rest/v1/game_settings?select=${cols}`, { headers: { apikey: key, Authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(8000) })
+    let res = await get('game,beta,promoted')
+    if (!res.ok) res = await get('game,beta') // antes de correr o SQL novo
     if (!res.ok) return null
-    return Object.fromEntries((await res.json()).map((r) => [r.game, r.beta]))
+    return settingsFromRows(await res.json())
   } catch {
     return null
   }

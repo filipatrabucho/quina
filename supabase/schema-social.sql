@@ -604,6 +604,22 @@ end;
 $$;
 grant execute on function public.admin_set_game_beta(text, boolean) to authenticated;
 
+-- Jogos promovidos: aparecem em destaque no topo da página inicial.
+-- (beta passa a poder ficar vazio: vazio = vale o que está no código.)
+alter table public.game_settings add column if not exists promoted boolean not null default false;
+alter table public.game_settings alter column beta drop not null;
+create or replace function public.admin_set_game_promoted(p_game text, p_promoted boolean)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin') then
+    raise exception 'Só o admin pode promover jogos.';
+  end if;
+  insert into game_settings (game, beta, promoted, updated_at, updated_by) values (p_game, null, p_promoted, now(), auth.uid())
+  on conflict (game) do update set promoted = excluded.promoted, updated_at = now(), updated_by = auth.uid();
+end;
+$$;
+grant execute on function public.admin_set_game_promoted(text, boolean) to authenticated;
+
 -- Quantas pessoas acabaram hoje (dia de Lisboa) um jogo: público, só o número.
 create or replace function public.daily_players(p_game text)
 returns int language sql stable security definer set search_path = public as $$

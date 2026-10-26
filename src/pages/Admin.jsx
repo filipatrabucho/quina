@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSocial } from '../social/SocialContext.jsx'
-import { adminListUsers, adminSetRole, adminStats, adminPlayStats, adminRecentPlays, adminSetGameBeta, adminRetention, adminListFeedback, adminSetFeedbackStatus } from '../lib/social.js'
+import { adminListUsers, adminSetRole, adminStats, adminPlayStats, adminRecentPlays, adminSetGameBeta, adminSetGamePromoted, adminRetention, adminListFeedback, adminSetFeedbackStatus } from '../lib/social.js'
 import { FEEDBACK_KINDS } from '../components/Feedback.jsx'
 import { GAMES, gameByKey, defaultBeta } from '../data/games.js'
 import Avatar from '../components/Avatar.jsx'
@@ -155,7 +155,7 @@ function Games({ stats, social }) {
   const [busy, setBusy] = useState(null)
   const [msg, setMsg] = useState({ error: '', info: '' })
   const byGame = Object.fromEntries((stats?.games || []).map((g) => [g.game, g]))
-  const list = [...GAMES].sort((a, b) => (b.beta ? 1 : 0) - (a.beta ? 1 : 0) || (byGame[b.key]?.plays || 0) - (byGame[a.key]?.plays || 0))
+  const list = [...GAMES].sort((a, b) => (b.promoted ? 1 : 0) - (a.promoted ? 1 : 0) || (b.beta ? 1 : 0) - (a.beta ? 1 : 0) || (byGame[b.key]?.plays || 0) - (byGame[a.key]?.plays || 0))
 
   const toggle = async (g) => {
     const toBeta = !g.beta
@@ -178,9 +178,31 @@ function Games({ stats, social }) {
     }
   }
 
+  const promote = async (g) => {
+    const on = !g.promoted
+    const ok = window.confirm(
+      on
+        ? `Promover ${g.title}?\n\nPassa a aparecer em destaque no topo da página inicial.${g.beta ? '\n\nAtenção: está em beta, por isso o destaque só aparece aos admins e testers até o pores em produção.' : ''}`
+        : `Tirar ${g.title} do destaque da página inicial?`,
+    )
+    if (!ok) return
+    setBusy(`p-${g.key}`)
+    setMsg({ error: '', info: '' })
+    try {
+      await adminSetGamePromoted(g.key, on)
+      await social.refreshCatalog()
+      setMsg({ error: '', info: on ? `${g.title} está agora em destaque na página inicial.` : `${g.title} saiu do destaque.` })
+    } catch (e) {
+      setMsg({ error: /admin_set_game_promoted|schema cache/.test(e.message) ? 'Falta correr o supabase/schema-social.sql novo no Supabase.' : e.message, info: '' })
+    } finally {
+      setBusy(null)
+    }
+  }
+
   return (
     <section className="bo-card">
       <p className="admin-note">
+        <strong>Promover</strong> põe o jogo em destaque no topo da página inicial (podes promover mais do que um).{' '}
         Os jogos em <strong>beta</strong> só aparecem aos admins e testers: não estão no menu nem na página inicial para os outros, e não vão para o Google.
         A mudança vale logo no site (até 1 minuto para quem já o tem aberto). O Google e o sitemap só a veem na próxima publicação do site.
       </p>
@@ -189,7 +211,7 @@ function Games({ stats, social }) {
       <div className="bo-table-wrap">
         <table className="bo-table" data-testid="bo-games">
           <thead>
-            <tr><th>Jogo</th><th>Estado</th><th className="bo-num">Jogadores</th><th className="bo-num">Partidas</th><th className="bo-num">Mudar</th></tr>
+            <tr><th>Jogo</th><th>Estado</th><th className="bo-num">Jogadores</th><th className="bo-num">Partidas</th><th className="bo-num">Mudar</th><th className="bo-num">Destaque</th></tr>
           </thead>
           <tbody>
             {list.map((g) => (
@@ -210,6 +232,18 @@ function Games({ stats, social }) {
                     data-testid={`bo-toggle-${g.key}`}
                   >
                     {busy === g.key ? 'A guardar…' : g.beta ? 'Pôr em produção' : 'Pôr em beta'}
+                  </button>
+                </td>
+                <td className="bo-num">
+                  <button
+                    type="button"
+                    className={`btn btn--small ${g.promoted ? 'btn--primary' : 'btn--outline'}`}
+                    disabled={busy === `p-${g.key}`}
+                    onClick={() => promote(g)}
+                    aria-pressed={!!g.promoted}
+                    data-testid={`bo-promote-${g.key}`}
+                  >
+                    {busy === `p-${g.key}` ? 'A guardar…' : g.promoted ? '⭐ Promovido' : 'Promover'}
                   </button>
                 </td>
               </tr>
