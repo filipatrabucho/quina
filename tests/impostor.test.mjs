@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { GRID, W, H, isFloor, STATIONS, BUTTON, ROOMS, startGame, applyAction, tick, actionsFor, taskProgress, impostorCount, impostorOnline } from '../src/games/impostor/impostorLogic.js'
+import * as L from '../src/games/impostor/impostorLogic.js'
 
 test('mapa: todas as salas ligadas e as tarefas em sítios onde se chega', () => {
   assert.equal(GRID.length, H)
@@ -95,4 +96,63 @@ test('jogos só com bots acabam com um vencedor', () => {
 test('online: junta bots até 10', () => {
   const g = impostorOnline.start([{ id: 'x' }, { id: 'y' }], { bots: 20 }, 0)
   assert.equal(g.order.length, 10)
+})
+
+test('impostor: condutas (entrar, mudar, sair, escondido, reunião tira de lá)', () => {
+  for (const v of L.VENTS) {
+    assert.ok(L.isFloor(v.x, v.y), `${v.id} no chão`)
+    assert.equal(v.links.length, 2)
+    assert.ok(!L.STATIONS.some((s) => s.x === v.x && s.y === v.y), `${v.id} não está em cima de uma tarefa`)
+  }
+  const ids = ['a', 'b', 'c', 'd', 'e']
+  let g = L.startGame(ids, [], 0, () => 0.1)
+  g = L.tick(g, L.ROLE_MS + 1)
+  const imp = ids.find((id) => g.players[id].role === 'impostor')
+  const crew = ids.find((id) => g.players[id].role === 'crew')
+  const v = L.VENTS[0]
+  g = { ...g, players: { ...g.players, [imp]: { ...g.players[imp], x: v.x, y: v.y }, [crew]: { ...g.players[crew], x: v.x, y: v.y } } }
+  const now = L.ROLE_MS + 2
+  assert.equal(L.actionsFor(g, crew, now).vent, null, 'tripulantes não usam condutas')
+  assert.throws(() => L.applyAction(g, crew, { type: 'vent' }, now), /conduta/)
+  assert.equal(L.actionsFor(g, imp, now).vent, v.id)
+  g = L.applyAction(g, imp, { type: 'vent' }, now)
+  assert.equal(g.players[imp].vent, v.id)
+  const inside = L.actionsFor(g, imp, now)
+  assert.equal(inside.inVent, v.id)
+  assert.equal(inside.kill, null)
+  assert.throws(() => L.applyAction(g, imp, { type: 'ventMove', to: L.VENTS[4].id }, now), /ligada/)
+  const to = L.ventById(v.links[0])
+  g = L.applyAction(g, imp, { type: 'ventMove', to: to.id }, now)
+  assert.deepEqual([g.players[imp].x, g.players[imp].y], [to.x, to.y])
+  g = L.applyAction(g, imp, { type: 'dir', dir: 'd' }, now + 500)
+  assert.deepEqual([g.players[imp].x, g.players[imp].y], [to.x, to.y], 'dentro da conduta não anda')
+  g = L.applyAction(g, imp, { type: 'vent' }, now + 600)
+  assert.equal(g.players[imp].vent, null)
+  g = L.applyAction(g, imp, { type: 'vent' }, now + 700)
+  g = { ...g, players: { ...g.players, [crew]: { ...g.players[crew], x: L.BUTTON.x, y: L.BUTTON.y + 1 } } }
+  g = L.applyAction(g, crew, { type: 'emergency' }, now + 800)
+  assert.equal(g.phase, 'meeting')
+  assert.equal(g.players[imp].vent, null, 'a reunião tira toda a gente das condutas')
+})
+
+test('impostor: cores e chapéus escolhidos, repetidos não, mantêm-se na desforra', () => {
+  const ids = ['a', 'b', 'c', 'd']
+  const g = L.startGame(ids, [], 0, Math.random, { looks: { a: { color: 3, hat: 'coroa' }, b: { color: 3, hat: 'nada' }, c: { color: 99 } } })
+  assert.equal(g.players.a.color, 3)
+  assert.equal(g.players.a.hat, 'coroa')
+  assert.notEqual(g.players.b.color, 3, 'cor já escolhida por outro')
+  assert.equal(g.players.b.hat, null)
+  assert.equal(new Set(ids.map((id) => g.players[id].color)).size, 4)
+  const over = { ...g, phase: 'over', winner: 'crew' }
+  const r = L.applyAction(over, 'a', { type: 'rematch' }, 1000)
+  assert.equal(r.players.a.color, 3)
+  assert.equal(r.players.a.hat, 'coroa')
+  // online: tempos da sala e preferências do lobby
+  const o = L.impostorOnline.start([{ id: 'a', prefs: { color: 5, hat: 'chef' } }, { id: 'b' }], { bots: 3, killCooldown: 10, meeting: 90 }, 0)
+  assert.equal(o.cfg.killCooldown, 10000)
+  assert.equal(o.cfg.meetingMs, 90000)
+  assert.equal(o.players.a.color, 5)
+  assert.equal(o.players.a.hat, 'chef')
+  const d = L.impostorOnline.start([{ id: 'a' }], { bots: 3, killCooldown: 7 }, 0)
+  assert.equal(d.cfg.killCooldown, L.KILL_COOLDOWN_MS, 'valor inválido usa o normal')
 })

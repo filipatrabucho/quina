@@ -4524,3 +4524,31 @@ span.pcard { display: inline-block; }
 .card__order { position: absolute; top: -9px; right: -9px; width: 22px; height: 22px; border-radius: 50%; background: #2FBF71; color: #04210F; font: 800 0.75rem/22px var(--font-body); text-align: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4); }
 .cards-multi { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 14px; padding: 10px 12px; border-radius: 12px; background: rgba(47, 191, 113, 0.12); border: 1px solid rgba(47, 191, 113, 0.45); font-size: 0.9rem; text-align: center; }
 @media (prefers-reduced-motion: reduce) { .card--addable { animation: none; } }
+
+/* O Impostor: condutas, mini-mapa, aparência */
+.imp-ent--vent { opacity: 0.45; filter: grayscale(0.5); }
+.imp-act--vent { background: #5B6382; }
+.imp-vent { align-items: center; }
+.imp-vent__title { width: 100%; text-align: right; font-size: 0.85rem; font-weight: 700; color: #C9D1F0; }
+.imp-mini { position: absolute; top: 8px; right: 8px; z-index: 5; width: 150px; padding: 4px; border: 2px solid #2A3050; border-radius: 10px; background: rgba(5, 7, 16, 0.85); cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
+.imp-mini svg { display: block; width: 100%; height: auto; }
+.imp-mini--big { top: 50%; left: 50%; right: auto; width: min(94%, 640px); transform: translate(-50%, -50%); z-index: 8; padding: 8px; border-color: #6B7394; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); }
+.imp-mini__legend { font-size: 0.75rem; color: #C9D1F0; text-align: center; }
+@media (max-width: 640px) { .imp-mini { width: 104px; } }
+.imp-lobby { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.imp-times { display: flex; flex-direction: column; gap: 4px; }
+.imp-look { display: flex; gap: 14px; align-items: center; padding: 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--stone-light); text-align: left; flex-wrap: wrap; justify-content: center; }
+.imp-look--locked { flex-wrap: nowrap; }
+.imp-look--locked .modal-note { margin: 0; }
+.imp-look__preview { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 90px; }
+.imp-look__preview small { font-size: 0.75rem; color: var(--stone); text-align: center; }
+.imp-look__opts { flex: 1 1 240px; display: flex; flex-direction: column; gap: 6px; }
+.imp-look__label { margin: 0; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--stone); }
+.imp-look__colors { display: flex; flex-wrap: wrap; gap: 6px; }
+.imp-swatch { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #14141C; cursor: pointer; box-shadow: 0 0 0 2px transparent; }
+.imp-swatch--on { box-shadow: 0 0 0 3px #FFC93C; }
+.imp-swatch:disabled { opacity: 0.25; cursor: not-allowed; }
+.imp-look__hats { display: flex; flex-wrap: wrap; gap: 6px; }
+.imp-hat { width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 2px solid #2A3050; background: #1A1E33; cursor: pointer; padding: 0; }
+.imp-hat--on { border-color: #FFC93C; background: #3A3320; }
+.imp-look__saved { margin: 0; }

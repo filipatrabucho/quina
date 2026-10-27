@@ -356,3 +356,16 @@ test('cartas coloridas: várias cartas com o mesmo número de uma vez', () => {
     assert.ok(x.winner, 'o jogo acaba')
   }
 })
+
+test('sala: preferências no lobby (limpas) e guardadas ao reentrar', () => {
+  const logic = { minPlayers: 1, maxPlayers: 4, start: (players) => ({ players }), reduce: (g) => g }
+  let s = { status: 'lobby', hostId: 'a', players: [{ id: 'a', name: 'A' }], maxPlayers: 4 }
+  s = reduceRoom(s, { type: 'prefs', prefs: { color: 2, hat: 'coroa', 'mau!': 1, big: 'x'.repeat(99), fn: {} } }, 'a', logic)
+  assert.deepEqual(s.players[0].prefs, { color: 2, hat: 'coroa' })
+  s = reduceRoom(s, { type: 'join', player: { name: 'A2' } }, 'a', logic)
+  assert.deepEqual(s.players[0].prefs, { color: 2, hat: 'coroa' })
+  assert.equal(s.players[0].name, 'A2')
+  assert.equal(reduceRoom(s, { type: 'prefs', prefs: { color: 1 } }, 'zz', logic), s, 'quem não está na sala não muda nada')
+  s = reduceRoom(s, { type: 'start' }, 'a', logic)
+  assert.deepEqual(s.game.players[0].prefs, { color: 2, hat: 'coroa' })
+})

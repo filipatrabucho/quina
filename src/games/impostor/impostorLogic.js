@@ -11,7 +11,10 @@ export const STEP_MS = 125
 export const ROLE_MS = 4500
 export const MEETING_MS = 60000
 export const EJECT_MS = 6000
-export const KILL_COOLDOWN_MS = 25000
+export const KILL_COOLDOWN_MS = 15000
+// Opções da sala (em segundos).
+export const COOLDOWN_OPTIONS = [10, 15, 20, 25, 30]
+export const MEETING_OPTIONS = [30, 45, 60, 90]
 export const KILL_RANGE = 1.5
 export const REPORT_RANGE = 2
 export const USE_RANGE = 1
@@ -21,6 +24,7 @@ export const BOT_TASK_MS = 10000 // quanto tempo um bot demora numa tarefa
 export const BOT_NAMES = ['Bot Rita', 'Bot Zé', 'Bot Inês', 'Bot Rui', 'Bot Ana', 'Bot Tó', 'Bot Bia', 'Bot Gui', 'Bot Lia']
 export const COLORS = ['#E5243B', '#2F80ED', '#2FBF71', '#F2B53B', '#8E44AD', '#FF7A1A', '#1ABC9C', '#EC4899', '#F5F5F5', '#6B4F2A']
 export const COLOR_NAMES = ['Vermelho', 'Azul', 'Verde', 'Amarelo', 'Roxo', 'Laranja', 'Turquesa', 'Rosa', 'Branco', 'Castanho']
+export const HATS = ['bone', 'cartola', 'coroa', 'festa', 'gorro', 'cowboy', 'chef', 'flor', 'auscultadores']
 const DIRS = { u: [0, -1], d: [0, 1], l: [-1, 0], r: [1, 0] }
 
 // ---------- Mapa ----------
@@ -54,6 +58,14 @@ export const isFloor = (x, y) => x >= 0 && y >= 0 && x < W && y < H && GRID[y][x
 export const roomAt = (x, y) => ROOMS.find((r) => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h)?.name || 'Corredor'
 
 export const BUTTON = { x: 15, y: 2 } // botão de emergência (Refeitório)
+// Condutas de ar: só os impostores as usam. Cada grupo liga 3 salas.
+const VENT_GROUPS = [
+  [{ id: 'v-cozinha', x: 4, y: 2 }, { id: 'v-enfermaria', x: 6, y: 10 }, { id: 'v-maquinas', x: 4, y: 17 }],
+  [{ id: 'v-comunicacoes', x: 27, y: 4 }, { id: 'v-armazem', x: 25, y: 9 }, { id: 'v-laboratorio', x: 27, y: 15 }],
+  [{ id: 'v-refeitorio', x: 12, y: 1 }, { id: 'v-escritorio', x: 13, y: 10 }, { id: 'v-ponte', x: 19, y: 17 }],
+]
+export const VENTS = VENT_GROUPS.flatMap((group) => group.map((v) => ({ ...v, links: group.filter((o) => o.id !== v.id).map((o) => o.id) })))
+export const ventById = (id) => VENTS.find((v) => v.id === id)
 export const STATIONS = [
   { id: 'lixo', name: 'Esvaziar o lixo', x: 2, y: 2 },
   { id: 'fogao', name: 'Desligar o fogão', x: 6, y: 5 },
@@ -71,6 +83,9 @@ export const STATIONS = [
 const SPAWN = [[13, 3], [14, 3], [17, 3], [18, 3], [13, 4], [14, 4], [17, 4], [18, 4], [15, 5], [16, 5]]
 
 export const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
+// Os bots impostores esperam mais entre mortes (são mais certeiros do que as pessoas).
+const BOT_COOLDOWN_X = 1.3
+const cooldownOf = (cfgMs, isBotPlayer) => Math.round(cfgMs * (isBotPlayer ? BOT_COOLDOWN_X : 1))
 export const isBot = (g, id) => g.bots.includes(id)
 export const visionOf = (g, id) => (g.players[id].role === 'impostor' ? VISION.impostor : VISION.crew)
 const alive = (g) => g.order.filter((id) => g.players[id].alive)
@@ -89,19 +104,39 @@ export function impostorCount(n) {
   return n >= 8 ? 2 : 1
 }
 
-// opts: { killCooldown, meetingMs }
+// Cores: primeiro as escolhidas (se ninguém a tiver já), depois as que sobram.
+function assignLooks(ids, looks = {}) {
+  const color = {}
+  const taken = new Set()
+  for (const id of ids) {
+    const c = looks[id]?.color
+    if (Number.isInteger(c) && c >= 0 && c < COLORS.length && !taken.has(c)) {
+      color[id] = c
+      taken.add(c)
+    }
+  }
+  const free = COLORS.map((_, i) => i).filter((i) => !taken.has(i))
+  ids.forEach((id, i) => {
+    if (color[id] == null) color[id] = free.length ? free.shift() : i % COLORS.length
+  })
+  const hat = Object.fromEntries(ids.map((id) => [id, HATS.includes(looks[id]?.hat) ? looks[id].hat : null]))
+  return { color, hat }
+}
+
+// opts: { killCooldown, meetingMs, looks: { id: { color, hat } } }
 export function startGame(ids, bots = [], now = Date.now(), rand = Math.random, opts = {}) {
   if (ids.length < 4) throw new Error('São precisos pelo menos 4 jogadores (podes juntar bots).')
   const imps = new Set(shuffle(ids, rand).slice(0, impostorCount(ids.length)))
+  const looks = assignLooks(ids, opts.looks)
   const players = {}
   ids.forEach((id, i) => {
     const [x, y] = SPAWN[i % SPAWN.length]
     const role = imps.has(id) ? 'impostor' : 'crew'
     players[id] = {
-      x, y, dir: null, next: 0, color: i % COLORS.length, role, alive: true,
+      x, y, dir: null, next: 0, color: looks.color[id], hat: looks.hat[id], vent: null, role, alive: true,
       tasks: shuffle(STATIONS.map((s) => s.id), rand).slice(0, TASKS_EACH),
-      done: [], emergency: 1, killReady: now + ROLE_MS + (opts.killCooldown || KILL_COOLDOWN_MS),
-      bot: bots.includes(id) ? { goal: null, wait: 0, suspect: null, target: null } : null,
+      done: [], emergency: 1, killReady: now + ROLE_MS + cooldownOf(opts.killCooldown || KILL_COOLDOWN_MS, bots.includes(id)),
+      bot: bots.includes(id) ? { goal: null, wait: 0, suspect: null, why: null, target: null, flee: false, ventOut: 0, ventMoved: false } : null,
     }
   })
   return {
@@ -170,7 +205,7 @@ function checkWin(g, now) {
 // ---------- Movimento ----------
 function tryMove(g, id, now) {
   const p = g.players[id]
-  if (!p.dir || now < p.next || g.phase !== 'play') return false
+  if (!p.dir || p.vent || now < p.next || g.phase !== 'play') return false
   const [dx, dy] = DIRS[p.dir]
   const nx = p.x + dx
   const ny = p.y + dy
@@ -184,8 +219,14 @@ function tryMove(g, id, now) {
 // O que esta pessoa pode fazer agora, onde está.
 export function actionsFor(g, id, now) {
   const p = g.players[id]
-  const out = { task: null, report: null, kill: null, emergency: false, killIn: 0 }
+  const out = { task: null, report: null, kill: null, emergency: false, killIn: 0, vent: null, inVent: null }
   if (!p || g.phase !== 'play') return out
+  if (p.vent) {
+    // Dentro da conduta só dá para mudar de conduta ou sair.
+    out.inVent = p.vent
+    if (p.role === 'impostor') out.killIn = Math.max(0, p.killReady - now)
+    return out
+  }
   if (p.role === 'crew') {
     const st = STATIONS.find((s) => p.tasks.includes(s.id) && !p.done.includes(s.id) && dist(p, s) <= USE_RANGE)
     if (st) out.task = st.id
@@ -195,6 +236,8 @@ export function actionsFor(g, id, now) {
   if (body) out.report = body.id
   if (p.emergency > 0 && dist(p, BUTTON) <= 1.5) out.emergency = true
   if (p.role === 'impostor') {
+    const v = VENTS.find((x) => dist(p, x) <= USE_RANGE)
+    if (v) out.vent = v.id
     out.killIn = Math.max(0, p.killReady - now)
     if (!out.killIn) {
       const target = alive(g)
@@ -212,20 +255,44 @@ function kill(g, id, target, now) {
   v.alive = false
   v.dir = null
   g.bodies.push({ id: target, x: v.x, y: v.y })
-  k.killReady = now + g.cfg.killCooldown
+  k.killReady = now + cooldownOf(g.cfg.killCooldown, !!k.bot)
   // Quem estava a ver fica a saber (os bots lembram-se).
   for (const o of alive(g)) {
     const w = g.players[o]
     if (o === id || w.role !== 'crew' || !w.bot) continue
-    if (dist(w, k) <= VISION.crew) w.bot.suspect = id
+    if (dist(w, k) <= VISION.crew) Object.assign(w.bot, { suspect: id, why: 'kill' })
   }
+}
+
+// Entrar/sair/mudar de conduta. Quem vir um impostor a entrar ou a sair desconfia.
+function seenByCrew(g, id) {
+  const p = g.players[id]
+  for (const o of alive(g)) {
+    const w = g.players[o]
+    if (o !== id && w.role === 'crew' && w.bot && dist(w, p) <= VISION.crew) Object.assign(w.bot, { suspect: id, why: 'vent' })
+  }
+}
+function enterVent(g, id, ventId) {
+  const p = g.players[id]
+  const v = ventById(ventId)
+  Object.assign(p, { x: v.x, y: v.y, dir: null, vent: v.id })
+  seenByCrew(g, id)
+}
+function moveVent(g, id, to) {
+  const p = g.players[id]
+  const v = ventById(to)
+  Object.assign(p, { x: v.x, y: v.y, vent: v.id })
+}
+function exitVent(g, id) {
+  g.players[id].vent = null
+  seenByCrew(g, id)
 }
 
 function startMeeting(g, by, body, now) {
   g.phase = 'meeting'
   g.phaseEnds = now + g.cfg.meetingMs
   g.meeting = { by, body, votes: {} }
-  for (const id of g.order) g.players[id].dir = null
+  for (const id of g.order) Object.assign(g.players[id], { dir: null, vent: null })
   addLog(g, body ? `@${by} encontrou o corpo de @${body}.` : `@${by} chamou uma reunião de emergência.`)
 }
 
@@ -257,8 +324,9 @@ function resumePlay(g, now) {
       ;[p.x, p.y] = SPAWN[k++ % SPAWN.length]
     }
     p.dir = null
-    if (p.role === 'impostor') p.killReady = now + g.cfg.killCooldown
-    if (p.bot) Object.assign(p.bot, { goal: null, wait: 0, target: null })
+    p.vent = null
+    if (p.role === 'impostor') p.killReady = now + cooldownOf(g.cfg.killCooldown, !!p.bot)
+    if (p.bot) Object.assign(p.bot, { goal: null, wait: 0, target: null, flee: false, ventOut: 0, ventMoved: false })
   }
 }
 
@@ -268,7 +336,8 @@ export function applyAction(game, id, action, now = Date.now(), rand = Math.rand
   if (!p) throw new Error('Não estás neste jogo.')
   if (action.type === 'rematch') {
     if (game.phase !== 'over') return game
-    return startGame(game.order, game.bots, now, rand, { ...game.cfg, round: game.round, wins: game.wins })
+    const looks = Object.fromEntries(game.order.map((id) => [id, { color: game.players[id].color, hat: game.players[id].hat }]))
+    return startGame(game.order, game.bots, now, rand, { ...game.cfg, round: game.round, wins: game.wins, looks })
   }
   if (action.type === 'dir') {
     const dir = action.dir && DIRS[action.dir] ? action.dir : null
@@ -305,6 +374,15 @@ export function applyAction(game, id, action, now = Date.now(), rand = Math.rand
     case 'report':
       if (!can.report) throw new Error('Não há nenhum corpo perto.')
       startMeeting(g, id, can.report, now)
+      return g
+    case 'vent':
+      if (can.inVent) exitVent(g, id)
+      else if (can.vent) enterVent(g, id, can.vent)
+      else throw new Error('Não há nenhuma conduta aqui.')
+      return g
+    case 'ventMove':
+      if (!can.inVent || !ventById(can.inVent).links.includes(action.to)) throw new Error('Essa conduta não está ligada a esta.')
+      moveVent(g, id, action.to)
       return g
     case 'emergency':
       if (!can.emergency) throw new Error('Tens de estar junto do botão.')
@@ -351,6 +429,35 @@ function botPlay(g, id, now, rand) {
   const p = g.players[id]
   const b = p.bot
   const can = actionsFor(g, id, now)
+  // Impostor numa conduta: muda para outra e sai lá.
+  if (p.vent) {
+    if (now >= b.ventOut) {
+      if (!b.ventMoved) {
+        const links = ventById(p.vent).links
+        moveVent(g, id, links[Math.floor(rand() * links.length)])
+        Object.assign(b, { ventMoved: true, ventOut: now + 700 })
+      } else {
+        exitVent(g, id)
+        Object.assign(b, { flee: false, ventMoved: false, goal: null })
+      }
+    }
+    p.dir = null
+    return
+  }
+  if (p.role === 'impostor' && p.alive && b.flee) {
+    // depois de matar foge pela conduta mais perto (se ninguém estiver a ver)
+    const watching = alive(g).some((o) => o !== id && g.players[o].role === 'crew' && dist(p, g.players[o]) <= VISION.crew)
+    if (can.vent && !watching) {
+      enterVent(g, id, can.vent)
+      b.ventOut = now + 600
+      return
+    }
+    if (!b.goal?.vent) {
+      const v = [...VENTS].sort((x, y) => dist(p, x) - dist(p, y))[0]
+      if (dist(p, v) > 7) b.flee = false
+      else b.goal = { x: v.x, y: v.y, vent: true }
+    }
+  }
   if (p.alive) {
     // vê um corpo: vai lá e reporta (os impostores não reportam)
     if (p.role === 'crew') {
@@ -364,6 +471,7 @@ function botPlay(g, id, now, rand) {
       if (!witnesses.length && rand() < 0.8) {
         kill(g, id, can.kill, now)
         b.goal = null
+        b.flee = rand() < 0.7
         return checkWin(g, now)
       }
     }
@@ -393,11 +501,11 @@ function botPlay(g, id, now, rand) {
   if (p.role === 'impostor' && p.alive) {
     const crew = alive(g).filter((o) => g.players[o].role === 'crew')
     if (b.target && !g.players[b.target]?.alive) b.target = null
-    if (!b.target && can.killIn < 4000 && crew.length) {
+    if (!b.flee && !b.target && can.killIn < 4000 && crew.length) {
       const lonely = (o) => Math.min(...crew.filter((c) => c !== o).map((c) => dist(g.players[o], g.players[c])), 99)
       b.target = crew.sort((x, y) => lonely(y) - lonely(x))[0]
     }
-    if (b.target) b.goal = { x: g.players[b.target].x, y: g.players[b.target].y }
+    if (b.target && !b.flee) b.goal = { x: g.players[b.target].x, y: g.players[b.target].y }
   }
   if (!b.goal) b.goal = STATIONS[Math.floor(rand() * STATIONS.length)]
   p.dir = bfsStep(p, b.goal)
@@ -449,7 +557,7 @@ export function tick(game, now, rand = Math.random) {
     changed = true
   } else if (g.phase === 'play') {
     // Estado de um bot que importa guardar (tarefas, espera, alvo, direção).
-    const sig = (p) => `${p.dir}|${p.done.length}|${p.bot.wait}|${p.bot.target}|${p.alive}|${p.killReady}`
+    const sig = (p) => `${p.dir}|${p.done.length}|${p.x},${p.y}|${p.vent}|${p.alive}|${p.killReady}|${JSON.stringify(p.bot)}`
     for (const id of g.order) {
       if (g.phase !== 'play') break
       const p = g.players[id]
@@ -475,7 +583,13 @@ export const impostorOnline = {
     const humans = players.map((p) => p.id)
     const nBots = Math.max(4 - humans.length, 0, Math.min(10 - humans.length, Number(action.bots) || 0))
     const bots = Array.from({ length: nBots }, (_, i) => `bot${i}`)
-    return startGame([...humans, ...bots], bots, now)
+    const pick = (v, list, def) => (list.includes(Number(v)) ? Number(v) * 1000 : def)
+    const looks = Object.fromEntries(players.map((p) => [p.id, p.prefs || {}]))
+    return startGame([...humans, ...bots], bots, now, Math.random, {
+      killCooldown: pick(action.killCooldown, COOLDOWN_OPTIONS, KILL_COOLDOWN_MS),
+      meetingMs: pick(action.meeting, MEETING_OPTIONS, MEETING_MS),
+      looks,
+    })
   },
   reduce(game, action, fromId, { now }) {
     if (action.type === 'tick') return tick(game, now)

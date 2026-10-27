@@ -3,15 +3,22 @@ import GameShell from '../../components/GameShell.jsx'
 import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import { gameBreak } from '../../lib/ads.js'
 import Astro from './Astro.jsx'
+import { Link } from 'react-router-dom'
 import { recordResultOnce } from '../../lib/social.js'
+import { useAuth } from '../../hooks/useAuth.js'
+import { hasAccount, loadLook, saveLook } from './look.js'
 import {
-  W, H, ROOMS, CORRIDORS, STATIONS, BUTTON, COLORS, BOT_NAMES, VISION,
-  dist, roomAt, visionOf, taskProgress, actionsFor, startGame, applyAction, tick, impostorOnline,
+  W, H, ROOMS, CORRIDORS, STATIONS, BUTTON, VENTS, COLORS, COLOR_NAMES, HATS, BOT_NAMES, VISION,
+  COOLDOWN_OPTIONS, MEETING_OPTIONS, KILL_COOLDOWN_MS, MEETING_MS,
+  dist, roomAt, ventById, visionOf, taskProgress, actionsFor, startGame, applyAction, tick, impostorOnline,
 } from './impostorLogic.js'
 
 const KEYS = { ArrowUp: 'u', ArrowDown: 'd', ArrowLeft: 'l', ArrowRight: 'r', w: 'u', s: 'd', a: 'l', d: 'r', W: 'u', S: 'd', A: 'l', D: 'r' }
 const STATION = Object.fromEntries(STATIONS.map((s) => [s.id, s]))
 const secs = (ms) => Math.max(0, Math.ceil(ms / 1000))
+const HAT_NAMES = { bone: 'Boné', cartola: 'Cartola', coroa: 'Coroa', festa: 'Chapéu de festa', gorro: 'Gorro', cowboy: 'Cowboy', chef: 'Chef', flor: 'Flor', auscultadores: 'Auscultadores' }
+// A personagem de um jogador (cor + chapéu).
+const Char = ({ p, size, dead, ghost }) => <Astro color={COLORS[p.color]} hat={dead ? null : p.hat} dead={dead} ghost={ghost} size={size} />
 
 function useNow(active, every = 200) {
   const [now, setNow] = useState(Date.now())
@@ -118,7 +125,7 @@ function Pad({ press, release }) {
 }
 
 // Botões do que dá para fazer aqui (com atalhos de teclado).
-function Actions({ can, me, onUse, onKill, onReport, onEmergency }) {
+function Actions({ can, me, onUse, onKill, onReport, onEmergency, onVent }) {
   const list = []
   if (can.report) list.push({ key: 'report', label: 'Reportar', icon: '📢', run: onReport, kb: 'R', cls: 'imp-act--report' })
   if (me.role === 'impostor' && me.alive) {
@@ -126,6 +133,7 @@ function Actions({ can, me, onUse, onKill, onReport, onEmergency }) {
   }
   if (can.task) list.push({ key: 'task', label: 'Usar', icon: '🔧', run: onUse, kb: 'E', cls: 'imp-act--use' })
   if (can.emergency) list.push({ key: 'emergency', label: 'Reunião', icon: '🚨', run: onEmergency, kb: 'E', cls: 'imp-act--report' })
+  if (can.vent) list.push({ key: 'vent', label: 'Conduta', icon: '🕳️', run: onVent, kb: 'V', cls: 'imp-act--vent' })
 
   useEffect(() => {
     const down = (e) => {
@@ -151,6 +159,39 @@ function Actions({ can, me, onUse, onKill, onReport, onEmergency }) {
         </button>
       ))}
       {!list.length && <span className="imp-acts__none">Anda até uma tarefa (ícone amarelo) para a fazer.</span>}
+    </div>
+  )
+}
+
+// Dentro de uma conduta: ir para as condutas ligadas ou sair.
+function VentPanel({ ventId, onMove, onExit }) {
+  const v = ventById(ventId)
+  useEffect(() => {
+    const down = (e) => {
+      if (e.repeat || e.target.closest?.('input, textarea')) return
+      const k = e.key.toUpperCase()
+      if (k === 'V' || k === 'E' || k === ' ') {
+        e.preventDefault()
+        onExit()
+      } else if (k === '1' || k === '2') onMove(v.links[Number(k) - 1])
+    }
+    window.addEventListener('keydown', down)
+    return () => window.removeEventListener('keydown', down)
+  })
+  return (
+    <div className="imp-acts imp-vent" data-testid="imp-vent-panel">
+      <span className="imp-vent__title">🕳️ Na conduta ({roomAt(v.x, v.y)}): ninguém te vê.</span>
+      {v.links.map((id, i) => {
+        const to = ventById(id)
+        return (
+          <button key={id} type="button" className="imp-act imp-act--use" onClick={() => onMove(id)} data-testid={`imp-vent-to-${id}`}>
+            <span aria-hidden="true">➜</span>{roomAt(to.x, to.y)}<kbd>{i + 1}</kbd>
+          </button>
+        )
+      })}
+      <button type="button" className="imp-act imp-act--vent" onClick={onExit} data-testid="imp-vent-exit">
+        <span aria-hidden="true">⬆️</span>Sair<kbd>V</kbd>
+      </button>
     </div>
   )
 }
@@ -290,11 +331,55 @@ function MapSvg({ c, me }) {
           <text x={c / 2} y={c * 0.66} fontSize={c * 0.42} textAnchor="middle">🔧</text>
         </g>
       ))}
+      {VENTS.map((v) => (
+        <g key={v.id} transform={`translate(${v.x * c} ${v.y * c})`} data-vent={v.id}>
+          <rect x={c * 0.1} y={c * 0.22} width={c * 0.8} height={c * 0.56} rx={c * 0.1} fill="#1A1E2E" stroke="#6B7394" strokeWidth="1.5" />
+          {[0.36, 0.5, 0.64].map((k) => <line key={k} x1={c * 0.18} x2={c * 0.82} y1={c * k} y2={c * k} stroke="#6B7394" strokeWidth="1.2" />)}
+        </g>
+      ))}
       <g transform={`translate(${BUTTON.x * c} ${BUTTON.y * c})`}>
         <circle cx={c / 2} cy={c / 2} r={c * 0.42} fill="#7A1F2B" />
         <circle cx={c / 2} cy={c / 2} r={c * 0.3} fill="#E5243B" stroke="#14141C" strokeWidth="1.5" />
       </g>
     </svg>
+  )
+}
+
+// Mini-mapa (toca para aumentar; M no teclado).
+function MiniMap({ game, meId }) {
+  const [big, setBig] = useState(false)
+  const me = game.players[meId]
+  useEffect(() => {
+    const down = (e) => {
+      if (e.repeat || e.target.closest?.('input, textarea')) return
+      if (e.key === 'm' || e.key === 'M') setBig((b) => !b)
+      else if (e.key === 'Escape') setBig(false)
+    }
+    window.addEventListener('keydown', down)
+    return () => window.removeEventListener('keydown', down)
+  }, [])
+  if (!me) return null
+  const todo = me.role === 'crew' ? me.tasks.filter((t) => !me.done.includes(t)).map((t) => STATION[t]) : []
+  const imp = me.role === 'impostor'
+  const mates = imp ? game.order.filter((id) => id !== meId && game.players[id].role === 'impostor' && game.players[id].alive) : []
+  return (
+    <button type="button" className={`imp-mini${big ? ' imp-mini--big' : ''}`} onClick={() => setBig((b) => !b)} aria-label={big ? 'Fechar o mapa' : 'Abrir o mapa'} data-testid="imp-minimap">
+      <svg viewBox={`-0.5 -0.5 ${W + 1} ${H + 1}`} aria-hidden="true">
+        {CORRIDORS.map(([x, y, w, h], i) => <rect key={i} x={x} y={y} width={w} height={h} fill="#3A4160" />)}
+        {ROOMS.map((r) => (
+          <g key={r.name}>
+            <rect x={r.x} y={r.y} width={r.w} height={r.h} rx="0.4" fill="#4C5578" stroke="#252B45" strokeWidth="0.2" />
+            {big && <text x={r.x + r.w / 2} y={r.y + r.h / 2 + 0.3} fontSize="0.85" textAnchor="middle" fill="#E6EAF8" fontWeight="700">{r.name}</text>}
+          </g>
+        ))}
+        <circle cx={BUTTON.x + 0.5} cy={BUTTON.y + 0.5} r="0.55" fill="#E5243B" />
+        {imp && VENTS.map((v) => <rect key={v.id} x={v.x + 0.1} y={v.y + 0.25} width="0.8" height="0.5" fill="#9AA3C7" />)}
+        {todo.map((s) => <circle key={s.id} cx={s.x + 0.5} cy={s.y + 0.5} r="0.55" fill="#FFC93C" stroke="#14141C" strokeWidth="0.15" data-mini-task={s.id} />)}
+        {mates.map((id) => <circle key={id} cx={game.players[id].x + 0.5} cy={game.players[id].y + 0.5} r="0.55" fill="#FF6B6B" />)}
+        <circle cx={me.x + 0.5} cy={me.y + 0.5} r="0.8" fill={COLORS[me.color]} stroke="#fff" strokeWidth="0.3" data-mini-me="1" />
+      </svg>
+      {big && <span className="imp-mini__legend">Amarelo: as tuas tarefas{imp ? ' · cinzento: condutas' : ''} · vermelho: botão de emergência</span>}
+    </button>
   )
 }
 
@@ -322,12 +407,12 @@ function World({ game, meId, people, full }) {
         {game.order.map((id) => {
           const p = game.players[id]
           const isMe = id === meId
-          if (!isMe && (!sees(p) || (!p.alive && !ghostView))) return null
+          if (!isMe && (!sees(p) || (!p.alive && !ghostView) || p.vent)) return null
           const imp = me?.role === 'impostor' && p.role === 'impostor'
           return (
-            <span key={id} className={`imp-ent${isMe ? ' imp-ent--me' : ''}`} style={pos(p.x, p.y)} data-testid={isMe ? 'imp-me' : undefined}>
+            <span key={id} className={`imp-ent${isMe ? ' imp-ent--me' : ''}${p.vent ? ' imp-ent--vent' : ''}`} style={pos(p.x, p.y)} data-testid={isMe ? 'imp-me' : undefined}>
               <span className={`imp-ent__name${imp ? ' imp-ent__name--imp' : ''}`}>{isMe ? 'Tu' : people(id)?.name}</span>
-              <Astro color={COLORS[p.color]} ghost={!p.alive} size={c} />
+              <Char p={p} ghost={!p.alive} size={c} />
             </span>
           )
         })}
@@ -339,6 +424,7 @@ function World({ game, meId, people, full }) {
         />
       )}
       <span className="imp-room" data-testid="imp-room">{me ? roomAt(me.x, me.y) : 'Nave'}</span>
+      {me && !full && <MiniMap game={game} meId={meId} />}
     </div>
   )
 }
@@ -356,7 +442,7 @@ function RoleScreen({ game, meId, people }) {
   const partners = game.order.filter((id) => id !== meId && game.players[id].role === 'impostor')
   return (
     <div className={`imp-over imp-over--${me.role}`} data-testid="imp-role">
-      <Astro color={COLORS[me.color]} size={80} />
+      <Char p={me} size={80} />
       <p className="imp-over__kicker">Tu és</p>
       <h3>{me.role === 'impostor' ? 'IMPOSTOR' : 'TRIPULANTE'}</h3>
       <p>
@@ -376,10 +462,11 @@ function Meeting({ game, meId, people, now, onVote }) {
   const body = m.body && game.bodies.find((b) => b.id === m.body)
   // O que os bots dizem: quem reportou e quem viu alguém a matar.
   const claims = []
+  const said = { kill: 'a matar', vent: 'a sair de uma conduta' }
   if (game.players[m.by]?.bot) claims.push([m.by, body ? `Encontrei o corpo de ${name(m.body)} em ${roomAt(body.x, body.y)}.` : 'Chamei a reunião, alguém anda estranho.'])
   for (const id of game.order) {
     const p = game.players[id]
-    if (p.bot && p.alive && p.bot.suspect && game.players[p.bot.suspect]?.alive) claims.push([id, p.bot.suspect === meId ? 'Eu vi-te a matar! Foste tu!' : `Eu vi ${name(p.bot.suspect)} a matar! Votem já!`])
+    if (p.bot && p.alive && p.bot.suspect && game.players[p.bot.suspect]?.alive) claims.push([id, p.bot.suspect === meId ? `Eu vi-te ${said[p.bot.why] || said.kill}! Foste tu!` : `Eu vi ${name(p.bot.suspect)} ${said[p.bot.why] || said.kill}! Votem já!`])
   }
   return (
     <div className="imp-over imp-over--flow imp-meeting" data-testid="imp-meeting">
@@ -406,7 +493,7 @@ function Meeting({ game, meId, people, now, onVote }) {
               onClick={() => onVote(id)}
               data-testid={`imp-vote-${id === meId ? 'me' : id}`}
             >
-              <Astro color={COLORS[p.color]} dead={!p.alive} size={30} />
+              <Char p={p} dead={!p.alive} size={30} />
               <span>{name(id)}</span>
               {voted && p.alive && <small className="imp-vote__done">votou</small>}
             </button>
@@ -430,7 +517,7 @@ function Eject({ game, meId, people }) {
     <div className="imp-over imp-eject" data-testid="imp-eject">
       {p ? (
         <>
-          <span className="imp-eject__astro"><Astro color={COLORS[p.color]} size={70} /></span>
+          <span className="imp-eject__astro"><Char p={p} size={70} /></span>
           <h3>{name(e.id)} {e.id === meId ? 'foste expulso' : 'foi expulso'}.</h3>
           <p>{e.wasImpostor ? `${e.id === meId ? 'Eras' : 'Era'} impostor.` : `${e.id === meId ? 'Não eras' : 'Não era'} impostor.`}</p>
         </>
@@ -454,7 +541,7 @@ function Over({ game, meId, people, children }) {
       <p>{game.reason}</p>
       <div className="imp-reveal">
         {imps.map((id) => (
-          <span key={id}><Astro color={COLORS[game.players[id].color]} size={34} /> {name(id)} {imps.length > 1 ? 'eram' : 'era'} impostor</span>
+          <span key={id}><Char p={game.players[id]} size={34} /> {name(id)} {imps.length > 1 ? 'eram' : 'era'} impostor</span>
         ))}
       </div>
       <p className="modal-note">Placar: tripulação {game.wins.crew || 0} · impostores {game.wins.impostor || 0}</p>
@@ -508,17 +595,25 @@ function Board({ game, meId, people, onAction, now, children }) {
         <div className="imp-foot">
           <div className="imp-controls">
             <Pad press={press} release={release} />
-            <Actions
-              can={can}
-              me={me}
-              onUse={() => {
-                onDir(null)
-                setTask(can.task)
-              }}
-              onKill={() => onAction({ type: 'kill' })}
-              onReport={() => onAction({ type: 'report' })}
-              onEmergency={() => onAction({ type: 'emergency' })}
-            />
+            {can.inVent ? (
+              <VentPanel ventId={can.inVent} onMove={(to) => onAction({ type: 'ventMove', to })} onExit={() => onAction({ type: 'vent' })} />
+            ) : (
+              <Actions
+                can={can}
+                me={me}
+                onUse={() => {
+                  onDir(null)
+                  setTask(can.task)
+                }}
+                onKill={() => onAction({ type: 'kill' })}
+                onReport={() => onAction({ type: 'report' })}
+                onEmergency={() => onAction({ type: 'emergency' })}
+                onVent={() => {
+                  onDir(null)
+                  onAction({ type: 'vent' })
+                }}
+              />
+            )}
           </div>
           <div className="imp-info">
             {me.role === 'crew' ? (
@@ -533,7 +628,7 @@ function Board({ game, meId, people, onAction, now, children }) {
               </p>
             )}
             {lastLog && <p className="imp-log">{fmtLog(lastLog, name)}</p>}
-            <p className="modal-note imp-hint--keys">Setas ou WASD para andar · E para usar · R para reportar{me.role === 'impostor' ? ' · Q para matar' : ''}</p>
+            <p className="modal-note imp-hint--keys">Setas ou WASD para andar · E para usar · R para reportar · M para o mapa{me.role === 'impostor' ? ' · Q para matar · V para as condutas' : ''}</p>
           </div>
         </div>
       )}
@@ -548,11 +643,110 @@ function useResult(game, meId, key) {
   }, [game?.phase]) // eslint-disable-line react-hooks/exhaustive-deps
 }
 
+// ---------- Aparência e definições ----------
+// Cor e chapéu: só com conta (ficam guardados na conta).
+function LookPicker({ user, look, onChange, taken = new Set() }) {
+  const [saved, setSaved] = useState('')
+  if (!hasAccount(user)) {
+    return (
+      <div className="imp-look imp-look--locked" data-testid="imp-look-locked">
+        <Astro color={COLORS[0]} hat="coroa" size={46} />
+        <p className="modal-note"><Link to="/conta?modo=criar&voltar=%2Fimpostor">Cria uma conta grátis</Link> para escolheres a cor e o chapéu do teu boneco.</p>
+      </div>
+    )
+  }
+  const set = (patch) => {
+    const next = { color: look?.color ?? null, hat: look?.hat ?? null, ...patch }
+    onChange(next)
+    setSaved('')
+    saveLook(next).then(() => setSaved('Guardado na tua conta ✓'), () => setSaved('Não deu para guardar na conta, mas fica para esta partida.'))
+  }
+  const color = look?.color ?? null
+  return (
+    <div className="imp-look" data-testid="imp-look">
+      <div className="imp-look__preview">
+        <Astro color={COLORS[color ?? 0]} hat={look?.hat} size={76} />
+        <small>{color == null ? 'Cor ao calhas' : COLOR_NAMES[color]}{look?.hat ? ` · ${HAT_NAMES[look.hat]}` : ''}</small>
+      </div>
+      <div className="imp-look__opts">
+        <p className="imp-look__label">Cor</p>
+        <div className="imp-look__colors">
+          {COLORS.map((c, i) => (
+            <button
+              key={c}
+              type="button"
+              className={`imp-swatch${color === i ? ' imp-swatch--on' : ''}`}
+              style={{ background: c }}
+              disabled={taken.has(i) && color !== i}
+              title={taken.has(i) && color !== i ? `${COLOR_NAMES[i]} (já escolhida)` : COLOR_NAMES[i]}
+              aria-label={COLOR_NAMES[i]}
+              aria-pressed={color === i}
+              onClick={() => set({ color: i })}
+              data-testid={`imp-color-${i}`}
+            />
+          ))}
+        </div>
+        <p className="imp-look__label">Chapéu</p>
+        <div className="imp-look__hats">
+          {[null, ...HATS].map((h) => (
+            <button
+              key={h || 'nenhum'}
+              type="button"
+              className={`imp-hat${(look?.hat ?? null) === h ? ' imp-hat--on' : ''}`}
+              title={h ? HAT_NAMES[h] : 'Sem chapéu'}
+              aria-label={h ? HAT_NAMES[h] : 'Sem chapéu'}
+              aria-pressed={(look?.hat ?? null) === h}
+              onClick={() => set({ hat: h })}
+              data-testid={`imp-hat-${h || 'nenhum'}`}
+            >
+              <Astro color={COLORS[color ?? 0]} hat={h} size={34} />
+            </button>
+          ))}
+        </div>
+        {saved && <p className="modal-note imp-look__saved">{saved}</p>}
+      </div>
+    </div>
+  )
+}
+
+function useLook(user) {
+  const [look, setLook] = useState(null)
+  useEffect(() => setLook(loadLook(user)), [user])
+  return [look, setLook]
+}
+
+// Tempo entre mortes e duração das reuniões.
+function TimeOptions({ cooldown, meeting, onChange }) {
+  return (
+    <div className="imp-times">
+      <p className="modal-note">Tempo de espera do impostor entre mortes:</p>
+      <div className="bot-levels">
+        {COOLDOWN_OPTIONS.map((s) => (
+          <button key={s} type="button" className={`mode-btn${cooldown === s ? ' mode-btn--active' : ''}`} onClick={() => onChange({ cooldown: s, meeting })} data-testid={`imp-cd-${s}`}>
+            {s} s
+          </button>
+        ))}
+      </div>
+      <p className="modal-note">Duração das reuniões:</p>
+      <div className="bot-levels">
+        {MEETING_OPTIONS.map((s) => (
+          <button key={s} type="button" className={`mode-btn${meeting === s ? ' mode-btn--active' : ''}`} onClick={() => onChange({ cooldown, meeting: s })} data-testid={`imp-meet-${s}`}>
+            {s} s
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 // ---------- Contra bots (tudo no browser) ----------
 const botPeople = (id) => (id === 'tu' ? { name: 'Tu' } : { name: BOT_NAMES[Number(id.slice(3))] })
 
 function VsBots() {
   const [bots, setBots] = useState(6)
+  const [times, setTimes] = useState({ cooldown: KILL_COOLDOWN_MS / 1000, meeting: 45 })
+  const { user } = useAuth()
+  const [look, setLook] = useLook(user)
   const [game, setGame] = useState(null)
   const now = useNow(!!game, 100)
 
@@ -585,13 +779,15 @@ function VsBots() {
           ))}
         </div>
         <p className="modal-note">{bots + 1 >= 8 ? 'Com 8 ou mais há 2 impostores.' : 'Com menos de 8 há 1 impostor.'} Podes calhar a ser tu!</p>
+        <TimeOptions cooldown={times.cooldown} meeting={times.meeting} onChange={setTimes} />
+        <LookPicker user={user} look={look} onChange={setLook} />
         <button
           type="button"
           className="share-btn"
           data-testid="imp-start"
           onClick={() => {
             const ids = ['tu', ...Array.from({ length: bots }, (_, i) => `bot${i}`)]
-            setGame(startGame(ids, ids.slice(1), Date.now(), Math.random, { meetingMs: 45000 }))
+            setGame(startGame(ids, ids.slice(1), Date.now(), Math.random, { killCooldown: times.cooldown * 1000, meetingMs: times.meeting * 1000, looks: { tu: look || {} } }))
           }}
         >
           Começar
@@ -607,7 +803,7 @@ function VsBots() {
           <button type="button" className="share-btn" data-testid="imp-again" onClick={() => gameBreak('impostor', () => setGame((g) => applyAction(g, 'tu', { type: 'rematch' }, Date.now())))}>
             Jogar outra vez
           </button>
-          <button type="button" className="mode-btn" onClick={() => setGame(null)}>Mudar nº de bots</button>
+          <button type="button" className="mode-btn" onClick={() => setGame(null)}>Mudar bots e definições</button>
         </div>
       </Board>
     </div>
@@ -635,28 +831,43 @@ function OnlineBoard({ state, game, me, dispatch, serverNow }) {
   )
 }
 
-// Nº de bots escolhido no lobby (lido ao carregar em "Começar jogo").
-const lobbyChoice = { bots: 0 }
+// Escolhas do anfitrião no lobby (lidas ao carregar em "Começar jogo").
+const lobbyChoice = { bots: 0, killCooldown: KILL_COOLDOWN_MS / 1000, meeting: MEETING_MS / 1000 }
 
-function LobbyBots({ state, amHost }) {
+function LobbyOptions({ state, amHost, dispatch }) {
   const humans = state.players.length
   const min = Math.max(0, 4 - humans)
   const max = Math.max(0, 10 - humans)
   const [bots, setBots] = useState(Math.max(min, 5 - humans))
+  const [times, setTimes] = useState({ cooldown: lobbyChoice.killCooldown, meeting: lobbyChoice.meeting })
+  const { user } = useAuth()
+  const [look, setLook] = useLook(user)
   const n = Math.min(max, Math.max(min, bots))
   lobbyChoice.bots = n
+  lobbyChoice.killCooldown = times.cooldown
+  lobbyChoice.meeting = times.meeting
   const options = useMemo(() => Array.from({ length: max - min + 1 }, (_, i) => min + i), [min, max])
-  if (!amHost) return null
+  // A minha cor e chapéu vão para a sala (o anfitrião usa-os ao começar).
+  useEffect(() => {
+    if (look && (look.color != null || look.hat)) dispatch({ type: 'prefs', prefs: { color: look.color, hat: look.hat } })
+  }, [look?.color, look?.hat]) // eslint-disable-line react-hooks/exhaustive-deps
+  const taken = new Set(state.players.filter((p) => p.id !== user?.id && Number.isInteger(p.prefs?.color)).map((p) => p.prefs.color))
   return (
-    <div className="bomb-lobby-bots">
-      <p className="modal-note">Bots na nave (são precisos pelo menos 4 jogadores):</p>
-      <div className="bot-levels">
-        {options.map((k) => (
-          <button key={k} type="button" className={`mode-btn${n === k ? ' mode-btn--active' : ''}`} onClick={() => setBots(k)} data-testid={`lobby-bots-${k}`}>
-            {k}
-          </button>
-        ))}
-      </div>
+    <div className="imp-lobby">
+      {amHost && (
+        <div className="bomb-lobby-bots">
+          <p className="modal-note">Bots na nave (são precisos pelo menos 4 jogadores):</p>
+          <div className="bot-levels">
+            {options.map((k) => (
+              <button key={k} type="button" className={`mode-btn${n === k ? ' mode-btn--active' : ''}`} onClick={() => setBots(k)} data-testid={`lobby-bots-${k}`}>
+                {k}
+              </button>
+            ))}
+          </div>
+          <TimeOptions cooldown={times.cooldown} meeting={times.meeting} onChange={setTimes} />
+        </div>
+      )}
+      <LookPicker user={user} look={look} onChange={setLook} taken={taken} />
     </div>
   )
 }
@@ -667,7 +878,10 @@ const HELP = (
     <p><strong>Tripulantes:</strong> andam pela nave e fazem as tarefas (os ícones amarelos). Se a barra de tarefas encher, a tripulação ganha.</p>
     <p><strong>Impostores:</strong> fingem que fazem tarefas e eliminam tripulantes quando ninguém está a ver. Ganham quando forem tantos como os tripulantes vivos.</p>
     <p>Quem encontrar um corpo pode <strong>reportar</strong>; também há um botão de emergência no Refeitório. Na reunião falam (na chamada do Discord, por exemplo) e votam em quem expulsar.</p>
-    <p>Anda com as setas ou WASD (no telemóvel, com o comando). E para usar, R para reportar, Q para matar.</p>
+    <p>Os impostores podem esconder-se nas <strong>condutas de ar</strong> (as grelhas no chão) e viajar por elas para outras salas. Quem os vir a entrar ou a sair fica a desconfiar!</p>
+    <p>O <strong>mini-mapa</strong> no canto mostra onde estás e as tuas tarefas; toca nele (ou carrega em M) para o aumentar.</p>
+    <p>Na sala dá para mudar o tempo de espera do impostor entre mortes e a duração das reuniões. Com conta, escolhes a cor e o chapéu do teu boneco.</p>
+    <p>Anda com as setas ou WASD (no telemóvel, com o comando). E para usar, R para reportar, Q para matar, V para as condutas.</p>
   </>
 )
 
@@ -690,8 +904,8 @@ export default function ImpostorGame() {
           <OnlineGame
             game="impostor"
             logic={impostorOnline}
-            renderLobbyOptions={(props) => <LobbyBots {...props} />}
-            prepareStart={() => ({ bots: lobbyChoice.bots })}
+            renderLobbyOptions={(props) => <LobbyOptions {...props} />}
+            prepareStart={() => ({ bots: lobbyChoice.bots, killCooldown: lobbyChoice.killCooldown, meeting: lobbyChoice.meeting })}
             renderGame={(props) => <OnlineBoard {...props} />}
           />
         )
