@@ -4552,3 +4552,20 @@ span.pcard { display: inline-block; }
 .imp-hat { width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 2px solid #2A3050; background: #1A1E33; cursor: pointer; padding: 0; }
 .imp-hat--on { border-color: #FFC93C; background: #3A3320; }
 .imp-look__saved { margin: 0; }
+
+/* O Impostor: conversa nas reuniões */
+.imp-chat { width: 100%; max-width: 620px; max-height: 190px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; padding: 8px; border-radius: 12px; background: rgba(255, 255, 255, 0.05); text-align: left; }
+.imp-chat__empty, .imp-chat__typing { margin: 0; font-size: 0.82rem; color: #9AA3C7; font-style: italic; }
+.imp-chat__msg { margin: 0; display: block; font-size: 0.88rem; line-height: 1.3; padding: 4px 8px; border-radius: 8px; background: rgba(255, 255, 255, 0.06); animation: imp-msg-in 0.2s ease-out; }
+.imp-chat__msg--me { background: rgba(47, 128, 237, 0.18); }
+.imp-chat__msg .imp-astro { display: inline-block; vertical-align: middle; margin-right: 4px; }
+.imp-chat__msg b { margin-right: 4px; }
+@keyframes imp-msg-in { from { opacity: 0; transform: translateY(4px); } }
+.imp-say { width: 100%; max-width: 620px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; }
+.imp-say__label { font-size: 0.78rem; font-weight: 700; color: #9AA3C7; text-transform: uppercase; letter-spacing: 0.05em; }
+.imp-say__btn { padding: 6px 10px; border-radius: 999px; border: 1px solid #3A4160; background: #1A1E33; color: #fff; font: 600 0.82rem var(--font-body); cursor: pointer; }
+.imp-say__btn:hover { border-color: #FFC93C; }
+.imp-say__hint { margin: 0; font-size: 0.88rem; color: #FFE08A; }
+.imp-vote--pick { border-color: #FFC93C; box-shadow: 0 0 0 2px rgba(255, 201, 60, 0.35); animation: card-addable 1.2s ease-in-out infinite; }
+.imp-meeting__tip { margin: 0; }
+@media (prefers-reduced-motion: reduce) { .imp-chat__msg, .imp-vote--pick { animation: none; } }

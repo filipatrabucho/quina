@@ -156,3 +156,56 @@ test('impostor: cores e chapéus escolhidos, repetidos não, mantêm-se na desfo
   const d = L.impostorOnline.start([{ id: 'a' }], { bots: 3, killCooldown: 7 }, 0)
   assert.equal(d.cfg.killCooldown, L.KILL_COOLDOWN_MS, 'valor inválido usa o normal')
 })
+
+test('impostor: falar na reunião convence os bots', () => {
+  const ids = ['tu', 'bot0', 'bot1', 'bot2', 'bot3', 'bot4']
+  let g = L.startGame(ids, ids.slice(1), 0, () => 0.99)
+  // fixa papéis: bot0 é o impostor
+  for (const id of ids) g.players[id].role = id === 'bot0' ? 'impostor' : 'crew'
+  g = L.tick(g, L.ROLE_MS + 1)
+  const t = L.ROLE_MS + 10
+  g = { ...g, players: { ...g.players, tu: { ...g.players.tu, x: L.BUTTON.x, y: L.BUTTON.y + 1 } } }
+  g = L.applyAction(g, 'tu', { type: 'emergency' }, t)
+  assert.equal(g.phase, 'meeting')
+  assert.throws(() => L.applyAction(g, 'tu', { type: 'say', kind: 'saw' }, t), /de quem/)
+  assert.throws(() => L.applyAction(g, 'tu', { type: 'say', kind: 'saw', target: 'tu' }, t), /outra pessoa/)
+  g = L.applyAction(g, 'tu', { type: 'say', kind: 'saw', target: 'bot0' }, t + 100, () => 0.1)
+  const chat = g.meeting.chat
+  assert.ok(chat.some((m) => m.by === 'tu' && m.kind === 'saw' && m.target === 'bot0'))
+  assert.ok(chat.some((m) => m.by === 'bot0' && m.kind === 'deny'), 'o acusado defende-se')
+  // os bots votam (depois de dar tempo) e expulsam quem eu acusei
+  g = L.applyAction(g, 'tu', { type: 'vote', target: 'bot0' }, t + 200)
+  let now = t + 300
+  while (g.phase === 'meeting' && now < t + 120000) { now += 100; g = L.tick(g, now, () => 0.05) }
+  assert.equal(g.eject.id, 'bot0', 'votaram como eu disse: ' + JSON.stringify(g.eject.votes))
+  // limite de frases
+  let h = L.startGame(ids, ids.slice(1), 0, () => 0.99)
+  h = L.tick(h, L.ROLE_MS + 1)
+  h = { ...h, players: { ...h.players, tu: { ...h.players.tu, x: L.BUTTON.x, y: L.BUTTON.y + 1 } } }
+  h = L.applyAction(h, 'tu', { type: 'emergency' }, t)
+  for (const [k, who] of [['accuse', 'bot1'], ['accuse', 'bot2'], ['safe', 'bot3'], ['skip', null]]) h = L.applyAction(h, 'tu', { type: 'say', kind: k, target: who }, t + 1)
+  assert.throws(() => L.applyAction(h, 'tu', { type: 'say', kind: 'deny' }, t + 2), /disseste/)
+})
+
+test('impostor: o bot impostor não persegue quem está acompanhado e desiste ao fim de um tempo', () => {
+  const ids = ['tu', 'amigo', 'bot0', 'bot1', 'bot2']
+  let g = L.startGame(ids, ['bot0', 'bot1', 'bot2'], 0, () => 0.99)
+  for (const id of ids) g.players[id].role = id === 'bot0' ? 'impostor' : 'crew'
+  g = L.tick(g, L.ROLE_MS + 1)
+  const put = (id, x, y) => { g = { ...g, players: { ...g.players, [id]: { ...g.players[id], x, y } } } }
+  // eu e um amigo juntos na Cozinha; o impostor no Refeitório pronto a matar; os outros bots longe
+  put('tu', 3, 3); put('amigo', 4, 3); put('bot0', 13, 3); put('bot1', 28, 17); put('bot2', 27, 17)
+  g = { ...g, players: { ...g.players, bot0: { ...g.players.bot0, killReady: 0, bot: { ...g.players.bot0.bot, nextHunt: 0 } } } }
+  let now = L.ROLE_MS + 100
+  g = L.tick(g, now)
+  assert.equal(g.players.bot0.bot.target, null, 'não escolhe quem está acompanhado')
+  // fico sozinho: passa a ser alvo
+  put('amigo', 2, 17)
+  now += 1100; g = L.tick(g, now)
+  assert.equal(g.players.bot0.bot.target, 'tu')
+  // o amigo volta para perto: desiste e deixa-me em paz um bocado
+  put('amigo', 3, 4)
+  now += 100; g = L.tick(g, now)
+  assert.equal(g.players.bot0.bot.target, null)
+  assert.equal(g.players.bot0.bot.skip.id, 'tu')
+})

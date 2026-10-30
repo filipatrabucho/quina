@@ -84,10 +84,11 @@ function Hat({ hat }) {
   }
 }
 
+// Sempre a mesma área de desenho (com folga para o chapéu): com ou sem chapéu, todos ficam do mesmo tamanho.
 export default function Astro({ color, hat = null, dead = false, ghost = false, size = 32 }) {
   const onTop = hat && hat !== 'auscultadores'
   return (
-    <svg viewBox={hat && !dead ? "-3 -6 46 46" : "0 0 40 40"} width={size} height={size} className={`imp-astro${ghost ? ' imp-astro--ghost' : ''}`} aria-hidden="true">
+    <svg viewBox="-3 -6 46 46" width={size} height={size} className={`imp-astro${ghost ? ' imp-astro--ghost' : ''}`} aria-hidden="true">
       {dead ? (
         <g>
           <ellipse cx="20" cy="30" rx="15" ry="7" fill={color} stroke={INK} strokeWidth="2" />

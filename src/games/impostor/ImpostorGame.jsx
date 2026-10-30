@@ -9,7 +9,7 @@ import { useAuth } from '../../hooks/useAuth.js'
 import { hasAccount, loadLook, saveLook } from './look.js'
 import {
   W, H, ROOMS, CORRIDORS, STATIONS, BUTTON, VENTS, COLORS, COLOR_NAMES, HATS, BOT_NAMES, VISION,
-  COOLDOWN_OPTIONS, MEETING_OPTIONS, KILL_COOLDOWN_MS, MEETING_MS,
+  COOLDOWN_OPTIONS, MEETING_OPTIONS, KILL_COOLDOWN_MS, MEETING_MS, SAY_MAX,
   dist, roomAt, ventById, visionOf, taskProgress, actionsFor, startGame, applyAction, tick, impostorOnline,
 } from './impostorLogic.js'
 
@@ -401,7 +401,7 @@ function World({ game, meId, people, full }) {
         <MapSvg c={c} me={me} />
         {game.bodies.filter(sees).map((b) => (
           <span key={`b${b.id}`} className="imp-ent imp-ent--body" style={pos(b.x, b.y)} data-testid="imp-body">
-            <Astro color={COLORS[game.players[b.id].color]} dead size={c} />
+            <Astro color={COLORS[game.players[b.id].color]} dead size={Math.round(c * 1.15)} />
           </span>
         ))}
         {game.order.map((id) => {
@@ -412,7 +412,7 @@ function World({ game, meId, people, full }) {
           return (
             <span key={id} className={`imp-ent${isMe ? ' imp-ent--me' : ''}${p.vent ? ' imp-ent--vent' : ''}`} style={pos(p.x, p.y)} data-testid={isMe ? 'imp-me' : undefined}>
               <span className={`imp-ent__name${imp ? ' imp-ent__name--imp' : ''}`}>{isMe ? 'Tu' : people(id)?.name}</span>
-              <Char p={p} ghost={!p.alive} size={c} />
+              <Char p={p} ghost={!p.alive} size={Math.round(c * 1.15)} />
             </span>
           )
         })}
@@ -454,43 +454,102 @@ function RoleScreen({ game, meId, people }) {
   )
 }
 
-function Meeting({ game, meId, people, now, onVote }) {
+// O que cada frase diz (t: nome de quem se fala; mine: fala-se de mim).
+function chatText(m, name, meId) {
+  const mine = m.target === meId
+  const t = m.target ? name(m.target) : ''
+  switch (m.kind) {
+    case 'found': return mine ? `Encontrei o teu corpo em ${m.room}.` : `Encontrei o corpo de ${t} em ${m.room}.`
+    case 'emergency': return 'Chamei a reunião: alguém anda estranho.'
+    case 'saw': return mine ? 'Eu vi-te a matar!' : `Eu vi ${t} a matar!`
+    case 'vent': return mine ? 'Eu vi-te a sair de uma conduta!' : `Eu vi ${t} a sair de uma conduta!`
+    case 'accuse': return mine ? 'Acho que foste tu.' : `Acho que foi ${t}.`
+    case 'safe': return mine ? 'Estavas comigo, não foste tu.' : `${t} estava comigo, não foi.`
+    case 'agree': return mine ? 'Concordo, és tu.' : `Concordo, voto em ${t}.`
+    case 'deny': return 'Não fui eu! Estava a fazer as minhas tarefas.'
+    case 'skip': return 'Não tenho a certeza. Melhor saltar.'
+    default: return ''
+  }
+}
+
+// Frases rápidas para falar com os bots (e com toda a gente, online).
+const PHRASES = [
+  { kind: 'saw', label: 'Vi a matar', icon: '🔪', target: true },
+  { kind: 'vent', label: 'Vi na conduta', icon: '🕳️', target: true },
+  { kind: 'accuse', label: 'Acho que foi…', icon: '🤔', target: true },
+  { kind: 'safe', label: 'Estava comigo', icon: '🤝', target: true },
+  { kind: 'deny', label: 'Não fui eu', icon: '🙅' },
+  { kind: 'skip', label: 'Saltem', icon: '🤷' },
+]
+
+function Meeting({ game, meId, people, now, onVote, onSay }) {
   const name = nameWith(people, meId)
   const m = game.meeting
   const me = game.players[meId]
   const myVote = m.votes[meId]
   const body = m.body && game.bodies.find((b) => b.id === m.body)
-  // O que os bots dizem: quem reportou e quem viu alguém a matar.
-  const claims = []
-  const said = { kill: 'a matar', vent: 'a sair de uma conduta' }
-  if (game.players[m.by]?.bot) claims.push([m.by, body ? `Encontrei o corpo de ${name(m.body)} em ${roomAt(body.x, body.y)}.` : 'Chamei a reunião, alguém anda estranho.'])
-  for (const id of game.order) {
-    const p = game.players[id]
-    if (p.bot && p.alive && p.bot.suspect && game.players[p.bot.suspect]?.alive) claims.push([id, p.bot.suspect === meId ? `Eu vi-te ${said[p.bot.why] || said.kill}! Foste tu!` : `Eu vi ${name(p.bot.suspect)} ${said[p.bot.why] || said.kill}! Votem já!`])
+  const [picking, setPicking] = useState(null) // frase à espera de escolher a pessoa
+  const chatRef = useRef(null)
+  const chat = (m.chat || []).filter((c) => c.at <= now).sort((a, b) => a.at - b.at)
+  const typing = [...new Set((m.chat || []).filter((c) => c.at > now).map((c) => c.by))]
+  const left = SAY_MAX - (m.chat || []).filter((c) => c.by === meId).length
+  useEffect(() => {
+    const el = chatRef.current
+    if (el) el.scrollTop = el.scrollHeight
+  }, [chat.length])
+  const speak = (kind, target = null) => {
+    onSay({ type: 'say', kind, target })
+    setPicking(null)
   }
+  const pickPhrase = PHRASES.find((x) => x.kind === picking)
   return (
     <div className="imp-over imp-over--flow imp-meeting" data-testid="imp-meeting">
       <p className="imp-over__kicker">{body ? '📢 Corpo encontrado' : '🚨 Reunião de emergência'}</p>
       <h3>Quem é o impostor?</h3>
-      <p className="imp-meeting__time">Faltam <b data-testid="imp-meet-time">{secs(game.phaseEnds - now)}</b> s · falem na chamada e votem</p>
-      {claims.length > 0 && (
-        <ul className="imp-claims">
-          {claims.map(([id, text]) => (
-            <li key={id}><b style={{ color: COLORS[game.players[id].color] }}>{name(id)}:</b> {text}</li>
-          ))}
-        </ul>
+      <p className="imp-meeting__time">Faltam <b data-testid="imp-meet-time">{secs(game.phaseEnds - now)}</b> s · digam o que viram e votem</p>
+      <div className="imp-chat" ref={chatRef} data-testid="imp-chat" aria-live="polite">
+        {chat.length === 0 && <p className="imp-chat__empty">Ninguém disse nada ainda.</p>}
+        {chat.map((c, k) => (
+          <p key={k} className={`imp-chat__msg${c.by === meId ? ' imp-chat__msg--me' : ''}`}>
+            <Char p={game.players[c.by]} size={22} />
+            <b style={{ color: COLORS[game.players[c.by].color] }}>{name(c.by)}:</b> {chatText(c, name, meId)}
+          </p>
+        ))}
+        {typing.length > 0 && <p className="imp-chat__typing">{typing.map(name).join(', ')} {typing.length === 1 ? 'está' : 'estão'} a escrever…</p>}
+      </div>
+      {me?.alive && (
+        <div className="imp-say" data-testid="imp-say">
+          {pickPhrase ? (
+            <p className="imp-say__hint">
+              {pickPhrase.icon} <b>{pickPhrase.label}</b>: toca na pessoa de quem estás a falar.{' '}
+              <button type="button" className="link-btn" onClick={() => setPicking(null)}>Cancelar</button>
+            </p>
+          ) : left > 0 ? (
+            <>
+              <span className="imp-say__label">Dizer ({left}):</span>
+              {PHRASES.map((ph) => (
+                <button key={ph.kind} type="button" className="imp-say__btn" onClick={() => (ph.target ? setPicking(ph.kind) : speak(ph.kind))} data-testid={`imp-say-${ph.kind}`}>
+                  <span aria-hidden="true">{ph.icon}</span> {ph.label}
+                </button>
+              ))}
+            </>
+          ) : (
+            <p className="imp-say__hint">Já disseste tudo o que podias nesta reunião.</p>
+          )}
+        </div>
       )}
       <div className="imp-votes">
         {game.order.map((id) => {
           const p = game.players[id]
           const voted = !!m.votes[id]
+          const pick = picking && p.alive && id !== meId
           return (
             <button
               key={id}
               type="button"
-              className={`imp-vote${!p.alive ? ' imp-vote--dead' : ''}${myVote === id ? ' imp-vote--mine' : ''}`}
-              disabled={!p.alive || !me?.alive || !!myVote}
-              onClick={() => onVote(id)}
+              className={`imp-vote${!p.alive ? ' imp-vote--dead' : ''}${myVote === id ? ' imp-vote--mine' : ''}${pick ? ' imp-vote--pick' : ''}`}
+              disabled={picking ? !pick : !p.alive || !me?.alive || !!myVote}
+              onClick={() => (picking ? speak(picking, id) : onVote(id))}
               data-testid={`imp-vote-${id === meId ? 'me' : id}`}
             >
               <Char p={p} dead={!p.alive} size={30} />
@@ -502,9 +561,10 @@ function Meeting({ game, meId, people, now, onVote }) {
       </div>
       {me?.alive ? (
         myVote ? <p className="modal-note">Já votaste. À espera dos outros…</p> : (
-          <button type="button" className="mode-btn" onClick={() => onVote('skip')} data-testid="imp-skip">Saltar voto</button>
+          <button type="button" className="mode-btn" onClick={() => onVote('skip')} disabled={!!picking} data-testid="imp-skip">Saltar voto</button>
         )
-      ) : <p className="modal-note">Estás morto: vês a votação mas não votas.</p>}
+      ) : <p className="modal-note">Estás morto: vês a votação mas não votas nem falas.</p>}
+      {!picking && me?.alive && !myVote && <p className="modal-note imp-meeting__tip">Toca numa pessoa para votar nela. Os bots ouvem o que dizes antes de votar.</p>}
     </div>
   )
 }
@@ -586,7 +646,7 @@ function Board({ game, meId, people, onAction, now, children }) {
       <div className="imp-stage">
         {game.phase !== 'meeting' && game.phase !== 'over' && <World game={game} meId={meId} people={people} full={!me} />}
         {game.phase === 'roles' && <RoleScreen game={game} meId={meId} people={people} />}
-        {game.phase === 'meeting' && <Meeting game={game} meId={meId} people={people} now={now} onVote={(target) => onAction({ type: 'vote', target })} />}
+        {game.phase === 'meeting' && <Meeting game={game} meId={meId} people={people} now={now} onVote={(target) => onAction({ type: 'vote', target })} onSay={onAction} />}
         {game.phase === 'eject' && <Eject game={game} meId={meId} people={people} />}
         {game.phase === 'over' && <Over game={game} meId={meId} people={people}>{children}</Over>}
         {task && <TaskModal id={task} onClose={() => setTask(null)} onDone={() => { onAction({ type: 'task', id: task }); setTask(null) }} />}
@@ -878,6 +938,7 @@ const HELP = (
     <p><strong>Tripulantes:</strong> andam pela nave e fazem as tarefas (os ícones amarelos). Se a barra de tarefas encher, a tripulação ganha.</p>
     <p><strong>Impostores:</strong> fingem que fazem tarefas e eliminam tripulantes quando ninguém está a ver. Ganham quando forem tantos como os tripulantes vivos.</p>
     <p>Quem encontrar um corpo pode <strong>reportar</strong>; também há um botão de emergência no Refeitório. Na reunião falam (na chamada do Discord, por exemplo) e votam em quem expulsar.</p>
+    <p>Na reunião também há <strong>frases rápidas</strong> (“Vi a matar”, “Estava comigo”…): os bots leem o que dizes e votam conforme o que se diz. Mas cuidado, um impostor também pode mentir!</p>
     <p>Os impostores podem esconder-se nas <strong>condutas de ar</strong> (as grelhas no chão) e viajar por elas para outras salas. Quem os vir a entrar ou a sair fica a desconfiar!</p>
     <p>O <strong>mini-mapa</strong> no canto mostra onde estás e as tuas tarefas; toca nele (ou carrega em M) para o aumentar.</p>
     <p>Na sala dá para mudar o tempo de espera do impostor entre mortes e a duração das reuniões. Com conta, escolhes a cor e o chapéu do teu boneco.</p>

@@ -84,7 +84,7 @@ const SPAWN = [[13, 3], [14, 3], [17, 3], [18, 3], [13, 4], [14, 4], [17, 4], [1
 
 export const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
 // Os bots impostores esperam mais entre mortes (são mais certeiros do que as pessoas).
-const BOT_COOLDOWN_X = 1.3
+const BOT_COOLDOWN_X = 1.2
 const cooldownOf = (cfgMs, isBotPlayer) => Math.round(cfgMs * (isBotPlayer ? BOT_COOLDOWN_X : 1))
 export const isBot = (g, id) => g.bots.includes(id)
 export const visionOf = (g, id) => (g.players[id].role === 'impostor' ? VISION.impostor : VISION.crew)
@@ -136,7 +136,7 @@ export function startGame(ids, bots = [], now = Date.now(), rand = Math.random, 
       x, y, dir: null, next: 0, color: looks.color[id], hat: looks.hat[id], vent: null, role, alive: true,
       tasks: shuffle(STATIONS.map((s) => s.id), rand).slice(0, TASKS_EACH),
       done: [], emergency: 1, killReady: now + ROLE_MS + cooldownOf(opts.killCooldown || KILL_COOLDOWN_MS, bots.includes(id)),
-      bot: bots.includes(id) ? { goal: null, wait: 0, suspect: null, why: null, target: null, flee: false, ventOut: 0, ventMoved: false } : null,
+      bot: bots.includes(id) ? { goal: null, wait: 0, suspect: null, why: null, target: null, flee: false, ventOut: 0, ventMoved: false, chaseUntil: 0, nextHunt: 0, skip: null } : null,
     }
   })
   return {
@@ -288,10 +288,59 @@ function exitVent(g, id) {
   seenByCrew(g, id)
 }
 
-function startMeeting(g, by, body, now) {
+// ---------- Conversa nas reuniões ----------
+// Frases rápidas (as pessoas carregam em botões; os bots também falam).
+// target: de quem se fala. Os bots usam isto para decidir o voto.
+export const SAY_KINDS = ['accuse', 'saw', 'vent', 'safe', 'deny', 'skip']
+export const SAY_MAX = 4 // frases por pessoa em cada reunião
+const NEEDS_TARGET = new Set(['accuse', 'saw', 'vent', 'safe'])
+// Peso de cada frase para os bots tripulantes.
+const WEIGHT = { saw: 3, vent: 2.5, accuse: 1.5, agree: 1, safe: -2 }
+
+function say(g, msg) {
+  g.meeting = { ...g.meeting, chat: [...g.meeting.chat, msg] }
+}
+
+// O que os bots dizem quando a reunião começa (aparece aos poucos).
+function botOpening(g, by, body, now, rand) {
+  let at = now + 1500
+  const next = () => (at += 1200 + Math.floor(rand() * 1500))
+  if (g.players[by].bot) {
+    const b = body && g.bodies.find((x) => x.id === body)
+    say(g, b ? { by, kind: 'found', target: body, room: roomAt(b.x, b.y), at } : { by, kind: 'emergency', at })
+  }
+  for (const id of alive(g)) {
+    const p = g.players[id]
+    if (!p.bot) continue
+    if (p.role === 'crew' && p.bot.suspect && g.players[p.bot.suspect]?.alive) {
+      say(g, { by: id, kind: p.bot.why === 'vent' ? 'vent' : 'saw', target: p.bot.suspect, at: next() })
+    } else if (p.role === 'impostor' && rand() < 0.3) {
+      // às vezes o impostor tenta culpar alguém
+      const crew = alive(g).filter((o) => g.players[o].role === 'crew')
+      if (crew.length) say(g, { by: id, kind: 'accuse', target: crew[Math.floor(rand() * crew.length)], at: next() })
+    }
+  }
+}
+
+// Reação dos bots ao que alguém disse.
+function botReplies(g, by, kind, target, now, rand) {
+  if (!NEEDS_TARGET.has(kind) || kind === 'safe') return
+  const t = g.players[target]
+  if (t?.bot && t.alive) {
+    // quem é acusado defende-se (e um impostor às vezes acusa de volta)
+    say(g, { by: target, kind: 'deny', at: now + 1200 })
+    if (t.role === 'impostor' && rand() < 0.4) say(g, { by: target, kind: 'accuse', target: by, at: now + 2600 })
+  }
+  // um tripulante sem pistas próprias pode concordar
+  const others = alive(g).filter((o) => o !== by && o !== target && g.players[o].bot && g.players[o].role === 'crew' && !g.players[o].bot.suspect)
+  if (others.length && rand() < 0.5) say(g, { by: others[Math.floor(rand() * others.length)], kind: 'agree', target, at: now + 2200 + Math.floor(rand() * 1500) })
+}
+
+function startMeeting(g, by, body, now, rand = Math.random) {
   g.phase = 'meeting'
   g.phaseEnds = now + g.cfg.meetingMs
-  g.meeting = { by, body, votes: {} }
+  g.meeting = { by, body, votes: {}, chat: [] }
+  botOpening(g, by, body, now, rand)
   for (const id of g.order) Object.assign(g.players[id], { dir: null, vent: null })
   addLog(g, body ? `@${by} encontrou o corpo de @${body}.` : `@${by} chamou uma reunião de emergência.`)
 }
@@ -326,7 +375,7 @@ function resumePlay(g, now) {
     p.dir = null
     p.vent = null
     if (p.role === 'impostor') p.killReady = now + cooldownOf(g.cfg.killCooldown, !!p.bot)
-    if (p.bot) Object.assign(p.bot, { goal: null, wait: 0, target: null, flee: false, ventOut: 0, ventMoved: false })
+    if (p.bot) Object.assign(p.bot, { goal: null, wait: 0, target: null, flee: false, ventOut: 0, ventMoved: false, chaseUntil: 0, nextHunt: now + 4000, skip: null })
   }
 }
 
@@ -345,6 +394,21 @@ export function applyAction(game, id, action, now = Date.now(), rand = Math.rand
     const g = clone(game)
     g.players[id].dir = dir
     tryMove(g, id, now)
+    return g
+  }
+  if (action.type === 'say') {
+    if (game.phase !== 'meeting' || !p.alive) throw new Error('Só os vivos falam nas reuniões.')
+    const { kind } = action
+    if (!SAY_KINDS.includes(kind)) throw new Error('Frase desconhecida.')
+    const target = NEEDS_TARGET.has(kind) ? action.target : null
+    if (target && (!game.players[target]?.alive || target === id)) throw new Error('Escolhe outra pessoa.')
+    if (NEEDS_TARGET.has(kind) && !target) throw new Error('Diz de quem estás a falar.')
+    const mine = game.meeting.chat.filter((m) => m.by === id && !game.players[id].bot).length
+    if (mine >= SAY_MAX) throw new Error('Já disseste o que tinhas a dizer.')
+    if (game.meeting.chat.some((m) => m.by === id && m.kind === kind && m.target === target)) return game
+    const g = clone(game)
+    say(g, { by: id, kind, target, at: now })
+    botReplies(g, id, kind, target, now, rand)
     return g
   }
   if (action.type === 'vote') {
@@ -373,7 +437,7 @@ export function applyAction(game, id, action, now = Date.now(), rand = Math.rand
       return g
     case 'report':
       if (!can.report) throw new Error('Não há nenhum corpo perto.')
-      startMeeting(g, id, can.report, now)
+      startMeeting(g, id, can.report, now, rand)
       return g
     case 'vent':
       if (can.inVent) exitVent(g, id)
@@ -387,7 +451,7 @@ export function applyAction(game, id, action, now = Date.now(), rand = Math.rand
     case 'emergency':
       if (!can.emergency) throw new Error('Tens de estar junto do botão.')
       me.emergency -= 1
-      startMeeting(g, id, null, now)
+      startMeeting(g, id, null, now, rand)
       return g
     default:
       throw new Error('Ação desconhecida.')
@@ -461,7 +525,7 @@ function botPlay(g, id, now, rand) {
   if (p.alive) {
     // vê um corpo: vai lá e reporta (os impostores não reportam)
     if (p.role === 'crew') {
-      if (can.report) return startMeeting(g, id, can.report, now)
+      if (can.report) return startMeeting(g, id, can.report, now, rand)
       const seen = g.bodies.find((x) => dist(p, x) <= VISION.crew)
       if (seen) b.goal = { x: seen.x, y: seen.y }
     }
@@ -497,32 +561,71 @@ function botPlay(g, id, now, rand) {
       b.goal = STATIONS[Math.floor(rand() * STATIONS.length)]
     }
   }
-  // Impostor: quando pode matar, persegue o tripulante mais isolado.
-  if (p.role === 'impostor' && p.alive) {
+  // Impostor: só caça quem está sozinho e quando já quase pode matar. Se a vítima
+  // ganhar companhia ou a perseguição demorar, desiste e vai fingir uma tarefa
+  // (para não ficar colado a alguém, o que dava logo nas vistas).
+  if (p.role === 'impostor' && p.alive && !b.flee) {
     const crew = alive(g).filter((o) => g.players[o].role === 'crew')
-    if (b.target && !g.players[b.target]?.alive) b.target = null
-    if (!b.flee && !b.target && can.killIn < 4000 && crew.length) {
-      const lonely = (o) => Math.min(...crew.filter((c) => c !== o).map((c) => dist(g.players[o], g.players[c])), 99)
-      b.target = crew.sort((x, y) => lonely(y) - lonely(x))[0]
+    const company = (o) => crew.filter((c) => c !== o && dist(g.players[o], g.players[c]) <= VISION.crew).length
+    if (b.target) {
+      const t = g.players[b.target]
+      if (!t?.alive || company(b.target) > 0 || now > b.chaseUntil) {
+        if (t?.alive) b.skip = { id: b.target, until: now + 12000 }
+        b.target = null
+        b.goal = STATIONS[Math.floor(rand() * STATIONS.length)]
+        b.nextHunt = now + 3000 + rand() * 4000
+      }
     }
-    if (b.target && !b.flee) b.goal = { x: g.players[b.target].x, y: g.players[b.target].y }
+    if (!b.target && can.killIn < 1500 && now >= b.nextHunt) {
+      const free = crew.filter((o) => company(o) === 0 && !(b.skip?.id === o && now < b.skip.until) && dist(p, g.players[o]) <= 11)
+      if (free.length) {
+        b.target = free.sort((x, y) => dist(p, g.players[x]) - dist(p, g.players[y]))[0]
+        b.chaseUntil = now + 7000 + rand() * 3000
+      } else b.nextHunt = now + 1000
+    }
+    if (b.target) b.goal = { x: g.players[b.target].x, y: g.players[b.target].y }
   }
   if (!b.goal) b.goal = STATIONS[Math.floor(rand() * STATIONS.length)]
   p.dir = bfsStep(p, b.goal)
   if (!p.dir) b.goal = null
 }
 
+// Pontos de suspeita a partir da conversa (e um pouco dos votos já feitos).
+function suspicion(g, id) {
+  const score = {}
+  const add = (who, v) => {
+    if (who && who !== id && g.players[who]?.alive) score[who] = (score[who] || 0) + v
+  }
+  for (const m of g.meeting.chat) {
+    if (m.by === id || !g.players[m.by]?.alive) continue
+    if (m.target === id && WEIGHT[m.kind] > 0) {
+      // sei que não fui eu: quem me acusa está a mentir
+      add(m.by, 2)
+      continue
+    }
+    add(m.target, WEIGHT[m.kind] || 0)
+  }
+  for (const [voter, v] of Object.entries(g.meeting.votes)) if (voter !== id && v !== 'skip') add(v, 0.5)
+  return score
+}
+
 function botVote(g, id, rand) {
   const p = g.players[id]
   const others = alive(g).filter((o) => o !== id)
+  const score = suspicion(g, id)
+  const ranked = Object.entries(score).sort((a, b) => b[1] - a[1])
   if (p.role === 'impostor') {
+    // vai atrás da conversa contra um tripulante; se o acusam, acusa de volta
+    const crewTop = ranked.find(([o, v]) => g.players[o].role === 'crew' && v > 0)
+    if (crewTop && rand() < 0.85) return crewTop[0]
+    const accuser = g.meeting.chat.find((m) => m.target === id && WEIGHT[m.kind] > 0 && g.players[m.by]?.alive)
+    if (accuser && rand() < 0.6) return accuser.by
     const crew = others.filter((o) => g.players[o].role === 'crew')
-    return crew.length && rand() < 0.5 ? crew[Math.floor(rand() * crew.length)] : 'skip'
+    return crew.length && rand() < 0.35 ? crew[Math.floor(rand() * crew.length)] : 'skip'
   }
   if (p.bot.suspect && g.players[p.bot.suspect]?.alive) return p.bot.suspect
-  // segue o voto de alguém que já votou numa pessoa (às vezes)
-  const named = Object.values(g.meeting.votes).filter((v) => v !== 'skip' && v !== id)
-  if (named.length && rand() < 0.4) return named[Math.floor(rand() * named.length)]
+  const [top, second] = ranked
+  if (top && top[1] >= 1.5 && (!second || top[1] > second[1]) && rand() < 0.85) return top[0]
   return 'skip'
 }
 
