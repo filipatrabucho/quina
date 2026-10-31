@@ -9,6 +9,10 @@ export function placeFood(snake, rand = Math.random) {
   return free.length ? free[Math.floor(rand() * free.length)] : null
 }
 
+// O recorde é o tamanho da cobra: começa com 3 e cresce 1 por cada comida.
+export const START_LENGTH = 3
+export const lengthOf = (score) => START_LENGTH + (Number(score) || 0)
+
 export function newGame(walls = true, rand = Math.random) {
   const snake = [[9, 10], [8, 10], [7, 10]]
   return { snake, dir: 'right', queue: [], food: placeFood(snake, rand), score: 0, over: false, walls }

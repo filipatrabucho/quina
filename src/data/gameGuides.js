@@ -395,13 +395,14 @@ export const GUIDES = {
       'O Snake é o clássico jogo da cobra dos telemóveis antigos: guia a cobra até à comida, cresce e tenta não bater em ti própria. Joga diretamente no browser, no PC ou no telemóvel, e bate o teu recorde.',
     rules: [
       'Usa as setas ou WASD no PC. No telemóvel desliza o dedo no tabuleiro ou usa os botões.',
-      'Cada peça de comida dá 1 ponto e faz a cobra crescer.',
+      'A cobra começa com 3 de tamanho e cada peça de comida fá-la crescer 1.',
+      'O recorde é o maior tamanho a que a tua cobra chegou. O top 3 mostra as maiores cobras de quem tem conta.',
       'A cobra fica mais rápida à medida que come.',
       'Com paredes: perdes se bateres na borda. Sem paredes: sais de um lado e entras pelo outro.',
       'Perdes se bateres no teu próprio corpo. Carrega em Espaço para pausa.',
     ],
     tips: ['Anda junto às paredes para deixar o meio livre.', 'Planeia o caminho para não ficares fechado dentro do teu próprio corpo.'],
-    faq: [['O recorde fica guardado?', 'Sim, no teu browser, separado para cada modo.']],
+    faq: [['O recorde fica guardado?', 'Sim. O teu melhor fica no browser, separado para cada modo; com conta, a tua maior cobra conta para o top 3 do site.']],
   },
   memoria: {
     intro:

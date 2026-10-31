@@ -44,7 +44,7 @@ export default function Ranking() {
     let alive = true
     setData(null)
     setError('')
-    getSiteRanking(days, 10).then((d) => alive && setData(d), () => alive && setError('Não deu para carregar o ranking. Tenta outra vez daqui a pouco.'))
+    getSiteRanking(days, 5).then((d) => alive && setData(d), () => alive && setError('Não deu para carregar o ranking. Tenta outra vez daqui a pouco.'))
     return () => {
       alive = false
     }

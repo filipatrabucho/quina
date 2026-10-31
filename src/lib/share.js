@@ -1,3 +1,4 @@
+import { lengthOf } from '../games/snake/snakeLogic.js'
 import { gameByKey } from '../data/games.js'
 
 const SITE = 'https://tugagames.pt'
@@ -9,7 +10,7 @@ export function shareMessage({ game, won, detail }) {
   const title = g?.title || 'Tuga Games'
   const url = `${SITE}${g?.to || '/'}?utm_source=partilha&utm_medium=social&utm_campaign=fim_de_jogo`
   let line
-  if (game === 'snake' && Number(detail) > 0) line = `Fiz ${detail} pontos na Snake 🐍`
+  if (game === 'snake' && Number(detail) > 0) line = `A minha cobra chegou a ${lengthOf(detail)} de tamanho na Snake 🐍`
   else if (game === 'emojis' && Number(detail) > 0) line = `Fiz ${detail} pontos no Emoji Battle 😎`
   else if (won) line = `Ganhei uma partida de ${title} 🏆`
   else line = `Estive a jogar ${title} 🎮`

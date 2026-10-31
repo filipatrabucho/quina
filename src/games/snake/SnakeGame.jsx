@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { gameBreak } from '../../lib/ads.js'
 import GameShell from '../../components/GameShell.jsx'
 import { recordResultOnce, getTopPlayers, STATS_CHANGED } from '../../lib/social.js'
-import { SIZE, newGame, step, turn, speedFor } from './snakeLogic.js'
+import { SIZE, newGame, step, turn, speedFor, lengthOf } from './snakeLogic.js'
 
 const BEST_KEY = 'quina-snake-best'
 const KEYS = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', w: 'up', s: 'down', a: 'left', d: 'right' }
@@ -170,12 +170,12 @@ function SnakeBoard() {
   return (
     <div className="game-panel snake">
       <div className="snake-top">
-        <span className="snake-score" data-testid="snake-score">Pontos <b>{state.score}</b></span>
-        <span className="snake-score" data-testid="snake-record" title={record ? `Recorde do site, de ${record.name}` : 'Ainda não há recorde do site'}>
-          Recorde <b>{record ? record.score : '–'}</b>
+        <span className="snake-score" data-testid="snake-score" title="Tamanho da cobra">Tamanho <b>{lengthOf(state.score)}</b></span>
+        <span className="snake-score" data-testid="snake-record" title={record ? `Recorde do site (maior cobra), de ${record.name}` : 'Ainda não há recorde do site'}>
+          Recorde <b>{record ? lengthOf(record.score) : '–'}</b>
           {record && <small className="snake-score__who">{record.name}</small>}
         </span>
-        <span className="snake-score snake-score--mine" data-testid="snake-mine">O teu melhor <b>{mine}</b></span>
+        <span className="snake-score snake-score--mine" data-testid="snake-mine" title="A tua maior cobra">O teu melhor <b>{lengthOf(mine)}</b></span>
         <div className="snake-walls">
           {[true, false].map((w) => (
             <button
@@ -196,7 +196,7 @@ function SnakeBoard() {
         <canvas ref={canvasRef} width={480} height={480} data-testid="snake-canvas" />
         {status !== 'playing' && (
           <div className="snake-overlay">
-            {status === 'over' && <p className="snake-over" data-testid="snake-over">Fim! {state.score} {state.score === 1 ? 'ponto' : 'pontos'}</p>}
+            {status === 'over' && <p className="snake-over" data-testid="snake-over">Fim! A tua cobra chegou a {lengthOf(state.score)} de tamanho.</p>}
             {status === 'paused' && <p className="snake-over">Pausa</p>}
             <button className="share-btn" onClick={() => (status === 'paused' ? setStatus('playing') : gameBreak('snake', () => restart()))} data-testid="snake-start">
               {status === 'over' ? 'Jogar outra vez' : status === 'paused' ? 'Continuar' : 'Começar'}

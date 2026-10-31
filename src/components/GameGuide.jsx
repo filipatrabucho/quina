@@ -4,6 +4,7 @@ import { GUIDES } from '../data/gameGuides.js'
 import { getTopPlayers, STATS_CHANGED, SCORE_GAMES } from '../lib/social.js'
 import { supabase } from '../lib/supabaseClient.js'
 import Avatar from './Avatar.jsx'
+import { lengthOf } from '../games/snake/snakeLogic.js'
 import { useRules, openRules, closeRules } from '../lib/rules.js'
 
 // Jogos que já têm o seu próprio botão de ajuda no ecrã.
@@ -66,7 +67,7 @@ function TopPlayers({ game }) {
           <Avatar src={x.profile.avatar_url} seed={x.profile.id} name={x.profile.username} size={30} />
           <Link to={`/u/${x.profile.username}`} className="game-top__name">{x.profile.username}</Link>
           {SCORE_GAMES.includes(game.key) ? (
-            <span className="game-top__wins"><b>{x.best_score}</b> {x.best_score === 1 ? 'ponto' : 'pontos'}</span>
+            <span className="game-top__wins"><b>{lengthOf(x.best_score)}</b> de tamanho</span>
           ) : (
             <span className="game-top__wins"><b>{x.wins}</b> {x.wins === 1 ? 'vitória' : 'vitórias'}</span>
           )}
