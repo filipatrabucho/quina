@@ -20,8 +20,7 @@ export const GAMES = [
     description: 'Escreve uma palavra com a sílaba antes que a bomba rebente! Rápido e viciante, contra bots ou com amigos.',
     tags: ['online', 'bot'],
     players: '1 a 8',
-    badge: 'Beta',
-    beta: true,
+    badge: 'Novo',
   },
   {
     key: 'impostor',
