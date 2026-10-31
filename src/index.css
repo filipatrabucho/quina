@@ -4753,3 +4753,10 @@ html.is-game-fs .mode-switch { display: none; }
 .home-ranking__cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .home-ranking__col h3 { margin: 0 0 6px; font-size: 0.85rem; color: var(--stone); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
 @media (max-width: 760px) { .home-ranking__cols { grid-template-columns: 1fr; } }
+/* Em ecrã inteiro o jogo fica centrado na largura e na altura (se for mais alto, começa no topo e faz scroll). */
+html.is-game-fs .site-col { height: 100vh; min-height: 100vh; overflow-y: auto; }
+html.is-game-fs .site-body { flex: 1 0 auto; display: flex; padding: 0 8px; }
+html.is-game-fs .site-main { flex: 1; display: flex; flex-direction: column; justify-content: safe center; align-items: center; min-height: 100vh; }
+html.is-game-fs .game-layout { flex: none; width: 100%; }
+html.is-game-fs .game-area { padding-top: 8px; padding-bottom: 8px; }
+@media (max-width: 760px) { html.is-game-fs .site-main { padding-top: 48px; } html.is-game-fs .game-area { padding-top: 8px; } }
