@@ -4675,3 +4675,28 @@ span.pcard { display: inline-block; }
 .bp-input input { width: auto; }
 .dw-chat__form .share-btn { width: auto; flex: none; padding-left: 16px; padding-right: 16px; }
 .dw-chat__form input { width: auto; }
+
+/* ---------- Ecrã inteiro dos jogos ---------- */
+html.is-game-fs, html.is-game-fs body { background: #0A0A0F; }
+html.is-game-fs .site-side, html.is-game-fs .topbar, html.is-game-fs .site-footer, html.is-game-fs .side-col,
+html.is-game-fs .page-foot-spot, html.is-game-fs .game-guide, html.is-game-fs .header--game, html.is-game-fs .site-backdrop,
+html.is-game-fs .chat-fab, html.is-game-fs .end-toast { display: none !important; }
+html.is-game-fs .site-col { min-height: 100vh; }
+html.is-game-fs .site-body { padding: 0 8px; max-width: none; }
+html.is-game-fs .game-layout, html.is-game-fs .game-layout__main { max-width: none; }
+html.is-game-fs .game-area { padding-top: 8px; padding-bottom: 8px; }
+html.is-game-fs .mode-switch { margin-top: 6px; }
+.fs-controls { position: fixed; top: 10px; left: 10px; z-index: 60; display: flex; flex-direction: column; gap: 8px; }
+.fs-btn { position: relative; width: 40px; height: 40px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(10, 10, 15, 0.6); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0.55; transition: opacity 0.15s, background 0.15s; backdrop-filter: blur(4px); }
+.fs-btn:hover, .fs-btn:focus-visible { opacity: 1; background: rgba(10, 10, 15, 0.9); }
+.fs-btn .chat-fab__badge { position: absolute; top: -4px; right: -4px; }
+html.is-game-fs .chat-panel { z-index: 70; }
+/* jogos que usam a altura do ecrã */
+html.is-game-fs .bomb-game { max-width: min(1000px, calc((100vh - 200px) * 13 / 11)); }
+html.is-game-fs .dw-main { grid-template-columns: minmax(0, calc((100vh - 120px) * 4 / 3)) 300px; justify-content: center; }
+html.is-game-fs .imp-game { max-width: 1200px; }
+html.is-game-fs .mode-switch { display: none; }
+@media (max-width: 760px) {
+  .fs-controls { flex-direction: row; top: 8px; left: 8px; }
+  html.is-game-fs .game-area { padding-top: 56px; }
+}

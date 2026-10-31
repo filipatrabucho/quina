@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import GameShell from '../../components/GameShell.jsx'
 import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import { gameBreak } from '../../lib/ads.js'
+import { useGameFullscreen } from '../../lib/fullscreen.js'
 import Astro from './Astro.jsx'
 import { Link } from 'react-router-dom'
 import { recordResultOnce } from '../../lib/social.js'
@@ -385,10 +386,11 @@ function MiniMap({ game, meId }) {
 
 function World({ game, meId, people, full }) {
   const [ref, vw] = useWidth()
+  const fs = useGameFullscreen()
   const me = game.players[meId]
   const ghostView = full || !me || !me.alive
   const c = full ? vw / W : Math.max(24, Math.min(44, Math.floor(vw / 13)))
-  const vh = full ? H * c : Math.round(Math.min(c * 10, typeof window !== 'undefined' ? window.innerHeight * 0.55 : 400))
+  const vh = full ? H * c : Math.round(Math.min(c * (fs ? 14 : 10), typeof window !== 'undefined' ? window.innerHeight * (fs ? 0.72 : 0.55) : 400))
   const tx = full ? 0 : vw / 2 - (me.x + 0.5) * c
   const ty = full ? 0 : vh / 2 - (me.y + 0.5) * c
   const vision = me ? visionOf(game, meId) : VISION.crew
