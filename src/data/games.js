@@ -8,8 +8,7 @@ export const GAMES = [
     description: 'Um desenha, os outros adivinham: escolhe uma palavra, desenha-a e ganha pontos por cada amigo que acerta. Ou partilha o ecrã na chamada.',
     tags: ['online'],
     players: '2 a 10',
-    badge: 'Beta',
-    beta: true,
+    badge: 'Novo',
     wide: true,
   },
   {
