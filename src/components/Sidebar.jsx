@@ -51,6 +51,12 @@ const ICONS = {
       <path d="M8 10v3M6.5 11.5h3M15 11h.01M17 12.5h.01" />
     </>
   ),
+  trophy: (
+    <>
+      <path d="M8 4h8v5a4 4 0 0 1-8 0z" />
+      <path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8.5 20h7M10 17h4" />
+    </>
+  ),
   admin: (
     <>
       <path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z" />
@@ -151,6 +157,10 @@ export default function Sidebar({ onNavigate }) {
         <Link to="/jogos-para-discord" className={`side-link${location.pathname === '/jogos-para-discord' ? ' side-link--on' : ''}`} onClick={onNavigate} title="Jogos para o Discord" data-testid="side-discord">
           <Icon name="discord" />
           <span className="side-link__label">Para o Discord</span>
+        </Link>
+        <Link to="/ranking" className={`side-link${location.pathname === '/ranking' ? ' side-link--on' : ''}`} onClick={onNavigate} title="Ranking" data-testid="side-ranking">
+          <Icon name="trophy" />
+          <span className="side-link__label">Ranking</span>
         </Link>
         {CATEGORIES.map((c) => (
           <Link key={c.key} to={`/?cat=${c.key}`} className={`side-link side-link--cat${cat === c.key ? ' side-link--on' : ''}`} onClick={onNavigate}>

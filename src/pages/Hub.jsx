@@ -10,6 +10,8 @@ import { useAuth } from '../hooks/useAuth.js'
 import { dayNumber, squares, solvedCount, todayResult, PER_DAY } from '../games/emojidia/emojiDia.js'
 import { dailyPlayers, recentGames } from '../lib/plays.js'
 import AppPromo from '../components/AppPromo.jsx'
+import { getSiteRanking } from '../lib/social.js'
+import { RANK_CATEGORIES, RankList } from './Ranking.jsx'
 
 const MODE_LABEL = { online: 'Multiplayer', bot: 'vs Bot', solo: 'Solo', diario: 'Diário' }
 // Os jogos grandes do topo: os 3 primeiros desta lista que a pessoa pode ver
@@ -125,6 +127,32 @@ function Promoted({ games }) {
   )
 }
 
+// Ranking do mês na página inicial (top 3 de três categorias).
+const HOME_RANKS = ['wins', 'plays', 'days']
+function HomeRanking() {
+  const [data, setData] = useState(null)
+  useEffect(() => {
+    getSiteRanking(30, 3).then(setData, () => setData(false))
+  }, [])
+  if (data === false) return null
+  return (
+    <section className="home-ranking" aria-label="Ranking do mês" data-testid="home-ranking">
+      <div className="home-ranking__head">
+        <h2>🏆 Ranking do mês</h2>
+        <Link to="/ranking" className="link-btn">Ver ranking completo →</Link>
+      </div>
+      <div className="home-ranking__cols">
+        {RANK_CATEGORIES.filter((c) => HOME_RANKS.includes(c.key)).map((c) => (
+          <div key={c.key} className="home-ranking__col">
+            <h3><span aria-hidden="true">{c.icon}</span> {c.title}</h3>
+            {data ? <RankList cat={c} list={data[c.key]} compact /> : <p className="rank-empty">A carregar…</p>}
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 // Os últimos jogos que esta pessoa abriu (só no browser).
 function ContinuePlaying({ games }) {
   const [keys, setKeys] = useState([])
@@ -189,6 +217,7 @@ export default function Hub() {
       {browsing && <Promoted games={games.filter((g) => g.promoted)} />}
       {browsing && <QuickStart />}
       {browsing && <ContinuePlaying games={games} />}
+      {browsing && <HomeRanking />}
       {browsing && <AppPromo />}
 
       {!browsing && (

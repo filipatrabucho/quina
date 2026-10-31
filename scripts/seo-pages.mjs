@@ -168,7 +168,7 @@ function page(path) {
 }
 
 writeFileSync(join(dist, 'index.html'), page('/'))
-const paths = [...GAMES.map((g) => g.to), DISCORD_PATH, '/conta', '/sobre', '/contacto']
+const paths = [...GAMES.map((g) => g.to), DISCORD_PATH, '/ranking', '/conta', '/sobre', '/contacto']
 for (const p of paths) {
   const dir = join(dist, p)
   mkdirSync(dir, { recursive: true })

@@ -332,6 +332,13 @@ export async function saveMyWallet(game, chips) {
 }
 
 // Quem jogou (com e sem conta), para o backoffice.
+// Ranking geral do site (público). days: 0 = desde sempre.
+export async function getSiteRanking(days = 30, limit = 10) {
+  const { data, error } = await supabase.rpc('site_ranking', { p_days: days, p_limit: limit })
+  fail(error)
+  return data
+}
+
 export async function adminPlayStats(days = 30) {
   const { data, error } = await supabase.rpc('admin_play_stats', { p_days: days })
   fail(error)

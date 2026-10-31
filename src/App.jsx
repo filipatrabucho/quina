@@ -6,6 +6,7 @@ import BetaGate from './components/BetaGate.jsx'
 import Sobre from './pages/Sobre.jsx'
 import Contacto from './pages/Contacto.jsx'
 import Discord from './pages/Discord.jsx'
+import Ranking from './pages/Ranking.jsx'
 
 // Os jogos novos só são descarregados quando se abrem.
 const PalavrasGame = lazy(() => import('./games/palavras/PalavrasGame.jsx'))
@@ -82,6 +83,7 @@ export default function App() {
         <Route path="u/:username" element={page(<Perfil />)} />
         <Route path="admin" element={page(<Admin />)} />
         <Route path="jogos-para-discord" element={<Discord />} />
+        <Route path="ranking" element={<Ranking />} />
         <Route path="sobre" element={<Sobre />} />
         <Route path="contacto" element={<Contacto />} />
       </Route>

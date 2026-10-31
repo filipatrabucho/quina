@@ -756,6 +756,63 @@ end;
 $$;
 grant execute on function public.admin_list_feedback(text, int) to authenticated;
 
+-- ---------- Ranking geral do site (página /ranking) ----------
+-- p_days: 0 = desde sempre; senão os últimos N dias. Para cada categoria
+-- devolve o top (nome público e avatar) e a posição de quem está a ver.
+--   plays: mais partidas  ·  wins: mais vitórias  ·  days: dias diferentes a jogar
+--   games: jogos diferentes jogados
+create or replace function public.site_ranking(p_days int default 30, p_limit int default 10)
+returns json language sql stable security definer set search_path = public as $$
+  with
+  opts as (
+    select coalesce(p_days, 0) > 0 as recent,
+      case when coalesce(p_days, 0) > 0 then now() - make_interval(days => least(p_days, 3650)) else '-infinity'::timestamptz end as since,
+      greatest(1, least(coalesce(p_limit, 10), 50)) as lim
+  ),
+  plays_rows as (
+    select gp.user_id, gp.game, gp.won, (gp.created_at at time zone 'Europe/Lisbon')::date as day
+    from game_plays gp, opts
+    where gp.kind = 'partida' and gp.user_id is not null and gp.created_at >= opts.since
+  ),
+  recent_stats as (
+    select user_id, count(*) as plays, count(*) filter (where won) as wins, count(distinct day) as days, count(distinct game) as games
+    from plays_rows group by user_id
+  ),
+  -- desde sempre: partidas e vitórias de player_stats (inclui o que houve antes do histórico)
+  all_stats as (
+    select s.user_id, sum(s.plays)::bigint as plays, sum(s.wins)::bigint as wins,
+      coalesce((select count(distinct day) from plays_rows r where r.user_id = s.user_id), 0) as days,
+      count(*) filter (where s.plays > 0) as games
+    from player_stats s group by s.user_id
+  ),
+  per as (
+    select * from recent_stats where (select recent from opts)
+    union all
+    select * from all_stats where not (select recent from opts)
+  ),
+  ranked as (
+    select p.user_id, pr.username, pr.avatar_url, p.plays, p.wins, p.days, p.games,
+      row_number() over (order by p.plays desc, p.wins desc, pr.username) as r_plays,
+      row_number() over (order by p.wins desc, p.plays asc, pr.username) as r_wins,
+      row_number() over (order by p.days desc, p.plays desc, pr.username) as r_days,
+      row_number() over (order by p.games desc, p.plays desc, pr.username) as r_games
+    from per p join profiles pr on pr.id = p.user_id
+    where p.plays > 0
+  )
+  select json_build_object(
+    'players', (select count(*) from ranked),
+    'plays', (select coalesce(json_agg(json_build_object('rank', r_plays, 'username', username, 'avatar_url', avatar_url, 'id', user_id, 'value', plays) order by r_plays), '[]'::json) from ranked where r_plays <= (select lim from opts)),
+    'wins', (select coalesce(json_agg(json_build_object('rank', r_wins, 'username', username, 'avatar_url', avatar_url, 'id', user_id, 'value', wins) order by r_wins), '[]'::json) from ranked where r_wins <= (select lim from opts) and wins > 0),
+    'days', (select coalesce(json_agg(json_build_object('rank', r_days, 'username', username, 'avatar_url', avatar_url, 'id', user_id, 'value', days) order by r_days), '[]'::json) from ranked where r_days <= (select lim from opts) and days > 0),
+    'games', (select coalesce(json_agg(json_build_object('rank', r_games, 'username', username, 'avatar_url', avatar_url, 'id', user_id, 'value', games) order by r_games), '[]'::json) from ranked where r_games <= (select lim from opts)),
+    'me', (select json_build_object('plays', json_build_object('rank', r_plays, 'value', plays), 'wins', json_build_object('rank', case when wins > 0 then r_wins end, 'value', wins),
+             'days', json_build_object('rank', case when days > 0 then r_days end, 'value', days), 'games', json_build_object('rank', r_games, 'value', games))
+           from ranked where user_id = auth.uid())
+  );
+$$;
+grant execute on function public.site_ranking(int, int) to anon, authenticated;
+
+
 create or replace function public.admin_set_feedback_status(p_id bigint, p_status text)
 returns void language plpgsql security definer set search_path = public as $$
 begin

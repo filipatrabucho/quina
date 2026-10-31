@@ -4,6 +4,10 @@ import { GUIDES } from '../data/gameGuides.js'
 import { getTopPlayers, STATS_CHANGED, SCORE_GAMES } from '../lib/social.js'
 import { supabase } from '../lib/supabaseClient.js'
 import Avatar from './Avatar.jsx'
+import { useRules, openRules, closeRules } from '../lib/rules.js'
+
+// Jogos que já têm o seu próprio botão de ajuda no ecrã.
+const OWN_HELP = ['palavras', 'fiada']
 
 // De quanto em quanto tempo o top volta a ser lido (se o tempo real falhar).
 const TOP_REFRESH_MS = 20000
@@ -72,42 +76,71 @@ function TopPlayers({ game }) {
   )
 }
 
-// Coluna do jogo: regras, dicas, perguntas e top 3, em acordeão.
-// No PC fica à esquerda do jogo; no telemóvel por baixo.
-export default function GameGuide({ game }) {
-  const g = GUIDES[game.key]
+// Top 3 do jogo, centrado por baixo do jogo.
+export function GameTop({ game }) {
   return (
-    <aside className="game-guide" aria-label={`Sobre o jogo ${game.title}`}>
-      <details className="game-guide__item" open>
-        <summary>Top 3 jogadores</summary>
-        <TopPlayers game={game} />
-      </details>
-      {g && (
-        <>
-          <details className="game-guide__item" open>
-            <summary>Como jogar {game.title}</summary>
-            <p className="game-guide__intro">{g.intro}</p>
-            <ul>{g.rules.map((r) => <li key={r}>{r}</li>)}</ul>
-          </details>
-          {g.tips?.length > 0 && (
-            <details className="game-guide__item">
-              <summary>Dicas</summary>
-              <ul>{g.tips.map((r) => <li key={r}>{r}</li>)}</ul>
-            </details>
-          )}
-          {g.faq?.length > 0 && (
-            <details className="game-guide__item">
-              <summary>Perguntas frequentes</summary>
-              {g.faq.map(([q, a]) => (
-                <div key={q} className="game-guide__faq">
-                  <h3>{q}</h3>
-                  <p>{a}</p>
-                </div>
-              ))}
-            </details>
-          )}
-        </>
+    <section className="game-topbox" aria-label={`Top 3 em ${game.title}`} data-testid="game-topbox">
+      <h2>🏆 Top 3 em {game.title}</h2>
+      <TopPlayers game={game} />
+      <Link to="/ranking" className="game-topbox__more">Ver o ranking geral do site →</Link>
+    </section>
+  )
+}
+
+// Janela "Como jogar": resumo do jogo + regras, dicas e perguntas.
+// Fica sempre na página (escondida até se abrir), para o Google também a ler.
+export default function GameRules({ game }) {
+  const g = GUIDES[game.key]
+  const { open, help, shell } = useRules()
+  useEffect(() => {
+    if (!open) return undefined
+    const onKey = (e) => e.key === 'Escape' && closeRules()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
+  // Fecha ao mudar de jogo.
+  useEffect(() => () => closeRules(), [game.key])
+  return (
+    <>
+      {!shell && !OWN_HELP.includes(game.key) && (
+        <button type="button" className="rules-fab" onClick={openRules} data-testid="rules-open">
+          <span aria-hidden="true">?</span> Como jogar
+        </button>
       )}
-    </aside>
+      <div className="modal-overlay rules-overlay" hidden={!open} onClick={closeRules} data-testid="rules-modal">
+        <div className="modal rules-modal" role="dialog" aria-modal="true" aria-label={`Como jogar ${game.title}`} onClick={(e) => e.stopPropagation()}>
+          <button type="button" className="modal-close" onClick={closeRules} aria-label="Fechar">×</button>
+          <h2>Como jogar {game.title}</h2>
+          {g?.intro && <p className="rules-intro">{g.intro}</p>}
+          {help && <div className="rules-help">{help}</div>}
+          {g && (
+            <>
+              <details className="rules-item" open={!help}>
+                <summary>Regras</summary>
+                <ul>{g.rules.map((r) => <li key={r}>{r}</li>)}</ul>
+              </details>
+              {g.tips?.length > 0 && (
+                <details className="rules-item">
+                  <summary>Dicas</summary>
+                  <ul>{g.tips.map((r) => <li key={r}>{r}</li>)}</ul>
+                </details>
+              )}
+              {g.faq?.length > 0 && (
+                <details className="rules-item">
+                  <summary>Perguntas frequentes</summary>
+                  {g.faq.map(([q, a]) => (
+                    <div key={q} className="game-guide__faq">
+                      <h3>{q}</h3>
+                      <p>{a}</p>
+                    </div>
+                  ))}
+                </details>
+              )}
+            </>
+          )}
+          <button type="button" className="share-btn rules-ok" onClick={closeRules}>Percebi, vamos jogar!</button>
+        </div>
+      </div>
+    </>
   )
 }

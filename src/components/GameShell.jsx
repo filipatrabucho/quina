@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import GameIcon from './GameIcon.jsx'
 import { useSocial } from '../social/SocialContext.jsx'
 import { enterFullscreen, exitFullscreen, useGameFullscreen } from '../lib/fullscreen.js'
+import { openRules, registerShell } from '../lib/rules.js'
 
 const FsIcon = ({ on }) => (
   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -46,8 +47,9 @@ function FullscreenControls() {
 // Cabeçalho comum aos jogos novos: título, ajuda e escolha de modo.
 export default function GameShell({ game, title, help, modes, children, wide = false }) {
   const [params, setParams] = useSearchParams()
-  const [showHelp, setShowHelp] = useState(false)
   const fs = useGameFullscreen()
+  // O resumo deste jogo vai para a janela "Como jogar" (com as regras completas).
+  useEffect(() => registerShell(help), [help])
   // Ao sair da página do jogo, sai do ecrã inteiro.
   useEffect(() => () => { exitFullscreen() }, [])
   const requested = params.get('sala') ? 'online' : params.get('modo')
@@ -62,7 +64,7 @@ export default function GameShell({ game, title, help, modes, children, wide = f
   return (
     <>
       <header className="header header--game">
-        <button className="icon-btn" onClick={() => setShowHelp(true)} aria-label="Como jogar">?</button>
+        <button className="icon-btn" onClick={openRules} aria-label="Como jogar" title="Como jogar" data-testid="rules-open">?</button>
         <h2 className="game-title">
           {game && <GameIcon game={game} size={30} />}
           {title}
@@ -86,15 +88,6 @@ export default function GameShell({ game, title, help, modes, children, wide = f
         </div>
       )}
       <main className={`game-area${wide ? ' game-area--wide' : ''}`}>{children(mode)}</main>
-      {showHelp && (
-        <div className="modal-overlay" onClick={() => setShowHelp(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setShowHelp(false)} aria-label="Fechar">×</button>
-            <h2>Como jogar</h2>
-            {help}
-          </div>
-        </div>
-      )}
     </>
   )
 }

@@ -14,6 +14,10 @@ const EXTRA = {
     title: `Jogos para jogar no Discord com amigos (grátis, no browser) | ${SITE_NAME}`,
     description: 'Jogos para jogar no Discord com amigos durante a chamada: cria uma sala, cola o link no chat e joguem todos no browser, sem instalar nada nem bots no servidor. Emoji Battle, Stop, Jogo dos Memes, Sueca e mais. Grátis e em português.',
   },
+  '/ranking': {
+    title: `Ranking dos jogadores: quem joga e ganha mais | ${SITE_NAME}`,
+    description: 'O ranking do Tuga Games PT: quem jogou mais partidas, quem ganhou mais, quem joga mais dias seguidos e quem já experimentou mais jogos. Cria conta e entra no top.',
+  },
   '/sobre': { title: `Sobre nós | ${SITE_NAME}`, description: 'O Tuga Games PT é um site de mini-jogos online grátis feito em Portugal: jogos de tabuleiro, palavras, cartas e jogos de festa para jogar sozinho ou com amigos, sem instalar nada.' },
   '/contacto': { title: `Contacto | ${SITE_NAME}`, description: 'Fala com a equipa do Tuga Games PT: sugestões de jogos, erros, pedidos sobre a tua conta e parcerias. Email tuga.games.staff@gmail.com.' },
   '/admin': { title: `Backoffice | ${SITE_NAME}`, description: DEFAULT_DESCRIPTION, noindex: true },
@@ -67,4 +71,4 @@ export function seoFor(pathname) {
   return { path, ...(EXTRA[path] || { title: DEFAULT_TITLE, description: DEFAULT_DESCRIPTION }) }
 }
 
-export const publicPaths = () => ['/', DISCORD_PATH, ...GAMES.filter((g) => !g.beta).map((g) => g.to), '/sobre', '/contacto']
+export const publicPaths = () => ['/', DISCORD_PATH, '/ranking', ...GAMES.filter((g) => !g.beta).map((g) => g.to), '/sobre', '/contacto']
