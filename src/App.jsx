@@ -34,6 +34,8 @@ const SuecaGame = lazy(() => import('./games/sueca/SuecaGame.jsx'))
 const BiscaGame = lazy(() => import('./games/bisca/BiscaGame.jsx'))
 const DominoGame = lazy(() => import('./games/domino/DominoGame.jsx'))
 const ImpostorGame = lazy(() => import('./games/impostor/ImpostorGame.jsx'))
+const DesenhoGame = lazy(() => import('./games/desenho/DesenhoGame.jsx'))
+const BombaGame = lazy(() => import('./games/bombapalavras/BombaGame.jsx'))
 const SpiderGame = lazy(() => import('./games/solitario/SpiderGame.jsx'))
 const FreecellGame = lazy(() => import('./games/solitario/FreecellGame.jsx'))
 const EmojiDiaGame = lazy(() => import('./games/emojidia/EmojiDiaGame.jsx'))
@@ -70,6 +72,8 @@ export default function App() {
         <Route path="freecell" element={game('freecell', <FreecellGame />)} />
         <Route path="domino" element={game('domino', <DominoGame />)} />
         <Route path="impostor" element={game('impostor', <ImpostorGame />)} />
+        <Route path="desenha-e-adivinha" element={game('desenho', <DesenhoGame />)} />
+        <Route path="bomba-de-palavras" element={game('bombapalavras', <BombaGame />)} />
         <Route path="bisca" element={game('bisca', <BiscaGame />)} />
         <Route path="sueca" element={game('sueca', <SuecaGame />)} />
         <Route path="emoji-battle" element={game('emojis', <EmojisGame />)} />

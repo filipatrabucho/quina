@@ -197,6 +197,30 @@ export default function GamePreview({ game }) {
           ))}
         </div>
       )
+    case 'desenho':
+      return (
+        <div className="pv pv-desenho">
+          <svg viewBox="0 0 120 90" aria-hidden="true">
+            <rect x="2" y="2" width="116" height="86" rx="8" fill="#fff" />
+            <circle cx="60" cy="38" r="18" fill="none" stroke="#14141C" strokeWidth="3" />
+            <path d="M48 34h4M68 34h4M50 46q10 8 20 0" stroke="#14141C" strokeWidth="3" fill="none" strokeLinecap="round" />
+            <path d="M30 78q30-16 60 0" stroke="#2FBF71" strokeWidth="4" fill="none" strokeLinecap="round" />
+            <text x="96" y="26" fontSize="18" fontWeight="900" fill="#E5243B">?</text>
+          </svg>
+        </div>
+      )
+    case 'bombapalavras':
+      return (
+        <div className="pv pv-bombapalavras">
+          <svg viewBox="0 0 120 120" width="88" height="88" aria-hidden="true">
+            <circle cx="58" cy="66" r="44" fill="#15151C" />
+            <rect x="64" y="14" width="20" height="16" rx="4" fill="#3A3F58" transform="rotate(35 74 22)" />
+            <path d="M80 16q8-12 18-6" stroke="#F4E6C3" strokeWidth="4" fill="none" strokeLinecap="round" />
+            <circle cx="99" cy="9" r="6" fill="#FFC93C" />
+          </svg>
+          <b>CA</b>
+        </div>
+      )
     case 'impostor':
       return (
         <div className="pv pv-impostor">

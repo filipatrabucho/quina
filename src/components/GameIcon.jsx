@@ -26,6 +26,8 @@ const THEMES = {
   freecell: '#0F6B5C',
   emojidia: '#E85D3A',
   impostor: '#3B3F8F',
+  desenho: '#E06A2B',
+  bombapalavras: '#B8322B',
 }
 
 function Art({ game }) {
@@ -299,6 +301,25 @@ function Art({ game }) {
           <rect x="26" y="13" width="15" height="22" rx="2.5" fill="#fff" transform="rotate(16 33 24)" />
           <text x="29.5" y="23" fontSize="9" fill="#15151C" transform="rotate(16 33 24)">K</text>
           <text x="30" y="31.5" fontSize="8" fill="#15151C" transform="rotate(16 33 24)">♠</text>
+        </g>
+      )
+    case 'desenho':
+      return (
+        <g>
+          <rect x="7" y="9" width="30" height="24" rx="3" fill="#fff" stroke="#14141C" strokeWidth="2" />
+          <path d="M12 27c4-9 7-9 9-3s5 4 9-7" stroke="#2F80ED" strokeWidth="2.6" fill="none" strokeLinecap="round" />
+          <path d="M31 33l9-15 4 2.4-9 15-5 1.6z" fill="#FFC93C" stroke="#14141C" strokeWidth="1.6" strokeLinejoin="round" />
+          <text x="11" y="21" fontSize="9" fontWeight="900" fill="#E5243B">?</text>
+        </g>
+      )
+    case 'bombapalavras':
+      return (
+        <g>
+          <circle cx="22" cy="27" r="13" fill="#15151C" />
+          <rect x="20" y="11" width="7" height="5" rx="1.5" fill="#3A3F58" transform="rotate(35 23 13.5)" />
+          <path d="M27 11q3-5 7-3" stroke="#F4E6C3" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+          <circle cx="35" cy="7" r="2.6" fill="#FFC93C" />
+          <text x="22" y="31" fontSize="10" fontWeight="900" fill="#fff" textAnchor="middle">CA</text>
         </g>
       )
     case 'impostor':

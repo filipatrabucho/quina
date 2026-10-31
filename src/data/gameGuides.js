@@ -203,6 +203,49 @@ export const GUIDES = {
       ['Preciso de conta?', 'Não. Com conta grátis, as vitórias contam para as medalhas e para o top.'],
     ],
   },
+  desenho: {
+    intro:
+      'O Desenha e Adivinha é o clássico jogo de desenhar e adivinhar, para jogar com amigos numa chamada de Discord: à vez, cada jogador escolhe uma palavra e desenha-a, e os outros escrevem palpites. Quanto mais depressa acertas, mais pontos ganhas. Sem conta, dá para jogar num só ecrã, a partilhar o ecrã na chamada.',
+    rules: [
+      'Em cada ronda, todos desenham uma vez. Quem desenha escolhe uma de três palavras: fácil, média ou difícil.',
+      'Os outros escrevem palpites na conversa. Os acentos e as maiúsculas não contam.',
+      'Quem acerta ganha mais pontos quanto mais cedo acertar, e o primeiro ganha um bónus. Quem desenha ganha pontos por cada pessoa que acerta.',
+      'A meio do tempo aparece uma letra de ajuda, e outra perto do fim.',
+      'A vez acaba quando todos acertam ou quando o tempo acaba. Ganha quem tiver mais pontos no fim das rondas.',
+    ],
+    tips: [
+      'Começa pelo mais importante: a forma geral primeiro, os pormenores depois.',
+      'Não vale escrever letras ou números no desenho!',
+      'Se o palpite estiver quase certo, o jogo avisa-te só a ti.',
+    ],
+    faq: [
+      ['Preciso de conta para jogar?', 'Para criar uma sala online, sim (é grátis). Sem conta podes jogar Num só ecrã, a partilhar o ecrã na chamada.'],
+      ['Quantas pessoas podem jogar?', 'De 2 a 10 na mesma sala.'],
+      ['Dá para jogar no telemóvel?', 'Sim, desenha-se com o dedo.'],
+    ],
+  },
+  bombapalavras: {
+    intro:
+      'A Bomba de Palavras é um jogo de palavras rápido: aparece uma sílaba e quem tem a bomba tem de escrever uma palavra que a contenha antes que rebente. Quem ficar com a bomba quando ela explode perde uma vida. Joga contra bots, sem conta, ou com amigos numa chamada de Discord.',
+    rules: [
+      'No centro aparece uma sílaba (por exemplo «CA»). Quem tem a bomba escreve uma palavra que a tenha: casa, macaco, faca…',
+      'A palavra tem de existir, ter pelo menos 3 letras e não pode ter sido usada antes no mesmo jogo. Os acentos não contam.',
+      'Se acertares, a bomba passa ao seguinte, com uma sílaba nova.',
+      'Não há relógio à vista: a bomba rebenta quando calhar, e quem a tiver perde uma vida.',
+      'Usa todas as letras do alfabeto ao longo do jogo para ganhares uma vida extra.',
+      'Ganha quem ficar por último.',
+    ],
+    tips: [
+      'Não procures a palavra perfeita: uma palavra curta e certa vale mais do que uma longa.',
+      'Palavras com letras raras (X, Z, J) ajudam a completar o alfabeto.',
+      'Os plurais e os verbos contam: casa, casas, casar…',
+    ],
+    faq: [
+      ['Preciso de conta para jogar?', 'Não para jogar contra os bots. Para jogar online com amigos precisas de uma conta grátis.'],
+      ['Que palavras são aceites?', 'As palavras de um dicionário de português com mais de 140 mil palavras, incluindo plurais e formas verbais.'],
+      ['Quantas pessoas podem jogar?', 'Até 8 na mesma sala, e os lugares vazios podem ser bots.'],
+    ],
+  },
   impostor: {
     intro:
       'O Impostor é um jogo de dedução social para 4 a 10 jogadores, ideal para jogar com amigos numa chamada de Discord. Estão todos numa nave: a maioria são tripulantes que fazem tarefas, mas 1 ou 2 são impostores que os eliminam às escondidas. Quando aparece um corpo, há reunião: falam, desconfiam uns dos outros e votam em quem expulsar. Também dá para jogar sozinho contra bots, sem conta.',

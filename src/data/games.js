@@ -1,6 +1,29 @@
 // Catálogo dos jogos (usado no início, no menu e nos cabeçalhos).
 export const GAMES = [
   {
+    key: 'desenho',
+    to: '/desenha-e-adivinha',
+    title: 'Desenha e Adivinha',
+    short: 'Desenha',
+    description: 'Um desenha, os outros adivinham: escolhe uma palavra, desenha-a e ganha pontos por cada amigo que acerta. Ou partilha o ecrã na chamada.',
+    tags: ['online'],
+    players: '2 a 10',
+    badge: 'Beta',
+    beta: true,
+    wide: true,
+  },
+  {
+    key: 'bombapalavras',
+    to: '/bomba-de-palavras',
+    title: 'Bomba de Palavras',
+    short: 'Bomba de Palavras',
+    description: 'Escreve uma palavra com a sílaba antes que a bomba rebente! Rápido e viciante, contra bots ou com amigos.',
+    tags: ['online', 'bot'],
+    players: '1 a 8',
+    badge: 'Beta',
+    beta: true,
+  },
+  {
     key: 'impostor',
     to: '/impostor',
     title: 'O Impostor',
