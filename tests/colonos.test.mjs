@@ -82,9 +82,9 @@ test('colonos: dados produzem recursos e o ladrão bloqueia', () => {
   assert.ok(rolled.hands.a[res] >= 1, 'recebe recurso')
   assert.equal(b.kind, 'aldeia')
   const blocked = L.applyAction({ ...g, board: { ...g.board, robber: hi } }, 'a', { type: 'roll' }, fixedRoll(...dice))
-  // Com o ladrão em cima, esse terreno não dá nada ao jogador nesse cruzamento
-  const fromOthers = VERTICES[v].hexes.filter((h) => h !== hi && g.board.tiles[h].num === num && g.board.tiles[h].res === res).length
-  assert.equal(blocked.hands.a[res], fromOthers > 0 ? blocked.hands.a[res] : 0)
+  // Com o ladrão em cima, esse terreno deixa de dar (o jogador pode receber
+  // o mesmo recurso de outras aldeias suas, noutros terrenos com o mesmo número).
+  assert.ok(blocked.hands.a[res] < rolled.hands.a[res], 'o ladrão tira o que esse terreno dava')
 })
 
 test('colonos: 7 obriga a descartar metade e o ladrão rouba uma carta', () => {

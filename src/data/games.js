@@ -29,8 +29,7 @@ export const GAMES = [
     description: 'Dedução social numa nave: faz as tarefas e descobre quem é o impostor antes que seja tarde. De 4 a 10, com amigos na chamada ou com bots.',
     tags: ['online', 'bot'],
     players: '4 a 10',
-    badge: 'Beta',
-    beta: true,
+    badge: 'Novo',
     wide: true,
   },
   {
