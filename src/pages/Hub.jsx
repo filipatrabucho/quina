@@ -15,7 +15,7 @@ import { RANK_CATEGORIES, RankList } from './Ranking.jsx'
 
 const MODE_LABEL = { online: 'Multiplayer', bot: 'vs Bot', solo: 'Solo', diario: 'Diário' }
 // Os jogos grandes do topo: os 3 primeiros desta lista que a pessoa pode ver
-// (o Bombas está em beta e só aparece aos testers).
+// (os jogos em beta só aparecem aos testers).
 const FEATURED_PICKS = ['emojis', 'stop', 'memes', 'sueca', 'palavras']
 // Quantas miniaturas antes do anúncio a meio da grelha.
 const BEFORE_AD = 6

@@ -112,8 +112,7 @@ export const GAMES = [
     description: 'Arena com bombas: rebenta caixas, apanha prémios e elimina os adversários. Contra bots ou com amigos.',
     tags: ['online', 'bot'],
     players: '1 a 4',
-    badge: 'Beta',
-    beta: true,
+    badge: 'Novo',
   },
   {
     key: 'blackjack',
