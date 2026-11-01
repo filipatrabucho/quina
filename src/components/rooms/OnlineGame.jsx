@@ -9,6 +9,7 @@ import DiscordButton from '../DiscordButton.jsx'
 import GoogleButton from '../GoogleButton.jsx'
 import { track } from '../../lib/analytics.js'
 import LoginGate from '../LoginGate.jsx'
+import RoomChat from './RoomChat.jsx'
 
 export function PlayerChip({ player, you, online, extra }) {
   return (
@@ -89,7 +90,7 @@ function InviteBox({ code, gameTitle }) {
 
 function Room({ game, code, me, logic, renderGame, renderLobbyOptions, prepareStart, onLeave }) {
   const room = useGameRoom({ game, code, me, logic })
-  const { state, amHost, online, hostOnline, error, setError, notFound, dispatch } = room
+  const { state, amHost, online, hostOnline, error, setError, notFound, dispatch, chat, sendChat } = room
   const [starting, setStarting] = useState(false)
 
   const start = async () => {
@@ -121,11 +122,19 @@ function Room({ game, code, me, logic, renderGame, renderLobbyOptions, prepareSt
   }
 
   const isOnline = (id) => online.some((p) => p?.id === id)
+  // O chat fica sempre no mesmo sítio da árvore: não fecha ao começar o jogo.
+  const withChat = (body) => (
+    <>
+      {body}
+      {roomChat}
+    </>
+  )
   const seated = state.players.some((p) => p.id === me.id)
 
+  const roomChat = <RoomChat chat={chat} sendChat={sendChat} players={state.players} me={me} />
   if (state.status === 'lobby') {
     const full = state.players.length >= state.maxPlayers
-    return (
+    return withChat(
       <div className="duel-panel room-lobby">
         <InviteBox code={code} gameTitle={gameByKey(game)?.title || 'Jogo'} />
         <p className="modal-note">
@@ -170,7 +179,7 @@ function Room({ game, code, me, logic, renderGame, renderLobbyOptions, prepareSt
     )
   }
 
-  return (
+  return withChat(
     <div className="room-playing">
       {!hostOnline && (
         <p className="room-banner">O anfitrião desligou-se. O jogo continua quando ele voltar.</p>
