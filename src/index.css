@@ -2594,8 +2594,8 @@ h1, h2, h3, .game-title, .modal h2 { letter-spacing: 0.01em; }
 .invite-modal__tools .chat-search { flex: 1; min-width: 0; margin: 0; }
 .invite-modal__toggle { display: flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--stone); white-space: nowrap; cursor: pointer; }
 .invite-modal__list {
-  flex: 1;
-  min-height: 120px;
+  flex: 1 1 auto;
+  min-height: 80px;
   max-height: 380px;
   overflow-y: auto;
   border: 1px solid var(--stone-light);
@@ -4786,8 +4786,8 @@ html.is-game-fs .game-area { padding-top: 8px; padding-bottom: 8px; }
 .invite-share { display: flex; gap: 8px; flex-wrap: wrap; }
 .invite-count { margin: 0; font-size: 1rem; color: var(--stone); }
 .invite-count b { font: 800 2rem var(--font-display); color: #fff; margin-right: 6px; }
-.invite-bar { height: 12px; border-radius: 6px; background: #1E1E28; overflow: hidden; }
-.invite-bar i { display: block; height: 100%; background: linear-gradient(90deg, #2FBF71, #6EE7A0); }
+.ref-bar { height: 12px; border-radius: 6px; background: #1E1E28; overflow: hidden; }
+.ref-bar i { display: block; height: 100%; background: linear-gradient(90deg, #2FBF71, #6EE7A0); }
 .invite-rewards, .invite-people, .invite-tiers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .invite-people li { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 10px; background: var(--cream-deep); flex-wrap: wrap; }
 .invite-people a { color: var(--ink); font-weight: 600; }
@@ -4854,3 +4854,12 @@ html.is-game-fs .game-area { padding-top: 8px; padding-bottom: 8px; }
 .room-voice__bar .mode-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .room-voice__bar .share-btn { width: auto; flex: none; padding: 0 14px; }
 @media (max-width: 640px) { .room-voice-btn { width: 42px; height: 42px; top: calc(50% + 30px); } .room-chat-btn { top: calc(50% - 22px); } }
+
+/* Janelas: nunca maiores do que o ecrã. Se o conteúdo não couber, a janela faz
+   scroll (e a de convidar amigos encolhe a lista), para os botões ficarem sempre à vista. */
+.modal-overlay { overflow-y: auto; align-items: safe center; }
+.modal { max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; }
+.invite-modal { overflow: hidden; }
+.invite-modal .invite-bar { flex: none; }
+/* Com uma janela aberta, os botões do chat e da voz da sala não ficam por cima dela. */
+body:has(.modal-overlay:not([hidden])) .room-chat-btn, body:has(.modal-overlay:not([hidden])) .room-voice-btn { display: none; }

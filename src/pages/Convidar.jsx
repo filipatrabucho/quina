@@ -110,7 +110,7 @@ export default function Convidar() {
           <section className="invite-card" data-testid="invite-progress">
             <h2>O teu progresso</h2>
             <p className="invite-count"><b data-testid="invite-valid">{valid}</b> {valid === 1 ? 'convite válido' : 'convites válidos'}</p>
-            <div className="invite-bar" aria-hidden="true"><i style={{ width: `${pct}%` }} /></div>
+            <div className="ref-bar" aria-hidden="true"><i style={{ width: `${pct}%` }} /></div>
             <p className="modal-note">Próximo prémio aos <b>{next.valid}</b>: {next.title}</p>
             {data?.rewards?.length > 0 && (
               <ul className="invite-rewards" data-testid="invite-rewards">
