@@ -100,8 +100,7 @@ export const GAMES = [
     description: 'Coloniza a ilha: junta recursos, constrói aldeias, cidades e estradas e troca com os outros até aos 10 pontos.',
     tags: ['online', 'bot'],
     players: '1 a 4',
-    badge: 'Beta',
-    beta: true,
+    badge: 'Novo',
     wide: true,
   },
   {
