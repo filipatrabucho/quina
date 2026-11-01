@@ -4,6 +4,8 @@ import { useAuth } from '../hooks/useAuth.js'
 import { getDisplayName, getAvatarUrl, getAvatarSeed } from '../lib/discordProfile.js'
 import { GAMES } from '../data/games.js'
 import GameRules, { GameTop } from './GameGuide.jsx'
+import SignupGate from './SignupGate.jsx'
+import { captureRef, claimPendingRef } from '../lib/referral.js'
 import { adsConfigured, showPrivacyOptions } from '../lib/ads.js'
 import Avatar from './Avatar.jsx'
 import Logo from './Logo.jsx'
@@ -60,6 +62,7 @@ function PageContent() {
       </div>
       <GameTop game={game} />
       <GameRules game={game} />
+      <SignupGate game={game} />
     </div>
   )
 }
@@ -88,6 +91,12 @@ function SiteShell() {
   const game = useCurrentGame()
   const [drawer, setDrawer] = useState(false)
   const isHome = pathname === '/'
+  const { user } = useAuth()
+  // Convites: guarda o código do link e, quando houver conta, liga-a a quem convidou.
+  useEffect(() => captureRef(), [])
+  useEffect(() => {
+    if (user && !user.is_anonymous) claimPendingRef(user)
+  }, [user?.id, pathname]) // eslint-disable-line react-hooks/exhaustive-deps
   // Sem anúncios nas páginas internas (backoffice).
   const ads = !pathname.startsWith('/admin')
 

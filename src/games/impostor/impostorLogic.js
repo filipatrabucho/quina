@@ -22,9 +22,11 @@ export const VISION = { crew: 4.5, impostor: 6.5 }
 export const TASKS_EACH = 5
 export const BOT_TASK_MS = 10000 // quanto tempo um bot demora numa tarefa
 export const BOT_NAMES = ['Bot Rita', 'Bot Zé', 'Bot Inês', 'Bot Rui', 'Bot Ana', 'Bot Tó', 'Bot Bia', 'Bot Gui', 'Bot Lia']
-export const COLORS = ['#E5243B', '#2F80ED', '#2FBF71', '#F2B53B', '#8E44AD', '#FF7A1A', '#1ABC9C', '#EC4899', '#F5F5F5', '#6B4F2A']
-export const COLOR_NAMES = ['Vermelho', 'Azul', 'Verde', 'Amarelo', 'Roxo', 'Laranja', 'Turquesa', 'Rosa', 'Branco', 'Castanho']
-export const HATS = ['bone', 'cartola', 'coroa', 'festa', 'gorro', 'cowboy', 'chef', 'flor', 'auscultadores']
+export const COLORS = ['#E5243B', '#2F80ED', '#2FBF71', '#F2B53B', '#8E44AD', '#FF7A1A', '#1ABC9C', '#EC4899', '#F5F5F5', '#6B4F2A', '#D4AF37']
+export const COLOR_NAMES = ['Vermelho', 'Azul', 'Verde', 'Amarelo', 'Roxo', 'Laranja', 'Turquesa', 'Rosa', 'Branco', 'Castanho', 'Dourado']
+// Prémios do "Convida amigos": só aparecem a quem os ganhou (e nunca aos bots).
+export const EXCLUSIVE = { colors: { 10: 3 }, hats: { aureola: 1 } } // item: convites válidos precisos
+export const HATS = ['bone', 'cartola', 'coroa', 'festa', 'gorro', 'cowboy', 'chef', 'flor', 'auscultadores', 'aureola']
 const DIRS = { u: [0, -1], d: [0, 1], l: [-1, 0], r: [1, 0] }
 
 // ---------- Mapa ----------
@@ -115,7 +117,7 @@ function assignLooks(ids, looks = {}) {
       taken.add(c)
     }
   }
-  const free = COLORS.map((_, i) => i).filter((i) => !taken.has(i))
+  const free = COLORS.map((_, i) => i).filter((i) => !taken.has(i) && !(i in EXCLUSIVE.colors))
   ids.forEach((id, i) => {
     if (color[id] == null) color[id] = free.length ? free.shift() : i % COLORS.length
   })

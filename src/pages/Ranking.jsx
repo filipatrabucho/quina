@@ -25,7 +25,7 @@ export function RankList({ cat, list, meId, compact = false }) {
         <li key={x.id} className={`rank-row rank-row--${x.rank}${x.id === meId ? ' rank-row--me' : ''}`}>
           <span className="rank-pos">{x.rank}</span>
           <Avatar src={x.avatar_url} seed={x.id} name={x.username} size={compact ? 26 : 32} />
-          <Link to={`/u/${x.username}`} className="rank-name">{x.username}{x.id === meId ? ' (tu)' : ''}</Link>
+          <Link to={`/u/${x.username}`} className="rank-name">{x.username}{x.amb && <span className="rank-amb" title="Embaixador: trouxe 10 amigos">⭐</span>}{x.id === meId ? ' (tu)' : ''}</Link>
           <span className="rank-val"><b>{x.value}</b> {unitOf(cat, x.value)}</span>
         </li>
       ))}

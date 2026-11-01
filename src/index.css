@@ -4760,3 +4760,48 @@ html.is-game-fs .site-main { flex: 1; display: flex; flex-direction: column; jus
 html.is-game-fs .game-layout { flex: none; width: 100%; }
 html.is-game-fs .game-area { padding-top: 8px; padding-bottom: 8px; }
 @media (max-width: 760px) { html.is-game-fs .site-main { padding-top: 48px; } html.is-game-fs .game-area { padding-top: 8px; } }
+
+/* Janela "cria conta para continuar" (depois da partida grátis) */
+.signup-gate { z-index: 95; }
+.signup-gate__box { max-width: 440px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.signup-gate__box h2 { margin: 4px 0 0; font-size: 1.35rem; line-height: 1.25; }
+.signup-gate__box p { margin: 0; color: #C9C9D3; }
+.signup-gate__ref { padding: 8px 12px; border-radius: 10px; background: rgba(47, 191, 113, 0.14); border: 1px solid rgba(47, 191, 113, 0.45); color: #fff !important; }
+.signup-gate__perks { list-style: none; margin: 4px 0; padding: 0; display: flex; flex-direction: column; gap: 6px; text-align: left; }
+.signup-gate__cta { width: 100%; text-align: center; text-decoration: none; }
+
+/* ---------- Convida amigos ---------- */
+.invite-page { width: 100%; max-width: 760px; margin: 0 auto; padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 14px; }
+.invite-head { text-align: center; }
+.invite-head h1 { margin: 0 0 6px; font: 800 2rem var(--font-display); text-transform: uppercase; color: #fff; }
+.invite-head p { margin: 0 auto; color: var(--stone); max-width: 560px; }
+.invite-card { padding: 16px; border-radius: 14px; background: var(--white); border: 1px solid var(--stone-light); display: flex; flex-direction: column; gap: 10px; }
+.invite-card h2 { margin: 0; font: 700 1.05rem var(--font-display); text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink); }
+.invite-card h3 { margin: 4px 0 0; font-size: 0.95rem; color: var(--ink); }
+.invite-card--cta { align-items: center; text-align: center; }
+.invite-card--cta p { margin: 0; }
+.invite-link { display: flex; gap: 8px; }
+.invite-link input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--stone-light); background: var(--cream-deep); color: var(--ink); font: 600 0.95rem var(--font-body); }
+.invite-link .share-btn { width: auto; flex: none; padding-left: 18px; padding-right: 18px; }
+.invite-share { display: flex; gap: 8px; flex-wrap: wrap; }
+.invite-count { margin: 0; font-size: 1rem; color: var(--stone); }
+.invite-count b { font: 800 2rem var(--font-display); color: #fff; margin-right: 6px; }
+.invite-bar { height: 12px; border-radius: 6px; background: #1E1E28; overflow: hidden; }
+.invite-bar i { display: block; height: 100%; background: linear-gradient(90deg, #2FBF71, #6EE7A0); }
+.invite-rewards, .invite-people, .invite-tiers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.invite-people li { display: flex; align-items: center; gap: 10px; padding: 7px 10px; border-radius: 10px; background: var(--cream-deep); flex-wrap: wrap; }
+.invite-people a { color: var(--ink); font-weight: 600; }
+.invite-people small { color: var(--stone); }
+.invite-people .invite-st { margin-left: auto; }
+.invite-st { font-size: 0.8rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
+.invite-st--ok { background: rgba(47, 191, 113, 0.15); color: #2FBF71; }
+.invite-st--wait { background: rgba(255, 201, 60, 0.12); color: #FFC93C; }
+.invite-st--no { background: rgba(255, 107, 107, 0.12); color: #FF8B8B; }
+.invite-steps { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; color: #C9C9D3; }
+.invite-tiers li { padding: 6px 10px; border-radius: 8px; background: var(--cream-deep); color: #C9C9D3; font-size: 0.92rem; }
+.invite-tiers b { color: #fff; }
+.imp-swatch--locked, .imp-hat--locked { position: relative; opacity: 0.55; cursor: not-allowed; }
+.imp-swatch--locked::after, .imp-hat--locked::after { content: '🔒'; position: absolute; right: -6px; bottom: -6px; font-size: 0.7rem; }
+.imp-look__invite { margin: 0; }
+.rank-amb { margin-left: 4px; font-size: 0.8rem; }
+.bo-sub { margin: 8px 0 0; font: 700 0.95rem var(--font-display); text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink); }

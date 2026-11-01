@@ -71,6 +71,13 @@ function Hat({ hat }) {
           <circle cx="20" cy="3" r="1.9" fill="#FFC93C" stroke={INK} strokeWidth="1" />
         </g>
       )
+    case 'aureola':
+      return (
+        <g>
+          <ellipse cx="20" cy="2.5" rx="9" ry="2.8" fill="none" stroke="#FFD54A" strokeWidth="2.4" />
+          <ellipse cx="20" cy="2.5" rx="9" ry="2.8" fill="none" stroke="#FFF3B0" strokeWidth="0.8" />
+        </g>
+      )
     case 'auscultadores':
       return (
         <g>

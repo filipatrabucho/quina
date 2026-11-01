@@ -269,6 +269,9 @@ begin
   if p_game = 'snake' and p_detail ~ '^[0-9]+$' and p_detail::int >= 40 and award_medal(uid, 'snake-40') then earned := array_append(earned, 'snake-40'); end if;
   if p_game = 'memes' and s.wins >= 3 and award_medal(uid, 'memes-3') then earned := array_append(earned, 'memes-3'); end if;
 
+  -- Se esta conta veio por um convite, vê se o convite já ficou válido.
+  perform check_referral(uid);
+
   return earned;
 end;
 $$;
@@ -756,6 +759,168 @@ end;
 $$;
 grant execute on function public.admin_list_feedback(text, int) to authenticated;
 
+-- ---------- Convida amigos ----------
+-- Quem cria conta através do link de um amigo fica ligado a ele. O convite
+-- só fica VÁLIDO quando a conta nova joga 5 partidas em 2 dias diferentes,
+-- nos primeiros 14 dias. A cada 25 convites válidos fica um vale de 5 €
+-- pendente, que o admin revê e envia à mão (Backoffice > Convites).
+create table if not exists public.referrals (
+  referred_id uuid primary key references public.profiles(id) on delete cascade,
+  referrer_id uuid not null references public.profiles(id) on delete cascade,
+  visitor text,
+  status text not null default 'pendente' check (status in ('pendente', 'valido', 'recusado')),
+  note text,
+  created_at timestamptz not null default now(),
+  validated_at timestamptz
+);
+create index if not exists referrals_referrer_idx on public.referrals (referrer_id, status);
+alter table public.referrals enable row level security;
+drop policy if exists "convites: os meus" on public.referrals;
+create policy "convites: os meus" on public.referrals for select using (auth.uid() in (referrer_id, referred_id));
+
+create table if not exists public.referral_rewards (
+  id bigint generated always as identity primary key,
+  user_id uuid not null references public.profiles(id) on delete cascade,
+  milestone int not null,
+  amount_eur int not null default 5,
+  status text not null default 'pendente' check (status in ('pendente', 'enviado', 'recusado')),
+  note text,
+  created_at timestamptz not null default now(),
+  sent_at timestamptz,
+  unique (user_id, milestone)
+);
+alter table public.referral_rewards enable row level security;
+drop policy if exists "vales: os meus" on public.referral_rewards;
+create policy "vales: os meus" on public.referral_rewards for select using (user_id = auth.uid());
+
+-- Chamado pela conta nova logo depois de a criar (com o código do link).
+create or replace function public.claim_referral(p_code text, p_visitor text default null)
+returns text language plpgsql security definer set search_path = public as $$
+declare
+  me uuid := auth.uid();
+  ref_id uuid;
+  st text := 'pendente';
+  nt text;
+begin
+  if me is null or not exists (select 1 from profiles where id = me) then raise exception 'Precisas de ter conta.'; end if;
+  if exists (select 1 from referrals where referred_id = me) then return 'ja'; end if;
+  -- só contas acabadas de criar contam como convite
+  if (select created_at from profiles where id = me) < now() - interval '3 days' then return 'antiga'; end if;
+  select id into ref_id from profiles where lower(username) = lower(trim(p_code));
+  if ref_id is null or ref_id = me then return 'invalido'; end if;
+  if p_visitor is not null and exists (select 1 from game_plays where user_id = ref_id and visitor = p_visitor) then
+    st := 'recusado';
+    nt := 'criada no mesmo browser de quem convidou';
+  elsif (select count(*) from referrals where referrer_id = ref_id and created_at > now() - interval '1 day') >= 10 then
+    st := 'recusado';
+    nt := 'mais de 10 convites num dia';
+  end if;
+  insert into referrals (referred_id, referrer_id, visitor, status, note) values (me, ref_id, left(p_visitor, 40), st, nt);
+  return st;
+end;
+$$;
+grant execute on function public.claim_referral(text, text) to authenticated;
+
+-- Valida o convite desta conta (se estiver pendente) e dá os prémios a quem convidou.
+create or replace function public.check_referral(p_user uuid)
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  r referrals;
+  n_plays int;
+  n_days int;
+  n_valid int;
+  m int;
+begin
+  select * into r from referrals where referred_id = p_user and status = 'pendente';
+  if not found or r.created_at < now() - interval '14 days' then return; end if;
+  select count(*), count(distinct (created_at at time zone 'Europe/Lisbon')::date) into n_plays, n_days
+    from game_plays where user_id = p_user and kind = 'partida' and created_at >= r.created_at;
+  if n_plays < 5 or n_days < 2 then return; end if;
+  update referrals set status = 'valido', validated_at = now() where referred_id = p_user;
+  select count(*) into n_valid from referrals where referrer_id = r.referrer_id and status = 'valido';
+  if n_valid >= 1 then perform award_medal(r.referrer_id, 'recrutador'); end if;
+  if n_valid >= 10 then perform award_medal(r.referrer_id, 'embaixador'); end if;
+  m := (n_valid / 25) * 25;
+  if m >= 25 then insert into referral_rewards (user_id, milestone) values (r.referrer_id, m) on conflict do nothing; end if;
+end;
+$$;
+revoke execute on function public.check_referral(uuid) from public, anon, authenticated;
+
+-- Os meus convites (para a página "Convida amigos").
+create or replace function public.my_referrals()
+returns json language sql stable security definer set search_path = public as $$
+  select json_build_object(
+    'code', (select username from profiles where id = auth.uid()),
+    'valid', (select count(*) from referrals where referrer_id = auth.uid() and status = 'valido'),
+    'list', (select coalesce(json_agg(x order by x.created_at desc), '[]'::json) from (
+      select p.username, r.status, r.created_at, r.validated_at,
+        r.status = 'pendente' and r.created_at < now() - interval '14 days' as expired,
+        (select count(*) from game_plays g where g.user_id = r.referred_id and g.kind = 'partida' and g.created_at >= r.created_at) as plays,
+        (select count(distinct (g.created_at at time zone 'Europe/Lisbon')::date) from game_plays g where g.user_id = r.referred_id and g.kind = 'partida' and g.created_at >= r.created_at) as days
+      from referrals r join profiles p on p.id = r.referred_id
+      where r.referrer_id = auth.uid()
+      limit 200
+    ) x),
+    'rewards', (select coalesce(json_agg(json_build_object('milestone', milestone, 'amount', amount_eur, 'status', status, 'created_at', created_at, 'sent_at', sent_at) order by milestone), '[]'::json)
+      from referral_rewards where user_id = auth.uid())
+  )
+  where auth.uid() is not null;
+$$;
+grant execute on function public.my_referrals() to authenticated;
+
+-- Backoffice: números dos convites, quem mais convida e vales por enviar.
+create or replace function public.admin_referrals()
+returns json language plpgsql stable security definer set search_path = public as $$
+begin
+  if not exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin') then
+    raise exception 'Só o admin pode ver estes números.';
+  end if;
+  return json_build_object(
+    'totals', (select json_build_object(
+      'all', count(*),
+      'pending', count(*) filter (where status = 'pendente' and created_at >= now() - interval '14 days'),
+      'expired', count(*) filter (where status = 'pendente' and created_at < now() - interval '14 days'),
+      'valid', count(*) filter (where status = 'valido'),
+      'rejected', count(*) filter (where status = 'recusado'),
+      'last30', count(*) filter (where created_at >= now() - interval '30 days'),
+      'valid30', count(*) filter (where status = 'valido' and validated_at >= now() - interval '30 days')
+    ) from referrals),
+    'spent', (select coalesce(sum(amount_eur), 0) from referral_rewards where status = 'enviado'),
+    'top', (select coalesce(json_agg(x order by x.valid desc, x.all_n desc), '[]'::json) from (
+      select p.username, count(*) filter (where r.status = 'valido') as valid, count(*) as all_n,
+        count(*) filter (where r.status = 'recusado') as rejected
+      from referrals r join profiles p on p.id = r.referrer_id
+      group by p.username order by 2 desc, 3 desc limit 20
+    ) x),
+    'rewards', (select coalesce(json_agg(x order by x.created_at desc), '[]'::json) from (
+      select w.id, p.username, w.milestone, w.amount_eur, w.status, w.note, w.created_at, w.sent_at
+      from referral_rewards w join profiles p on p.id = w.user_id
+      order by (w.status = 'pendente') desc, w.created_at desc limit 100
+    ) x),
+    'recent', (select coalesce(json_agg(x order by x.created_at desc), '[]'::json) from (
+      select pf.username as referrer, pr.username as referred, r.status, r.note, r.created_at
+      from referrals r join profiles pf on pf.id = r.referrer_id join profiles pr on pr.id = r.referred_id
+      order by r.created_at desc limit 50
+    ) x)
+  );
+end;
+$$;
+grant execute on function public.admin_referrals() to authenticated;
+
+create or replace function public.admin_set_reward_status(p_id bigint, p_status text, p_note text default null)
+returns void language plpgsql security definer set search_path = public as $$
+begin
+  if not exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin') then
+    raise exception 'Só o admin pode mudar os vales.';
+  end if;
+  if p_status not in ('pendente', 'enviado', 'recusado') then raise exception 'Estado inválido.'; end if;
+  update referral_rewards set status = p_status, note = left(p_note, 300),
+    sent_at = case when p_status = 'enviado' then now() else null end
+  where id = p_id;
+end;
+$$;
+grant execute on function public.admin_set_reward_status(bigint, text, text) to authenticated;
+
 -- ---------- Ranking geral do site (página /ranking) ----------
 -- p_days: 0 = desde sempre; senão os últimos N dias. Para cada categoria
 -- devolve o top (nome público e avatar) e a posição de quem está a ver.
@@ -792,6 +957,7 @@ returns json language sql stable security definer set search_path = public as $$
   ),
   ranked as (
     select p.user_id, pr.username, pr.avatar_url, p.plays, p.wins, p.days, p.games,
+      exists (select 1 from user_medals um where um.user_id = p.user_id and um.medal = 'embaixador') as amb,
       row_number() over (order by p.plays desc, p.wins desc, pr.username) as r_plays,
       row_number() over (order by p.wins desc, p.plays asc, pr.username) as r_wins,
       row_number() over (order by p.days desc, p.plays desc, pr.username) as r_days,
@@ -801,10 +967,10 @@ returns json language sql stable security definer set search_path = public as $$
   )
   select json_build_object(
     'players', (select count(*) from ranked),
-    'plays', (select coalesce(json_agg(json_build_object('rank', r_plays, 'username', username, 'avatar_url', avatar_url, 'id', user_id, 'value', plays) order by r_plays), '[]'::json) from ranked where r_plays <= (select lim from opts)),
-    'wins', (select coalesce(json_agg(json_build_object('rank', r_wins, 'username', username, 'avatar_url', avatar_url, 'id', user_id, 'value', wins) order by r_wins), '[]'::json) from ranked where r_wins <= (select lim from opts) and wins > 0),
-    'days', (select coalesce(json_agg(json_build_object('rank', r_days, 'username', username, 'avatar_url', avatar_url, 'id', user_id, 'value', days) order by r_days), '[]'::json) from ranked where r_days <= (select lim from opts) and days > 0),
-    'games', (select coalesce(json_agg(json_build_object('rank', r_games, 'username', username, 'avatar_url', avatar_url, 'id', user_id, 'value', games) order by r_games), '[]'::json) from ranked where r_games <= (select lim from opts)),
+    'plays', (select coalesce(json_agg(json_build_object('rank', r_plays, 'username', username, 'avatar_url', avatar_url, 'id', user_id, 'value', plays, 'amb', amb) order by r_plays), '[]'::json) from ranked where r_plays <= (select lim from opts)),
+    'wins', (select coalesce(json_agg(json_build_object('rank', r_wins, 'username', username, 'avatar_url', avatar_url, 'id', user_id, 'value', wins, 'amb', amb) order by r_wins), '[]'::json) from ranked where r_wins <= (select lim from opts) and wins > 0),
+    'days', (select coalesce(json_agg(json_build_object('rank', r_days, 'username', username, 'avatar_url', avatar_url, 'id', user_id, 'value', days, 'amb', amb) order by r_days), '[]'::json) from ranked where r_days <= (select lim from opts) and days > 0),
+    'games', (select coalesce(json_agg(json_build_object('rank', r_games, 'username', username, 'avatar_url', avatar_url, 'id', user_id, 'value', games, 'amb', amb) order by r_games), '[]'::json) from ranked where r_games <= (select lim from opts)),
     'me', (select json_build_object('plays', json_build_object('rank', r_plays, 'value', plays), 'wins', json_build_object('rank', case when wins > 0 then r_wins end, 'value', wins),
              'days', json_build_object('rank', case when days > 0 then r_days end, 'value', days), 'games', json_build_object('rank', r_games, 'value', games))
            from ranked where user_id = auth.uid())

@@ -18,6 +18,11 @@ const EXTRA = {
     title: `Ranking dos jogadores: quem joga e ganha mais | ${SITE_NAME}`,
     description: 'O ranking do Tuga Games PT: quem jogou mais partidas, quem ganhou mais, quem joga mais dias seguidos e quem já experimentou mais jogos. Cria conta e entra no top.',
   },
+  '/convidar': {
+    title: `Convida amigos e ganha prémios | ${SITE_NAME}`,
+    description: 'Convida os teus amigos para o Tuga Games: medalhas, itens exclusivos e vales de 5 € a partir de 25 amigos que criam conta e jogam.',
+    noindex: true,
+  },
   '/sobre': { title: `Sobre nós | ${SITE_NAME}`, description: 'O Tuga Games PT é um site de mini-jogos online grátis feito em Portugal: jogos de tabuleiro, palavras, cartas e jogos de festa para jogar sozinho ou com amigos, sem instalar nada.' },
   '/contacto': { title: `Contacto | ${SITE_NAME}`, description: 'Fala com a equipa do Tuga Games PT: sugestões de jogos, erros, pedidos sobre a tua conta e parcerias. Email tuga.games.staff@gmail.com.' },
   '/admin': { title: `Backoffice | ${SITE_NAME}`, description: DEFAULT_DESCRIPTION, noindex: true },

@@ -20,11 +20,13 @@ export const MEDALS = [
   { key: 'emojis-5', name: 'Fala emoji', description: 'Ganha 5 jogos de Emoji Battle.', tier: 'prata', icon: 'laugh' },
   { key: 'bombas-5', name: 'Demolidor', description: 'Ganha 5 rondas de Bombas & Companhia.', tier: 'prata', icon: 'flame' },
   { key: 'colonos-3', name: 'Fundador', description: 'Ganha 3 partidas de Colonos.', tier: 'ouro', icon: 'crown' },
-  { key: 'snake-40', name: 'Cobra gigante', description: 'Faz 40 pontos no Snake.', tier: 'ouro', icon: 'flame' },
+  { key: 'snake-40', name: 'Cobra gigante', description: 'A tua cobra chega a 43 de tamanho no Snake.', tier: 'ouro', icon: 'flame' },
   { key: 'memes-3', name: 'Rei dos memes', description: 'Ganha 3 jogos dos Memes.', tier: 'ouro', icon: 'laugh' },
   { key: 'xadrez-mestre', name: 'Grande mestre', description: 'Vence o bot de xadrez no nível difícil.', tier: 'ouro', icon: 'crown' },
   { key: 'popular', name: 'Popular', description: 'Tem 10 amigos.', tier: 'ouro', icon: 'people' },
   { key: 'conversador', name: 'Conversador', description: 'Envia 100 mensagens.', tier: 'ouro', icon: 'chat' },
+  { key: 'recrutador', name: 'Recrutador', description: 'Um amigo que convidaste criou conta e começou a jogar.', tier: 'prata', icon: 'people' },
+  { key: 'embaixador', name: 'Embaixador', description: 'Trouxeste 10 amigos para o Tuga Games.', tier: 'ouro', icon: 'crown' },
   { key: 'lenda', name: 'Lenda', description: 'Ganha 100 partidas.', tier: 'platina', icon: 'crown' },
 ]
 

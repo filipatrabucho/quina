@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSocial } from '../social/SocialContext.jsx'
 import { adminListUsers, adminSetRole, adminStats, adminPlayStats, adminRecentPlays, adminSetGameBeta, adminSetGamePromoted, adminRetention, adminListFeedback, adminSetFeedbackStatus } from '../lib/social.js'
+import { adminReferrals, adminSetRewardStatus } from '../lib/referral.js'
 import { FEEDBACK_KINDS } from '../components/Feedback.jsx'
 import { GAMES, gameByKey, defaultBeta } from '../data/games.js'
 import Avatar from '../components/Avatar.jsx'
@@ -600,6 +601,96 @@ const FEEDBACK_STATUS = [
 const KIND_LABEL = Object.fromEntries(FEEDBACK_KINDS.map((k) => [k.key, k.label]))
 
 // Feedback dos utilizadores (opiniões, sugestões, erros, ideias de jogos).
+// Convida amigos: números, quem mais convida e vales por enviar.
+const REWARD_LABEL = { pendente: 'Por enviar', enviado: 'Enviado', recusado: 'Recusado' }
+const REF_LABEL = { pendente: 'A confirmar', valido: 'Válido', recusado: 'Recusado' }
+function Referrals() {
+  const [data, setData] = useState(null)
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(null)
+  const load = () => adminReferrals().then(setData, (e) => setError(/admin_referrals|schema cache/.test(e.message) ? 'Falta correr o supabase/schema-social.sql novo no Supabase.' : e.message))
+  useEffect(() => {
+    load()
+  }, [])
+  const setStatus = async (w, status) => {
+    const note = status === 'enviado'
+      ? window.prompt(`Vale de ${w.amount_eur} € para ${w.username}. Nota (ex.: código do vale ou "Instant Gaming, enviado por email"):`, w.note || '')
+      : window.prompt(`Recusar o vale de ${w.username}? Motivo:`, w.note || '')
+    if (note === null) return
+    setBusy(w.id)
+    try {
+      await adminSetRewardStatus(w.id, status, note)
+      await load()
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setBusy(null)
+    }
+  }
+  const t = data?.totals
+  const pendingRewards = (data?.rewards || []).filter((w) => w.status === 'pendente')
+  return (
+    <section className="bo-card" data-testid="bo-referrals">
+      <p className="admin-note" style={{ margin: 0 }}>
+        Um convite fica <b>válido</b> quando a conta nova joga 5 partidas em 2 dias diferentes, nos primeiros 14 dias. A cada 25 válidos, quem convidou ganha um vale de 5 €:
+        aparece aqui <b>por enviar</b> até o enviares (por email, para o endereço da conta) e marcares como enviado.
+      </p>
+      {error && <p className="duel-error">{error}</p>}
+      <div className="bo-stats">
+        <Stat label="Convites (contas criadas)" value={t?.all} hint={t ? `${t.last30} nos últimos 30 dias` : null} />
+        <Stat label="Válidos" value={t?.valid} hint={t ? `${t.valid30} nos últimos 30 dias` : null} />
+        <Stat label="A confirmar / expirados" value={t ? `${t.pending} / ${t.expired}` : null} hint={t ? `${t.rejected} recusados` : null} />
+        <Stat label="Gasto em vales" value={data ? `${data.spent} €` : null} hint={t?.valid ? `${(data.spent / t.valid).toFixed(2)} € por convite válido` : 'ainda nada'} />
+      </div>
+      <h3 className="bo-sub">Vales por enviar ({pendingRewards.length})</h3>
+      <div className="bo-table-wrap">
+        <table className="bo-table" data-testid="bo-rewards">
+          <thead><tr><th>Quem</th><th className="bo-num">Convites</th><th className="bo-num">Valor</th><th>Estado</th><th>Nota</th><th className="bo-num">Ações</th></tr></thead>
+          <tbody>
+            {(data?.rewards || []).map((w) => (
+              <tr key={w.id}>
+                <td><Link to={`/u/${w.username}`}>{w.username}</Link></td>
+                <td className="bo-num">{w.milestone}</td>
+                <td className="bo-num">{w.amount_eur} €</td>
+                <td>{REWARD_LABEL[w.status]}{w.sent_at ? ` (${ago(w.sent_at)})` : ''}</td>
+                <td className="bo-email">{w.note || '–'}</td>
+                <td className="bo-num">
+                  {w.status !== 'enviado' && <button type="button" className="btn btn--small btn--primary" disabled={busy === w.id} onClick={() => setStatus(w, 'enviado')} data-testid={`bo-reward-sent-${w.id}`}>Marcar como enviado</button>}{' '}
+                  {w.status === 'pendente' && <button type="button" className="btn btn--small btn--outline" disabled={busy === w.id} onClick={() => setStatus(w, 'recusado')}>Recusar</button>}
+                </td>
+              </tr>
+            ))}
+            {data && !data.rewards.length && <tr><td colSpan={6} className="bo-empty">Ainda não há vales. Aparecem quando alguém chega aos 25 convites válidos.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+      <h3 className="bo-sub">Quem mais convida</h3>
+      <div className="bo-table-wrap">
+        <table className="bo-table" data-testid="bo-ref-top">
+          <thead><tr><th>Quem</th><th className="bo-num">Válidos</th><th className="bo-num">Contas criadas</th><th className="bo-num">Recusados</th></tr></thead>
+          <tbody>
+            {(data?.top || []).map((x) => (
+              <tr key={x.username}><td><Link to={`/u/${x.username}`}>{x.username}</Link></td><td className="bo-num"><b>{x.valid}</b></td><td className="bo-num">{x.all_n}</td><td className="bo-num">{x.rejected}</td></tr>
+            ))}
+            {data && !data.top.length && <tr><td colSpan={4} className="bo-empty">Ainda ninguém convidou ninguém.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+      <h3 className="bo-sub">Últimos convites</h3>
+      <div className="bo-table-wrap">
+        <table className="bo-table" data-testid="bo-ref-recent">
+          <thead><tr><th>Quando</th><th>Quem convidou</th><th>Conta nova</th><th>Estado</th><th>Nota</th></tr></thead>
+          <tbody>
+            {(data?.recent || []).map((r, i) => (
+              <tr key={i}><td>{ago(r.created_at)}</td><td>{r.referrer}</td><td>{r.referred}</td><td>{REF_LABEL[r.status]}</td><td className="bo-email">{r.note || '–'}</td></tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
+
 function FeedbackList() {
   const [filter, setFilter] = useState('novo')
   const [list, setList] = useState(null)
@@ -701,6 +792,7 @@ export default function Admin() {
         <button type="button" role="tab" aria-selected={tab === 'plays'} className={`bo-tab${tab === 'plays' ? ' bo-tab--on' : ''}`} onClick={() => setTab('plays')} data-testid="bo-tab-plays">Quem jogou</button>
         <button type="button" role="tab" aria-selected={tab === 'ranking'} className={`bo-tab${tab === 'ranking' ? ' bo-tab--on' : ''}`} onClick={() => setTab('ranking')} data-testid="bo-tab-ranking">Ranking</button>
         <button type="button" role="tab" aria-selected={tab === 'activity'} className={`bo-tab${tab === 'activity' ? ' bo-tab--on' : ''}`} onClick={() => setTab('activity')} data-testid="bo-tab-activity">Atividade</button>
+        <button type="button" role="tab" aria-selected={tab === 'convites'} className={`bo-tab${tab === 'convites' ? ' bo-tab--on' : ''}`} onClick={() => setTab('convites')} data-testid="bo-tab-convites">Convites</button>
         <button type="button" role="tab" aria-selected={tab === 'feedback'} className={`bo-tab${tab === 'feedback' ? ' bo-tab--on' : ''}`} onClick={() => setTab('feedback')} data-testid="bo-tab-feedback">Feedback</button>
         <button type="button" role="tab" aria-selected={tab === 'users'} className={`bo-tab${tab === 'users' ? ' bo-tab--on' : ''}`} onClick={() => setTab('users')}>Utilizadores e testers</button>
         <button type="button" role="tab" aria-selected={tab === 'games'} className={`bo-tab${tab === 'games' ? ' bo-tab--on' : ''}`} onClick={() => setTab('games')}>Jogos</button>
@@ -709,6 +801,7 @@ export default function Admin() {
       {tab === 'ranking' && <Ranking />}
       {tab === 'activity' && <Activity />}
       {tab === 'feedback' && <FeedbackList />}
+      {tab === 'convites' && <Referrals />}
       {tab === 'users' && <Users myId={s.myId} onChanged={loadStats} />}
       {tab === 'games' && <Games stats={stats} social={s} />}
     </main>

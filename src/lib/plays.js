@@ -43,6 +43,15 @@ export function logOpen(game) {
   logPlay('abriu', game)
 }
 
+// Quantas partidas já acabou sem conta (neste browser).
+export function guestPlays() {
+  try {
+    return Number(localStorage.getItem(GUEST_PLAYS_KEY) || 0)
+  } catch {
+    return 0
+  }
+}
+
 // Partidas acabadas sem conta (para sugerir criar conta de vez em quando).
 export function countGuestPlay() {
   try {

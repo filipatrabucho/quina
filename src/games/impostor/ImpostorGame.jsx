@@ -8,8 +8,9 @@ import { Link } from 'react-router-dom'
 import { recordResultOnce } from '../../lib/social.js'
 import { useAuth } from '../../hooks/useAuth.js'
 import { hasAccount, loadLook, saveLook } from './look.js'
+import { getMyReferrals } from '../../lib/referral.js'
 import {
-  W, H, ROOMS, CORRIDORS, STATIONS, BUTTON, VENTS, COLORS, COLOR_NAMES, HATS, BOT_NAMES, VISION,
+  W, H, ROOMS, CORRIDORS, STATIONS, BUTTON, VENTS, COLORS, COLOR_NAMES, HATS, EXCLUSIVE, BOT_NAMES, VISION,
   COOLDOWN_OPTIONS, MEETING_OPTIONS, KILL_COOLDOWN_MS, MEETING_MS, SAY_MAX,
   dist, roomAt, ventById, visionOf, taskProgress, actionsFor, startGame, applyAction, tick, impostorOnline,
 } from './impostorLogic.js'
@@ -17,7 +18,7 @@ import {
 const KEYS = { ArrowUp: 'u', ArrowDown: 'd', ArrowLeft: 'l', ArrowRight: 'r', w: 'u', s: 'd', a: 'l', d: 'r', W: 'u', S: 'd', A: 'l', D: 'r' }
 const STATION = Object.fromEntries(STATIONS.map((s) => [s.id, s]))
 const secs = (ms) => Math.max(0, Math.ceil(ms / 1000))
-const HAT_NAMES = { bone: 'Boné', cartola: 'Cartola', coroa: 'Coroa', festa: 'Chapéu de festa', gorro: 'Gorro', cowboy: 'Cowboy', chef: 'Chef', flor: 'Flor', auscultadores: 'Auscultadores' }
+const HAT_NAMES = { bone: 'Boné', cartola: 'Cartola', coroa: 'Coroa', festa: 'Chapéu de festa', gorro: 'Gorro', cowboy: 'Cowboy', chef: 'Chef', flor: 'Flor', auscultadores: 'Auscultadores', aureola: 'Auréola' }
 // A personagem de um jogador (cor + chapéu).
 const Char = ({ p, size, dead, ghost }) => <Astro color={COLORS[p.color]} hat={dead ? null : p.hat} dead={dead} ghost={ghost} size={size} />
 
@@ -709,6 +710,14 @@ function useResult(game, meId, key) {
 // Cor e chapéu: só com conta (ficam guardados na conta).
 function LookPicker({ user, look, onChange, taken = new Set() }) {
   const [saved, setSaved] = useState('')
+  // Itens exclusivos do "Convida amigos" (quantos convites válidos tenho).
+  const [valid, setValid] = useState(0)
+  useEffect(() => {
+    if (hasAccount(user)) getMyReferrals().then((d) => setValid(Number(d?.valid) || 0), () => {})
+  }, [user])
+  const needColor = (i) => (i in EXCLUSIVE.colors && valid < EXCLUSIVE.colors[i] ? EXCLUSIVE.colors[i] : 0)
+  const needHat = (h) => (h && h in EXCLUSIVE.hats && valid < EXCLUSIVE.hats[h] ? EXCLUSIVE.hats[h] : 0)
+  const lockText = (n) => `Exclusivo: convida ${n} ${n === 1 ? 'amigo' : 'amigos'} (convites válidos) para desbloquear`
   if (!hasAccount(user)) {
     return (
       <div className="imp-look imp-look--locked" data-testid="imp-look-locked">
@@ -737,10 +746,10 @@ function LookPicker({ user, look, onChange, taken = new Set() }) {
             <button
               key={c}
               type="button"
-              className={`imp-swatch${color === i ? ' imp-swatch--on' : ''}`}
+              className={`imp-swatch${color === i ? ' imp-swatch--on' : ''}${needColor(i) ? ' imp-swatch--locked' : ''}`}
               style={{ background: c }}
-              disabled={taken.has(i) && color !== i}
-              title={taken.has(i) && color !== i ? `${COLOR_NAMES[i]} (já escolhida)` : COLOR_NAMES[i]}
+              disabled={(taken.has(i) && color !== i) || !!needColor(i)}
+              title={needColor(i) ? `${COLOR_NAMES[i]}. ${lockText(needColor(i))}` : taken.has(i) && color !== i ? `${COLOR_NAMES[i]} (já escolhida)` : COLOR_NAMES[i]}
               aria-label={COLOR_NAMES[i]}
               aria-pressed={color === i}
               onClick={() => set({ color: i })}
@@ -754,8 +763,9 @@ function LookPicker({ user, look, onChange, taken = new Set() }) {
             <button
               key={h || 'nenhum'}
               type="button"
-              className={`imp-hat${(look?.hat ?? null) === h ? ' imp-hat--on' : ''}`}
-              title={h ? HAT_NAMES[h] : 'Sem chapéu'}
+              className={`imp-hat${(look?.hat ?? null) === h ? ' imp-hat--on' : ''}${needHat(h) ? ' imp-hat--locked' : ''}`}
+              disabled={!!needHat(h)}
+              title={needHat(h) ? `${HAT_NAMES[h]}. ${lockText(needHat(h))}` : h ? HAT_NAMES[h] : 'Sem chapéu'}
               aria-label={h ? HAT_NAMES[h] : 'Sem chapéu'}
               aria-pressed={(look?.hat ?? null) === h}
               onClick={() => set({ hat: h })}
@@ -766,6 +776,7 @@ function LookPicker({ user, look, onChange, taken = new Set() }) {
           ))}
         </div>
         {saved && <p className="modal-note imp-look__saved">{saved}</p>}
+        <p className="modal-note imp-look__invite">🎁 Os itens com cadeado ganham-se a <Link to="/convidar">convidar amigos</Link>.</p>
       </div>
     </div>
   )
