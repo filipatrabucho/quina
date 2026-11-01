@@ -10,6 +10,8 @@ import GoogleButton from '../GoogleButton.jsx'
 import { track } from '../../lib/analytics.js'
 import LoginGate from '../LoginGate.jsx'
 import RoomChat from './RoomChat.jsx'
+import RoomVoice from './RoomVoice.jsx'
+import { useSocial } from '../../social/SocialContext.jsx'
 
 export function PlayerChip({ player, you, online, extra }) {
   return (
@@ -92,6 +94,8 @@ function Room({ game, code, me, logic, renderGame, renderLobbyOptions, prepareSt
   const room = useGameRoom({ game, code, me, logic })
   const { state, amHost, online, hostOnline, error, setError, notFound, dispatch, chat, sendChat } = room
   const [starting, setStarting] = useState(false)
+  // Chat de voz: em beta, só para o admin e os testers.
+  const voiceBeta = !!useSocial()?.canSeeBeta
 
   const start = async () => {
     setStarting(true)
@@ -131,7 +135,12 @@ function Room({ game, code, me, logic, renderGame, renderLobbyOptions, prepareSt
   )
   const seated = state.players.some((p) => p.id === me.id)
 
-  const roomChat = <RoomChat chat={chat} sendChat={sendChat} players={state.players} me={me} />
+  const roomChat = (
+    <>
+      <RoomChat chat={chat} sendChat={sendChat} players={state.players} me={me} />
+      {voiceBeta && <RoomVoice game={game} code={code} me={me} amHost={amHost} hostId={state.hostId} />}
+    </>
+  )
   if (state.status === 'lobby') {
     const full = state.players.length >= state.maxPlayers
     return withChat(

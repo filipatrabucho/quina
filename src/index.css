@@ -4832,3 +4832,25 @@ html.is-game-fs .game-area { padding-top: 8px; padding-bottom: 8px; }
   .room-chat-btn { width: 42px; height: 42px; }
 }
 @media (prefers-reduced-motion: reduce) { .room-chat-btn--new { animation: none; } }
+
+/* ---------- Chat de voz da sala (beta) ---------- */
+.room-voice-btn { position: fixed; right: 10px; top: calc(50% + 34px); transform: translateY(-50%); z-index: 56; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.2); background: rgba(20, 20, 30, 0.85); color: #fff; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4); }
+.room-voice-btn--on { background: #1E8A50; border-color: #2FBF71; }
+.room-voice-btn--talk { box-shadow: 0 0 0 4px rgba(47, 191, 113, 0.45), 0 6px 18px rgba(0, 0, 0, 0.4); }
+.room-voice-btn .chat-fab__badge { position: absolute; top: -4px; left: -4px; }
+.room-chat-btn { top: calc(50% - 26px); }
+.room-voice { height: auto; max-height: min(460px, 75vh); }
+.room-voice__beta { background: rgba(255, 210, 63, 0.15); color: #FFD23F !important; padding: 1px 6px; border-radius: 5px; margin-right: 0 !important; font-weight: 700; }
+.room-voice__intro { display: flex; flex-direction: column; gap: 8px; text-align: center; }
+.room-voice__intro p { margin: 0; color: #C9C9D3; font-size: 0.9rem; }
+.room-voice__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.room-voice__list li { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 10px; background: var(--cream-deep); }
+.room-voice__list li span { flex: 1; min-width: 0; display: flex; flex-direction: column; font-size: 0.9rem; color: var(--ink); }
+.room-voice__list li small { color: var(--stone); font-size: 0.72rem; }
+.room-voice__list li.talking { box-shadow: inset 0 0 0 2px #2FBF71; }
+.room-voice__list li.talking img, .room-voice__list li.talking .avatar { box-shadow: 0 0 0 2px #2FBF71; border-radius: 50%; }
+.room-voice__alone { justify-content: center; color: var(--stone); font-size: 0.85rem; }
+.room-voice__bar { display: flex; gap: 6px; padding: 8px; border-top: 1px solid var(--stone-light); }
+.room-voice__bar .mode-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.room-voice__bar .share-btn { width: auto; flex: none; padding: 0 14px; }
+@media (max-width: 640px) { .room-voice-btn { width: 42px; height: 42px; top: calc(50% + 30px); } .room-chat-btn { top: calc(50% - 22px); } }
