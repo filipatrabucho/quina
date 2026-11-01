@@ -121,8 +121,7 @@ export const GAMES = [
     description: 'Chega o mais perto de 21 sem passar e ganha à banca. Sozinho ou numa mesa com amigos, com fichas a fingir.',
     tags: ['solo', 'online'],
     players: '1 a 5',
-    badge: 'Beta',
-    beta: true,
+    badge: 'Novo',
   },
   {
     key: 'poker',
@@ -132,8 +131,7 @@ export const GAMES = [
     description: "Torneio de Texas Hold'em: blinds a subir, all-ins e bluffs. Contra bots ou numa mesa com amigos, com fichas a fingir.",
     tags: ['bot', 'online'],
     players: '2 a 6',
-    badge: 'Beta',
-    beta: true,
+    badge: 'Novo',
   },
   {
     key: 'emojis',
@@ -275,8 +273,7 @@ export const GAMES = [
     description: 'Organiza os azulejos numerados por ordem crescente antes dos adversários.',
     tags: ['diario', 'online'],
     players: '1 a 5',
-    badge: 'Beta',
-    beta: true,
+    badge: 'Novo',
   },
 ]
 
