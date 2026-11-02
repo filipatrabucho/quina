@@ -868,6 +868,31 @@ returns json language sql stable security definer set search_path = public as $$
 $$;
 grant execute on function public.my_referrals() to authenticated;
 
+-- Visitas aos links de convite (uma por browser e por link), para saber quem
+-- anda a partilhar o link mesmo antes de alguém criar conta.
+create table if not exists public.referral_visits (
+  id bigint generated always as identity primary key,
+  referrer_id uuid not null references public.profiles(id) on delete cascade,
+  visitor text not null,
+  created_at timestamptz not null default now()
+);
+create unique index if not exists referral_visits_unica on public.referral_visits (referrer_id, visitor);
+alter table public.referral_visits enable row level security;
+
+create or replace function public.log_referral_visit(p_code text, p_visitor text)
+returns void language plpgsql security definer set search_path = public as $$
+declare
+  ref_id uuid;
+begin
+  if p_visitor is null or p_visitor !~ '^[A-Za-z0-9_-]{6,40}$' then return; end if;
+  select id into ref_id from profiles where lower(username) = lower(trim(p_code));
+  -- quem abre o próprio link não conta
+  if ref_id is null or ref_id = auth.uid() then return; end if;
+  insert into referral_visits (referrer_id, visitor) values (ref_id, p_visitor) on conflict do nothing;
+end;
+$$;
+grant execute on function public.log_referral_visit(text, text) to anon, authenticated;
+
 -- Backoffice: números dos convites, quem mais convida e vales por enviar.
 create or replace function public.admin_referrals()
 returns json language plpgsql stable security definer set search_path = public as $$
@@ -886,11 +911,25 @@ begin
       'valid30', count(*) filter (where status = 'valido' and validated_at >= now() - interval '30 days')
     ) from referrals),
     'spent', (select coalesce(sum(amount_eur), 0) from referral_rewards where status = 'enviado'),
-    'top', (select coalesce(json_agg(x order by x.valid desc, x.all_n desc), '[]'::json) from (
-      select p.username, count(*) filter (where r.status = 'valido') as valid, count(*) as all_n,
-        count(*) filter (where r.status = 'recusado') as rejected
-      from referrals r join profiles p on p.id = r.referrer_id
-      group by p.username order by 2 desc, 3 desc limit 20
+    'visits', (select count(*) from referral_visits),
+    'top', (select coalesce(json_agg(x order by x.valid desc, x.all_n desc, x.visits desc), '[]'::json) from (
+      select p.username, p.avatar_url, p.id,
+        (select count(*) from referral_visits v where v.referrer_id = p.id) as visits,
+        count(r.referred_id) as all_n,
+        count(r.referred_id) filter (where r.status = 'pendente' and r.created_at >= now() - interval '14 days') as pending,
+        count(r.referred_id) filter (where r.status = 'valido') as valid,
+        count(r.referred_id) filter (where r.status = 'recusado') as rejected,
+        greatest(max(r.created_at), (select max(v.created_at) from referral_visits v where v.referrer_id = p.id)) as last_at
+      from profiles p left join referrals r on r.referrer_id = p.id
+      where exists (select 1 from referrals r2 where r2.referrer_id = p.id) or exists (select 1 from referral_visits v2 where v2.referrer_id = p.id)
+      group by p.id, p.username, p.avatar_url
+      order by valid desc, all_n desc, visits desc limit 100
+    ) x),
+    'rooms', (select coalesce(json_agg(x order by x.sent desc), '[]'::json) from (
+      select p.username, p.avatar_url, p.id, count(*) as sent, count(distinct m.recipient) as friends, max(m.created_at) as last_at
+      from messages m join profiles p on p.id = m.sender
+      where m.kind = 'convite' and m.created_at >= now() - interval '30 days'
+      group by p.id, p.username, p.avatar_url order by sent desc limit 50
     ) x),
     'rewards', (select coalesce(json_agg(x order by x.created_at desc), '[]'::json) from (
       select w.id, p.username, w.milestone, w.amount_eur, w.status, w.note, w.created_at, w.sent_at
@@ -906,6 +945,25 @@ begin
 end;
 $$;
 grant execute on function public.admin_referrals() to authenticated;
+
+-- Backoffice: quem esta pessoa convidou (com o progresso de cada um).
+create or replace function public.admin_referrer_detail(p_user uuid)
+returns json language plpgsql stable security definer set search_path = public as $$
+begin
+  if not exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin') then
+    raise exception 'Só o admin pode ver estes números.';
+  end if;
+  return (select coalesce(json_agg(x order by x.created_at desc), '[]'::json) from (
+    select p.username, r.status, r.note, r.created_at, r.validated_at,
+      r.status = 'pendente' and r.created_at < now() - interval '14 days' as expired,
+      (select count(*) from game_plays g where g.user_id = r.referred_id and g.kind = 'partida' and g.created_at >= r.created_at) as plays,
+      (select count(distinct (g.created_at at time zone 'Europe/Lisbon')::date) from game_plays g where g.user_id = r.referred_id and g.kind = 'partida' and g.created_at >= r.created_at) as days
+    from referrals r join profiles p on p.id = r.referred_id
+    where r.referrer_id = p_user
+  ) x);
+end;
+$$;
+grant execute on function public.admin_referrer_detail(uuid) to authenticated;
 
 create or replace function public.admin_set_reward_status(p_id bigint, p_status text, p_note text default null)
 returns void language plpgsql security definer set search_path = public as $$

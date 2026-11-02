@@ -25,6 +25,8 @@ export function captureRef() {
     if (code && /^[A-Za-z0-9_.]{3,20}$/.test(code)) {
       localStorage.setItem(KEY, JSON.stringify({ code, at: Date.now() }))
       track('referral_click', { code })
+      // Conta a visita para o Backoffice (uma por browser e por link).
+      supabase.rpc('log_referral_visit', { p_code: code, p_visitor: visitorId() }).then(() => {}, () => {})
     }
   } catch {
     // sem localStorage não há convite
@@ -75,6 +77,12 @@ export async function getMyReferrals() {
 
 export async function adminReferrals() {
   const { data, error } = await supabase.rpc('admin_referrals')
+  if (error) throw new Error(error.message)
+  return data
+}
+
+export async function adminReferrerDetail(userId) {
+  const { data, error } = await supabase.rpc('admin_referrer_detail', { p_user: userId })
   if (error) throw new Error(error.message)
   return data
 }

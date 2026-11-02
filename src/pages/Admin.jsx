@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSocial } from '../social/SocialContext.jsx'
 import { adminListUsers, adminSetRole, adminStats, adminPlayStats, adminRecentPlays, adminSetGameBeta, adminSetGamePromoted, adminRetention, adminListFeedback, adminSetFeedbackStatus } from '../lib/social.js'
-import { adminReferrals, adminSetRewardStatus } from '../lib/referral.js'
+import { adminReferrals, adminSetRewardStatus, adminReferrerDetail, REF_RULES } from '../lib/referral.js'
 import { FEEDBACK_KINDS } from '../components/Feedback.jsx'
 import { GAMES, gameByKey, defaultBeta } from '../data/games.js'
 import Avatar from '../components/Avatar.jsx'
@@ -604,6 +604,52 @@ const KIND_LABEL = Object.fromEntries(FEEDBACK_KINDS.map((k) => [k.key, k.label]
 // Convida amigos: números, quem mais convida e vales por enviar.
 const REWARD_LABEL = { pendente: 'Por enviar', enviado: 'Enviado', recusado: 'Recusado' }
 const REF_LABEL = { pendente: 'A confirmar', valido: 'Válido', recusado: 'Recusado' }
+// Uma pessoa que convida: ao tocar, mostra quem convidou e o progresso de cada um.
+function ReferrerRow({ x }) {
+  const [open, setOpen] = useState(false)
+  const [list, setList] = useState(null)
+  const [error, setError] = useState('')
+  const toggle = () => {
+    setOpen((o) => !o)
+    if (!list) adminReferrerDetail(x.id).then(setList, (e) => setError(e.message))
+  }
+  const statusOf = (r) =>
+    r.status === 'valido' ? 'Válido ✓' : r.status === 'recusado' ? `Recusado${r.note ? ` (${r.note})` : ''}` : r.expired ? 'Expirou' : `A confirmar: ${Math.min(r.plays, REF_RULES.plays)}/${REF_RULES.plays} partidas, ${Math.min(r.days, REF_RULES.days)}/${REF_RULES.days} dias`
+  return (
+    <>
+      <tr className="bo-ref-row" onClick={toggle} aria-expanded={open} data-testid={`bo-ref-${x.username}`}>
+        <td><span className="bo-user"><span className="bo-ref-caret" aria-hidden="true">{open ? '▾' : '▸'}</span><Avatar src={x.avatar_url} seed={x.id} name={x.username} size={26} /><b>{x.username}</b></span></td>
+        <td className="bo-num">{x.visits}</td>
+        <td className="bo-num">{x.all_n}</td>
+        <td className="bo-num">{x.pending}</td>
+        <td className="bo-num"><b>{x.valid}</b></td>
+        <td className="bo-num">{x.rejected}</td>
+        <td className="bo-num">{x.last_at ? ago(x.last_at) : '–'}</td>
+      </tr>
+      {open && (
+        <tr className="bo-ref-detail">
+          <td colSpan={7}>
+            {error && <p className="duel-error">{error}</p>}
+            {!list && !error && <p className="bo-empty">A carregar…</p>}
+            {list && !list.length && <p className="bo-empty">Ainda ninguém criou conta com o link de {x.username} ({x.visits} {x.visits === 1 ? 'pessoa abriu' : 'pessoas abriram'} o link).</p>}
+            {list && list.length > 0 && (
+              <ul className="bo-ref-list" data-testid={`bo-ref-list-${x.username}`}>
+                {list.map((r) => (
+                  <li key={r.username}>
+                    <Link to={`/u/${r.username}`}>{r.username}</Link>
+                    <small>conta criada {ago(r.created_at)}</small>
+                    <span className={`invite-st invite-st--${r.status === 'valido' ? 'ok' : r.status === 'recusado' || r.expired ? 'no' : 'wait'}`}>{statusOf(r)}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </td>
+        </tr>
+      )}
+    </>
+  )
+}
+
 function Referrals() {
   const [data, setData] = useState(null)
   const [error, setError] = useState('')
@@ -637,6 +683,7 @@ function Referrals() {
       </p>
       {error && <p className="duel-error">{error}</p>}
       <div className="bo-stats">
+        <Stat label="Abriram links de convite" value={data?.visits} hint="browsers diferentes" />
         <Stat label="Convites (contas criadas)" value={t?.all} hint={t ? `${t.last30} nos últimos 30 dias` : null} />
         <Stat label="Válidos" value={t?.valid} hint={t ? `${t.valid30} nos últimos 30 dias` : null} />
         <Stat label="A confirmar / expirados" value={t ? `${t.pending} / ${t.expired}` : null} hint={t ? `${t.rejected} recusados` : null} />
@@ -664,15 +711,35 @@ function Referrals() {
           </tbody>
         </table>
       </div>
-      <h3 className="bo-sub">Quem mais convida</h3>
+      <h3 className="bo-sub">Quem está a convidar pessoas novas (link de convite)</h3>
+      <p className="admin-note" style={{ margin: 0 }}>Toca numa pessoa para ver quem ela convidou. <b>Abriram o link</b> conta cada browser uma vez, mesmo sem criar conta.</p>
       <div className="bo-table-wrap">
         <table className="bo-table" data-testid="bo-ref-top">
-          <thead><tr><th>Quem</th><th className="bo-num">Válidos</th><th className="bo-num">Contas criadas</th><th className="bo-num">Recusados</th></tr></thead>
+          <thead>
+            <tr><th>Quem</th><th className="bo-num">Abriram o link</th><th className="bo-num">Contas criadas</th><th className="bo-num">A confirmar</th><th className="bo-num">Válidos</th><th className="bo-num">Recusados</th><th className="bo-num">Último</th></tr>
+          </thead>
           <tbody>
             {(data?.top || []).map((x) => (
-              <tr key={x.username}><td><Link to={`/u/${x.username}`}>{x.username}</Link></td><td className="bo-num"><b>{x.valid}</b></td><td className="bo-num">{x.all_n}</td><td className="bo-num">{x.rejected}</td></tr>
+              <ReferrerRow key={x.id} x={x} />
             ))}
-            {data && !data.top.length && <tr><td colSpan={4} className="bo-empty">Ainda ninguém convidou ninguém.</td></tr>}
+            {data && !data.top.length && <tr><td colSpan={7} className="bo-empty">Ainda ninguém partilhou o link de convite.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+      <h3 className="bo-sub">Quem convida amigos para jogar (salas, últimos 30 dias)</h3>
+      <div className="bo-table-wrap">
+        <table className="bo-table" data-testid="bo-room-invites">
+          <thead><tr><th>Quem</th><th className="bo-num">Convites enviados</th><th className="bo-num">Amigos diferentes</th><th className="bo-num">Último</th></tr></thead>
+          <tbody>
+            {(data?.rooms || []).map((x) => (
+              <tr key={x.id}>
+                <td><Link to={`/u/${x.username}`} className="bo-user"><Avatar src={x.avatar_url} seed={x.id} name={x.username} size={26} /><b>{x.username}</b></Link></td>
+                <td className="bo-num"><b>{x.sent}</b></td>
+                <td className="bo-num">{x.friends}</td>
+                <td className="bo-num">{ago(x.last_at)}</td>
+              </tr>
+            ))}
+            {data && !(data.rooms || []).length && <tr><td colSpan={4} className="bo-empty">Ninguém convidou amigos para salas nos últimos 30 dias.</td></tr>}
           </tbody>
         </table>
       </div>

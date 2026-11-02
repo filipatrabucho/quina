@@ -4863,3 +4863,11 @@ html.is-game-fs .game-area { padding-top: 8px; padding-bottom: 8px; }
 .invite-modal .invite-bar { flex: none; }
 /* Com uma janela aberta, os botões do chat e da voz da sala não ficam por cima dela. */
 body:has(.modal-overlay:not([hidden])) .room-chat-btn, body:has(.modal-overlay:not([hidden])) .room-voice-btn { display: none; }
+.bo-ref-row { cursor: pointer; }
+.bo-ref-caret { width: 12px; color: var(--stone); }
+.bo-ref-detail td { background: #14141C; }
+.bo-ref-list { list-style: none; margin: 4px 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+.bo-ref-list li { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 6px 10px; border-radius: 8px; background: var(--cream-deep); }
+.bo-ref-list a { color: var(--ink); font-weight: 600; }
+.bo-ref-list small { color: var(--stone); }
+.bo-ref-list .invite-st { margin-left: auto; }
