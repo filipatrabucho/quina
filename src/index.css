@@ -4871,3 +4871,5 @@ body:has(.modal-overlay:not([hidden])) .room-chat-btn, body:has(.modal-overlay:n
 .bo-ref-list a { color: var(--ink); font-weight: 600; }
 .bo-ref-list small { color: var(--stone); }
 .bo-ref-list .invite-st { margin-left: auto; }
+.cards-pile { position: relative; }
+.cards-pending { position: absolute; top: -10px; right: -12px; padding: 3px 9px; border-radius: 999px; background: #E5243B; color: #fff; font: 900 1rem var(--font-display); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); animation: room-chat-pulse 1.2s ease-in-out infinite; }

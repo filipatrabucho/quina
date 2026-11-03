@@ -30,7 +30,10 @@ export function shuffle(list, rand = Math.random) {
 
 export const isWild = (card) => card.color === null
 
-export function canPlay(card, top, color) {
+// pending: cartas que o jogador da vez tem de comprar por causa de +2 acumulados.
+// Enquanto houver, só serve outro +2 (que acumula para o seguinte).
+export function canPlay(card, top, color, pending = 0) {
+  if (pending > 0) return card.value === '+2'
   if (isWild(card)) return true
   return card.color === color || card.value === top.value
 }
@@ -73,6 +76,7 @@ export function startGame(playerIds, rand = Math.random) {
     turn: 0,
     direction: 1,
     drawnThisTurn: null, // id da carta comprada nesta vez (só essa pode ser jogada)
+    pending: 0, // cartas a comprar por +2 acumulados
     winner: null,
     lastAction: null,
     round: 1,
@@ -86,13 +90,13 @@ export function currentPlayer(game) {
 
 export const isNumber = (card) => /^\d$/.test(card.value)
 
-// Cartas que podem ir juntas com esta (mesmo número, de qualquer cor).
-export function sameNumber(hand, card) {
-  if (!isNumber(card)) return []
+// Cartas que podem ir juntas com esta: iguais (mesmo número ou mesmo símbolo), de qualquer cor.
+export function sameValue(hand, card) {
   return hand.filter((c) => c.id !== card.id && c.value === card.value)
 }
 
-// extraIds: outras cartas com o mesmo número, jogadas logo a seguir (a última fica em cima e manda na cor).
+// extraIds: outras cartas iguais, jogadas logo a seguir (a última fica em cima e manda na cor).
+// Os efeitos somam-se: Saltar x2 salta 2 jogadores, +2 x2 acumula +4, +4 x2 dá 8 a comprar...
 export function playCard(game, playerId, cardId, chosenColor, extraIds = []) {
   if (game.winner) throw new Error('A partida já acabou.')
   if (currentPlayer(game) !== playerId) throw new Error('Não é a tua vez.')
@@ -101,13 +105,16 @@ export function playCard(game, playerId, cardId, chosenColor, extraIds = []) {
   if (!card) throw new Error('Não tens essa carta.')
   if (game.drawnThisTurn != null && card.id !== game.drawnThisTurn) throw new Error('Depois de comprar só podes jogar a carta comprada.')
   const top = game.discard[game.discard.length - 1]
-  if (!canPlay(card, top, game.color)) throw new Error('Essa carta não serve.')
+  const pending = game.pending || 0
+  if (pending > 0 && card.value !== '+2') throw new Error(`Responde com um +2 ou compra ${pending} cartas.`)
+  if (!canPlay(card, top, game.color, pending)) throw new Error('Essa carta não serve.')
   if (isWild(card) && !COLORS.includes(chosenColor)) throw new Error('Escolhe uma cor.')
   const extras = []
   for (const id of extraIds || []) {
     const c = hand.find((x) => x.id === id)
     if (!c || id === cardId || extras.includes(c)) throw new Error('Não tens essa carta.')
-    if (!isNumber(card) || c.value !== card.value) throw new Error('Só podes juntar cartas com o mesmo número.')
+    if (c.value !== card.value) throw new Error('Só podes juntar cartas iguais.')
+    if (game.drawnThisTurn != null) throw new Error('Depois de comprar só podes jogar a carta comprada.')
     extras.push(c)
   }
   const played = [card, ...extras]
@@ -120,6 +127,7 @@ export function playCard(game, playerId, cardId, chosenColor, extraIds = []) {
     discard: [...game.discard, ...played],
     color: isWild(card) ? chosenColor : last.color,
     drawnThisTurn: null,
+    pending: 0,
     lastAction: { by: playerId, type: 'jogou', card: last, count: played.length },
   }
   if (next.hands[playerId].length === 0) {
@@ -127,16 +135,23 @@ export function playCard(game, playerId, cardId, chosenColor, extraIds = []) {
   }
 
   const twoPlayers = game.order.length === 2
+  const n = played.length
   let skip = 0
   if (card.value === 'inverter') {
-    if (twoPlayers) skip = 1
-    else next.direction = -game.direction
+    // A 2, cada Inverter é como um Saltar; com mais, inverter duas vezes volta ao mesmo sentido.
+    if (twoPlayers) skip = n
+    else if (n % 2 === 1) next.direction = -game.direction
   }
-  if (card.value === 'saltar') skip = 1
-  if (card.value === '+2' || card.value === '+4') {
+  if (card.value === 'saltar') skip = n
+  if (card.value === '+2') {
+    // Não compra logo: o seguinte pode responder com outro +2 (acumula) ou compra tudo.
+    next.pending = pending + 2 * n
+    next.lastAction = { ...next.lastAction, pending: next.pending }
+  }
+  if (card.value === '+4') {
     const victimIdx = nextIndex(next, game.turn)
     const victim = next.order[victimIdx]
-    const d = draw(next, card.value === '+2' ? 2 : 4)
+    const d = draw(next, 4 * n)
     next = { ...next, drawPile: d.drawPile, discard: d.discard, hands: { ...next.hands, [victim]: [...next.hands[victim], ...d.cards] } }
     skip = 1
   }
@@ -147,6 +162,19 @@ export function drawCard(game, playerId) {
   if (game.winner) throw new Error('A partida já acabou.')
   if (currentPlayer(game) !== playerId) throw new Error('Não é a tua vez.')
   if (game.drawnThisTurn != null) throw new Error('Já compraste uma carta nesta vez.')
+  // Com +2 acumulados: compra-os todos e perde a vez.
+  if (game.pending > 0) {
+    const d = draw(game, game.pending)
+    return {
+      ...game,
+      drawPile: d.drawPile,
+      discard: d.discard,
+      hands: { ...game.hands, [playerId]: [...game.hands[playerId], ...d.cards] },
+      pending: 0,
+      turn: nextIndex(game, game.turn),
+      lastAction: { by: playerId, type: 'comprou', count: d.cards.length },
+    }
+  }
   const d = draw(game, 1)
   if (!d.cards.length) {
     // Sem cartas para comprar: passa a vez.
@@ -183,14 +211,16 @@ export function rematch(game) {
 export function botMove(game, botId) {
   const hand = game.hands[botId]
   const top = game.discard[game.discard.length - 1]
-  const playable = hand.filter((c) => canPlay(c, top, game.color) && (game.drawnThisTurn == null || c.id === game.drawnThisTurn))
+  const pending = game.pending || 0
+  const playable = hand.filter((c) => canPlay(c, top, game.color, pending) && (game.drawnThisTurn == null || c.id === game.drawnThisTurn))
   const colorCount = Object.fromEntries(COLORS.map((c) => [c, hand.filter((x) => x.color === c).length]))
   const bestColor = COLORS.reduce((a, b) => (colorCount[b] > colorCount[a] ? b : a), COLORS[0])
   if (playable.length) {
     const rank = (c) => (isWild(c) ? 0 : ['+2', 'saltar', 'inverter'].includes(c.value) ? 3 : 2) + (c.color === game.color ? 0.5 : 0)
     const card = [...playable].sort((a, b) => rank(b) - rank(a))[0]
-    // Com várias do mesmo número joga-as todas; fica em cima a da cor de que tem mais.
-    const same = sameNumber(hand, card)
+    // Com várias iguais joga-as todas; fica em cima a da cor de que tem mais.
+    const same = game.drawnThisTurn != null ? [] : sameValue(hand, card)
+    if (same.length && isWild(card)) return { type: 'play', cardId: card.id, color: bestColor, extra: same.map((c) => c.id) }
     if (same.length) {
       const left = hand.filter((c) => c.value !== card.value)
       const count = (col) => left.filter((x) => x.color === col).length

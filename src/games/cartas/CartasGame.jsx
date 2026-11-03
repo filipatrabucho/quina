@@ -4,7 +4,7 @@ import GameShell from '../../components/GameShell.jsx'
 import OnlineGame from '../../components/rooms/OnlineGame.jsx'
 import Avatar from '../../components/Avatar.jsx'
 import { recordResultOnce } from '../../lib/social.js'
-import { COLORS, COLOR_NAMES, canPlay, sameNumber, currentPlayer, startGame, applyMove, botMove, rematch, cartasOnline } from './cartasLogic.js'
+import { COLORS, COLOR_NAMES, canPlay, sameValue, currentPlayer, startGame, applyMove, botMove, rematch, cartasOnline } from './cartasLogic.js'
 
 const SYMBOL = { saltar: '⊘', inverter: '⇄', '+2': '+2', cor: '', '+4': '+4' }
 const LABEL = { saltar: 'Saltar', inverter: 'Inverter', '+2': 'Mais dois', cor: 'Muda a cor', '+4': 'Mais quatro' }
@@ -51,14 +51,18 @@ function ColorPicker({ onPick, onCancel }) {
 
 // Mesa: adversários em cima, baralho e pilha ao centro, a minha mão em baixo.
 function Table({ game, meId, people, onMove, isOnline }) {
-  const [picking, setPicking] = useState(null) // carta coringa à espera da cor
-  const [sel, setSel] = useState([]) // várias cartas com o mesmo número (a 1.ª serve na mesa; a última fica em cima)
+  const [picking, setPicking] = useState(null) // coringa(s) à espera da cor: { id, extra }
+  const [sel, setSel] = useState([]) // várias cartas iguais (a 1.ª serve na mesa; a última fica em cima)
   const myTurn = !game.winner && currentPlayer(game) === meId
   const top = game.discard[game.discard.length - 1]
   const hand = game.hands[meId] || []
   const others = game.order.filter((id) => id !== meId)
   const name = (id) => (id === meId ? 'Tu' : people(id)?.name || 'Jogador')
-  const usable = (c) => myTurn && canPlay(c, top, game.color) && (game.drawnThisTurn == null || c.id === game.drawnThisTurn)
+  const pending = game.pending || 0
+  const usable = (c) => myTurn && canPlay(c, top, game.color, pending) && (game.drawnThisTurn == null || c.id === game.drawnThisTurn)
+  // Depois de comprar só se joga a carta comprada (sem juntar outras).
+  const twins = (c) => (game.drawnThisTurn == null ? sameValue(hand, c) : [])
+  const valueName = (v) => (LABEL[v] ? `«${LABEL[v]}»` : `o ${v}`)
   const last = game.lastAction
 
   // Lugares à volta da mesa, por ordem de jogo a partir de mim:
@@ -101,12 +105,13 @@ function Table({ game, meId, people, onMove, isOnline }) {
       if (addable(card)) return setSel([...sel, card.id])
     }
     if (!usable(card)) return
-    if (card.color === null) setPicking(card)
-    else if (sameNumber(hand, card).length) setSel([card.id])
+    if (twins(card).length) setSel([card.id])
+    else if (card.color === null) setPicking({ id: card.id, extra: [] })
     else onMove({ type: 'play', cardId: card.id })
   }
   const playSelected = () => {
-    onMove({ type: 'play', cardId: sel[0], extra: sel.slice(1) })
+    if (selCards[0]?.color === null) setPicking({ id: sel[0], extra: sel.slice(1) })
+    else onMove({ type: 'play', cardId: sel[0], extra: sel.slice(1) })
     setSel([])
   }
 
@@ -119,6 +124,7 @@ function Table({ game, meId, people, onMove, isOnline }) {
           <div className="cards-pile">
             <Card back onClick={myTurn && game.drawnThisTurn == null ? () => onMove({ type: 'draw' }) : undefined} testid="cards-draw" />
             <span className="cards-pile__label">{game.drawPile.length}</span>
+            {pending > 0 && <span className="cards-pending" data-testid="cards-pending" title="Cartas a comprar por +2 acumulados">+{pending}</span>}
           </div>
           <div className="cards-pile">
             <Card card={top} testid="cards-top" />
@@ -134,12 +140,21 @@ function Table({ game, meId, people, onMove, isOnline }) {
         {game.winner
           ? game.winner === meId ? 'Ganhaste! Ficaste sem cartas.' : `${name(game.winner)} ganhou a partida.`
           : myTurn
-            ? game.drawnThisTurn != null ? 'Podes jogar a carta que compraste ou passar.' : 'É a tua vez: joga uma carta ou compra do baralho.'
-            : `Vez de ${name(currentPlayer(game))}…`}
+            ? pending > 0
+              ? `Levaste +${pending}! Responde com um +2 (passa ao seguinte, acumulado) ou toca no baralho para comprar ${pending} cartas.`
+              : game.drawnThisTurn != null ? 'Podes jogar a carta que compraste ou passar.' : 'É a tua vez: joga uma carta ou compra do baralho.'
+            : pending > 0 ? `${name(currentPlayer(game))} tem +${pending} para responder ou comprar…` : `Vez de ${name(currentPlayer(game))}…`}
       </p>
       {last && !game.winner && (
         <p className="naval-log">
-          {name(last.by)} {last.type === 'jogou' ? (last.count > 1 ? `jogou ${last.count} cartas com o ${last.card.value} (fica ${COLOR_NAMES[last.card.color]})` : `jogou ${last.card.color ? COLOR_NAMES[last.card.color] + ' ' : ''}${LABEL[last.card.value]?.toLowerCase() || last.card.value}`) : last.type === 'comprou' ? 'comprou uma carta' : 'passou'}
+          {last.by === meId ? '' : `${name(last.by)} `}
+          {(last.type === 'jogou'
+            ? (last.count > 1
+              ? `jogou ${last.count} cartas ${LABEL[last.card.value] ? LABEL[last.card.value] : `com o ${last.card.value}`}${last.card.color ? ` (fica ${COLOR_NAMES[last.card.color]})` : ''}`
+              : `jogou ${last.card.color ? COLOR_NAMES[last.card.color] + ' ' : ''}${LABEL[last.card.value]?.toLowerCase() || last.card.value}`) + (last.pending ? `: +${last.pending} acumulado para o seguinte` : '')
+            : last.type === 'comprou' ? (last.count > 1 ? `comprou ${last.count} cartas` : 'comprou uma carta') : 'passou')
+            // quando és tu: "Jogaste", "Compraste", "Passaste"
+            .replace(/^(jogou|comprou|passou)/, (v) => (last.by === meId ? { jogou: 'Jogaste', comprou: 'Compraste', passou: 'Passaste' }[v] : v))}
         </p>
       )}
 
@@ -166,8 +181,8 @@ function Table({ game, meId, people, onMove, isOnline }) {
         <div className="cards-multi" data-testid="cards-multi">
           <span>
             {sel.length === 1
-              ? `Tens mais ${selCards[0] ? sameNumber(hand, selCards[0]).length : 0} com o ${selCards[0]?.value}: toca nelas para as juntar.`
-              : `${sel.length} cartas com o ${selCards[0]?.value}. A última que escolheste fica em cima e manda na cor.`}
+              ? `Tens mais ${selCards[0] ? twins(selCards[0]).length : 0} ${selCards[0] ? valueName(selCards[0].value) : ''}: toca nelas para as juntar.`
+              : `${sel.length} cartas ${selCards[0] ? valueName(selCards[0].value) : ''}: os efeitos somam-se.${selCards[0]?.color ? ' A última que escolheste fica em cima e manda na cor.' : ''}`}
           </span>
           <button className="share-btn" onClick={playSelected} data-testid="cards-play-multi">
             {sel.length === 1 ? 'Jogar só esta' : `Jogar ${sel.length} cartas`}
@@ -181,7 +196,7 @@ function Table({ game, meId, people, onMove, isOnline }) {
       {picking && (
         <ColorPicker
           onPick={(color) => {
-            onMove({ type: 'play', cardId: picking.id, color })
+            onMove({ type: 'play', cardId: picking.id, color, extra: picking.extra })
             setPicking(null)
           }}
           onCancel={() => setPicking(null)}
@@ -276,7 +291,8 @@ function OnlineBoard({ state, game, me, dispatch, isOnline }) {
 const HELP = (
   <>
     <p>Joga uma carta da mesma cor ou com o mesmo número/símbolo da carta da mesa. Se não tiveres nenhuma, compra uma do baralho.</p>
-    <p><strong>⊘ Saltar</strong>: o próximo perde a vez. <strong>⇄ Inverter</strong>: muda o sentido. <strong>+2</strong>: o próximo compra 2 e perde a vez.</p>
+    <p><strong>⊘ Saltar</strong>: o próximo perde a vez. <strong>⇄ Inverter</strong>: muda o sentido. <strong>+2</strong>: o próximo compra 2 e perde a vez, a não ser que responda com outro +2: aí acumula (+4, +6…) e passa ao seguinte.</p>
+    <p>Podes jogar <strong>várias cartas iguais</strong> de uma vez (o mesmo número ou o mesmo símbolo) e os efeitos somam-se: Saltar ×2 salta os 2 jogadores seguintes, +2 ×2 acumula +4, +4 ×2 dá 8 cartas a comprar.</p>
     <p>Se tiveres <strong>várias cartas com o mesmo número</strong> (de qualquer cor), podes jogá-las todas de uma vez: a primeira tem de servir na mesa e a última que escolheres fica em cima e manda na cor.</p>
     <p><strong>Muda a cor</strong> e <strong>+4</strong> servem em qualquer altura e escolhes a cor seguinte. Ganha quem ficar sem cartas primeiro.</p>
   </>

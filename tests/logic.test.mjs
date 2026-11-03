@@ -287,7 +287,10 @@ test('cartas coloridas: baralho, jogar, +2, inverter, comprar e ganhar', () => {
   } }
   assert.throws(() => cartas.playCard(g, 'a', 902), /não serve/)
   assert.throws(() => cartas.playCard(g, 'b', 904), /vez/)
-  g = cartas.playCard(g, 'a', 901) // +2 em b: b compra 2 e perde a vez
+  g = cartas.playCard(g, 'a', 901) // +2 em b: b não tem +2, por isso compra 2 e perde a vez
+  assert.equal(cartas.currentPlayer(g), 'b')
+  assert.equal(g.pending, 2)
+  g = cartas.drawCard(g, 'b')
   assert.equal(g.hands.b.length, 4)
   assert.equal(cartas.currentPlayer(g), 'c')
   assert.throws(() => cartas.playCard(g, 'c', 906), /não serve/)
@@ -329,7 +332,7 @@ test('cartas coloridas: várias cartas com o mesmo número de uma vez', () => {
     a: [{ id: 1, color: 'b', value: '5' }, { id: 2, color: 'g', value: '5' }, { id: 3, color: 'y', value: '7' }, { id: 4, color: 'y', value: '5' }],
     b: [{ id: 10, color: 'g', value: '1' }],
   } }
-  assert.throws(() => cartas.playCard(g, 'a', 1, undefined, [3]), /mesmo número/)
+  assert.throws(() => cartas.playCard(g, 'a', 1, undefined, [3]), /iguais/)
   assert.throws(() => cartas.playCard(g, 'a', 1, undefined, [99]), /Não tens/)
   assert.throws(() => cartas.playCard(g, 'a', 3, undefined, []), /não serve/) // a primeira tem de servir
   const n = cartas.playCard(g, 'a', 1, undefined, [2, 4])
@@ -341,9 +344,9 @@ test('cartas coloridas: várias cartas com o mesmo número de uma vez', () => {
   // ficar sem cartas ao jogar várias ganha
   const w = cartas.playCard({ ...g, hands: { ...g.hands, a: [{ id: 1, color: 'b', value: '5' }, { id: 2, color: 'g', value: '5' }] } }, 'a', 2, undefined, [1])
   assert.equal(w.winner, 'a')
-  // só números
-  const act = { ...g, discard: [{ id: 900, color: 'r', value: '+2' }], hands: { ...g.hands, a: [{ id: 5, color: 'r', value: '+2' }, { id: 6, color: 'b', value: '+2' }] } }
-  assert.throws(() => cartas.playCard(act, 'a', 5, undefined, [6]), /mesmo número/)
+  // cartas diferentes não se juntam
+  const mix = { ...g, discard: [{ id: 900, color: 'r', value: '+2' }], hands: { ...g.hands, a: [{ id: 5, color: 'r', value: '+2' }, { id: 6, color: 'r', value: 'saltar' }, { id: 7, color: 'g', value: '1' }] } }
+  assert.throws(() => cartas.playCard(mix, 'a', 5, undefined, [6]), /iguais/)
   // o bot junta as do mesmo número e deixa em cima a cor de que tem mais
   const m = cartas.botMove(g, 'a')
   const after = cartas.applyMove(g, 'a', m)
@@ -368,4 +371,55 @@ test('sala: preferências no lobby (limpas) e guardadas ao reentrar', () => {
   assert.equal(reduceRoom(s, { type: 'prefs', prefs: { color: 1 } }, 'zz', logic), s, 'quem não está na sala não muda nada')
   s = reduceRoom(s, { type: 'start' }, 'a', logic)
   assert.deepEqual(s.game.players[0].prefs, { color: 2, hat: 'coroa' })
+})
+
+test('cartas coloridas: +2 acumula e cartas especiais iguais juntas', () => {
+  const base = (hands, top = { id: 900, color: 'r', value: '5' }, order = ['a', 'b', 'c']) => {
+    const g = cartas.startGame(order)
+    return { ...g, order, discard: [top], color: top.color, turn: 0, direction: 1, drawnThisTurn: null, pending: 0, hands: { a: [], b: [], c: [], ...hands } }
+  }
+  const filler = (id) => ({ id, color: 'y', value: '9' })
+  // +2 não compra logo: o seguinte responde com +2 e acumula; o terceiro compra 4
+  let g = base({ a: [{ id: 1, color: 'r', value: '+2' }, filler(11)], b: [{ id: 2, color: 'b', value: '+2' }, filler(12)], c: [{ id: 3, color: 'g', value: '7' }, filler(13)] })
+  g = cartas.playCard(g, 'a', 1)
+  assert.equal(g.pending, 2)
+  assert.equal(cartas.currentPlayer(g), 'b')
+  assert.equal(g.hands.b.length, 2, 'ainda não comprou')
+  assert.throws(() => cartas.playCard({ ...g, hands: { ...g.hands, b: [{ id: 20, color: 'r', value: '3' }, filler(12)] } }, 'b', 20), /Responde com um \+2/)
+  g = cartas.playCard(g, 'b', 2)
+  assert.equal(g.pending, 4)
+  assert.equal(cartas.currentPlayer(g), 'c')
+  assert.ok(!cartas.canPlay(g.hands.c[0], g.discard.at(-1), g.color, g.pending), 'com +2 pendente só serve +2')
+  g = cartas.drawCard(g, 'c')
+  assert.equal(g.hands.c.length, 6, 'compra os 4 acumulados')
+  assert.equal(g.pending, 0)
+  assert.equal(cartas.currentPlayer(g), 'a', 'e perde a vez')
+  assert.equal(g.lastAction.count, 4)
+  // dois +2 juntos = +4 a acumular
+  let h = base({ a: [{ id: 1, color: 'r', value: '+2' }, { id: 2, color: 'b', value: '+2' }, filler(11)] })
+  h = cartas.playCard(h, 'a', 1, undefined, [2])
+  assert.equal(h.pending, 4)
+  // Saltar x2: salta os 2 seguintes (a 4 jogadores joga o 4.º)
+  let s = base({ a: [{ id: 1, color: 'r', value: 'saltar' }, { id: 2, color: 'b', value: 'saltar' }, filler(11)] }, undefined, ['a', 'b', 'c', 'd'])
+  s = { ...s, hands: { ...s.hands, d: [filler(14)] } }
+  s = cartas.playCard(s, 'a', 1, undefined, [2])
+  assert.equal(cartas.currentPlayer(s), 'd')
+  // Inverter x2: o sentido fica igual; x1 inverte
+  let r = base({ a: [{ id: 1, color: 'r', value: 'inverter' }, { id: 2, color: 'g', value: 'inverter' }, filler(11)] })
+  r = cartas.playCard(r, 'a', 1, undefined, [2])
+  assert.equal(r.direction, 1)
+  assert.equal(cartas.currentPlayer(r), 'b')
+  // +4 x2: o seguinte compra 8 e perde a vez
+  let w = base({ a: [{ id: 1, color: null, value: '+4' }, { id: 2, color: null, value: '+4' }, filler(11)], b: [filler(12)] })
+  w = cartas.playCard(w, 'a', 1, 'g', [2])
+  assert.equal(w.hands.b.length, 9)
+  assert.equal(w.color, 'g')
+  assert.equal(cartas.currentPlayer(w), 'c')
+  // o bot responde a um +2 com os +2 que tiver; sem +2, compra
+  let bt = base({ a: [{ id: 1, color: 'r', value: '+2' }, filler(11)], b: [{ id: 2, color: 'b', value: '+2' }, { id: 3, color: 'y', value: '+2' }, filler(12)] })
+  bt = cartas.playCard(bt, 'a', 1)
+  const mv = cartas.botMove(bt, 'b')
+  bt = cartas.applyMove(bt, 'b', mv)
+  assert.equal(bt.pending, 6, 'o bot juntou os dois +2')
+  assert.deepEqual(cartas.botMove(bt, 'c'), { type: 'draw' })
 })
