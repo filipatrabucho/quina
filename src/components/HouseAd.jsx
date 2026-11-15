@@ -29,7 +29,6 @@ export function HouseAdCard({ ad, variant = 'banner', preview = false }) {
         {ad.body && <span className="house-ad__text">{ad.body}</span>}
       </span>
       <span className="house-ad__cta">{ad.cta}</span>
-      <span className="house-ad__note">Publicidade: podemos receber uma comissão, sem custo para ti.</span>
     </a>
   )
 }
