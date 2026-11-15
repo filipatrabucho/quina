@@ -75,12 +75,16 @@ function Table({ game, meId, people, onMove, isOnline }) {
     top: rotated.slice(side, rotated.length - side),
     right: rotated.slice(rotated.length - side),
   }
+  const finished = game.finished || []
+  const placeOf = (id) => (game.places ? game.places.indexOf(id) + 1 : finished.indexOf(id) + 1)
+  const myPlace = placeOf(meId)
   const renderSeat = (id) => {
     const p = people(id)
     const n = game.hands[id]?.length || 0
     const turn = currentPlayer(game) === id && !game.winner
     return (
-      <div key={id} className={`cards-seat${turn ? ' cards-seat--turn' : ''}${game.winner === id ? ' cards-seat--winner' : ''}`} data-testid={`seat-${id}`}>
+      <div key={id} className={`cards-seat${turn ? ' cards-seat--turn' : ''}${game.winner === id ? ' cards-seat--winner' : ''}${finished.includes(id) ? ' cards-seat--done' : ''}`} data-testid={`seat-${id}`}>
+        {placeOf(id) > 0 && (finished.includes(id) || game.places) && <span className={`cards-place cards-place--${placeOf(id)}`} data-testid={`place-${id}`}>{placeOf(id)}.º</span>}
         {turn && <span className="cards-seat__badge">A jogar</span>}
         <Avatar src={p?.avatar} seed={p?.seed || id} name={p?.name} size={44} />
         <span className="cards-seat__name">{p?.name || 'Jogador'}{isOnline && !isOnline(id) ? ' · offline' : ''}</span>
@@ -138,13 +142,24 @@ function Table({ game, meId, people, onMove, isOnline }) {
 
       <p className="game-status" data-testid="cards-status">
         {game.winner
-          ? game.winner === meId ? 'Ganhaste! Ficaste sem cartas.' : `${name(game.winner)} ganhou a partida.`
+          ? myPlace === 1 ? 'Ganhaste! Ficaste em 1.º lugar.' : myPlace > 0 ? `Ficaste em ${myPlace}.º lugar. ${name(game.winner)} ganhou.` : `${name(game.winner)} ganhou a partida.`
+          : myPlace > 0
+            ? `Acabaste em ${myPlace}.º lugar! 🎉 Os outros continuam a jogar pelos lugares seguintes…`
           : myTurn
             ? pending > 0
-              ? `Levaste +${pending}! Responde com um +2 (passa ao seguinte, acumulado) ou toca no baralho para comprar ${pending} cartas.`
+              ? `Levaste +${pending}! Responde com um +2 ou +4 (passa ao seguinte, acumulado) ou toca no baralho para comprar ${pending} cartas.`
               : game.drawnThisTurn != null ? 'Podes jogar a carta que compraste ou passar.' : 'É a tua vez: joga uma carta ou compra do baralho.'
             : pending > 0 ? `${name(currentPlayer(game))} tem +${pending} para responder ou comprar…` : `Vez de ${name(currentPlayer(game))}…`}
       </p>
+      {game.places && (
+        <ol className="cards-standings" data-testid="cards-standings">
+          {game.places.map((id, i) => (
+            <li key={id} className={`cards-standings__row cards-standings__row--${i + 1}${id === meId ? ' cards-standings__row--me' : ''}`}>
+              <b>{i + 1}.º</b> {name(id)}{i === game.places.length - 1 && game.places.length > 2 ? ' (último)' : ''}
+            </li>
+          ))}
+        </ol>
+      )}
       {last && !game.winner && (
         <p className="naval-log">
           {last.by === meId ? '' : `${name(last.by)} `}
@@ -155,6 +170,7 @@ function Table({ game, meId, people, onMove, isOnline }) {
             : last.type === 'comprou' ? (last.count > 1 ? `comprou ${last.count} cartas` : 'comprou uma carta') : 'passou')
             // quando és tu: "Jogaste", "Compraste", "Passaste"
             .replace(/^(jogou|comprou|passou)/, (v) => (last.by === meId ? { jogou: 'Jogaste', comprou: 'Compraste', passou: 'Passaste' }[v] : v))}
+          {last.place ? ` e ${last.by === meId ? 'acabaste' : 'acabou'} as cartas: ${last.place}.º lugar! 🎉` : ''}
         </p>
       )}
 
@@ -219,12 +235,12 @@ function VsBots() {
     if (!game || game.winner) return undefined
     const p = currentPlayer(game)
     if (p === 'tu') return undefined
-    const t = setTimeout(() => setGame((g) => (g && !g.winner && currentPlayer(g) === p ? applyMove(g, p, botMove(g, p)) : g)), 900)
+    const t = setTimeout(() => setGame((g) => (g && !g.winner && currentPlayer(g) === p ? applyMove(g, p, botMove(g, p)) : g)), (game.finished || []).includes('tu') ? 450 : 900) // mais rápido quando já acabaste
     return () => clearTimeout(t)
   }, [game])
 
   useEffect(() => {
-    if (game?.winner) recordResultOnce(`cartas-bot-${Date.now()}`, 'cartas', game.winner === 'tu')
+    if (game?.winner) recordResultOnce(`cartas-bot-${Date.now()}`, 'cartas', game.winner === 'tu', String(game.places.indexOf('tu') + 1))
   }, [game?.winner]) // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!game) {
@@ -273,7 +289,7 @@ function OnlineBoard({ state, game, me, dispatch, isOnline }) {
   const people = (id) => state.players.find((p) => p.id === id)
   const seated = game.order.includes(me.id)
   useEffect(() => {
-    if (game.winner && seated) recordResultOnce(`cartas-${state.code}-${game.round}`, 'cartas', game.winner === me.id)
+    if (game.winner && seated) recordResultOnce(`cartas-${state.code}-${game.round}`, 'cartas', game.winner === me.id, String((game.places || []).indexOf(me.id) + 1))
   }, [game.winner, game.round]) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <div className="game-panel game-panel--wide">
@@ -291,7 +307,8 @@ function OnlineBoard({ state, game, me, dispatch, isOnline }) {
 const HELP = (
   <>
     <p>Joga uma carta da mesma cor ou com o mesmo número/símbolo da carta da mesa. Se não tiveres nenhuma, compra uma do baralho.</p>
-    <p><strong>⊘ Saltar</strong>: o próximo perde a vez. <strong>⇄ Inverter</strong>: muda o sentido. <strong>+2</strong>: o próximo compra 2 e perde a vez, a não ser que responda com outro +2: aí acumula (+4, +6…) e passa ao seguinte.</p>
+    <p><strong>⊘ Saltar</strong>: o próximo perde a vez. <strong>⇄ Inverter</strong>: muda o sentido. <strong>+2</strong> e <strong>+4</strong>: o próximo compra e perde a vez, a não ser que responda com outro +2 ou +4: aí acumula e passa ao seguinte. Por cima de um +4 serve um +4, ou um +2 da cor escolhida.</p>
+    <p>Quando alguém fica sem cartas, fica com o lugar seguinte (1.º, 2.º…) e os outros continuam até sobrar só um.</p>
     <p>Podes jogar <strong>várias cartas iguais</strong> de uma vez (o mesmo número ou o mesmo símbolo) e os efeitos somam-se: Saltar ×2 salta os 2 jogadores seguintes, +2 ×2 acumula +4, +4 ×2 dá 8 cartas a comprar.</p>
     <p>Se tiveres <strong>várias cartas com o mesmo número</strong> (de qualquer cor), podes jogá-las todas de uma vez: a primeira tem de servir na mesa e a última que escolheres fica em cima e manda na cor.</p>
     <p><strong>Muda a cor</strong> e <strong>+4</strong> servem em qualquer altura e escolhes a cor seguinte. Ganha quem ficar sem cartas primeiro.</p>

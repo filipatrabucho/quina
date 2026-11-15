@@ -30,17 +30,31 @@ export function shuffle(list, rand = Math.random) {
 
 export const isWild = (card) => card.color === null
 
-// pending: cartas que o jogador da vez tem de comprar por causa de +2 acumulados.
-// Enquanto houver, só serve outro +2 (que acumula para o seguinte).
+// pending: cartas que o jogador da vez tem de comprar por causa de +2/+4 acumulados.
+// Enquanto houver, só servem cartas de comprar, que acumulam para o seguinte:
+// um +4 (sempre) ou um +2 (por cima de +2, ou da cor escolhida no +4).
+export const isDraw = (card) => card.value === '+2' || card.value === '+4'
 export function canPlay(card, top, color, pending = 0) {
-  if (pending > 0) return card.value === '+2'
+  if (pending > 0) return card.value === '+4' || (card.value === '+2' && (top.value === '+2' || card.color === color))
   if (isWild(card)) return true
   return card.color === color || card.value === top.value
 }
 
+// Quem ainda está a jogar (quem já ficou sem cartas espera pelo fim).
+export const activePlayers = (game) => game.order.filter((id) => !(game.finished || []).includes(id))
+
+// Avança `steps` jogadores no sentido do jogo, saltando quem já acabou.
 const nextIndex = (game, from, steps = 1) => {
   const n = game.order.length
-  return (((from + game.direction * steps) % n) + n) % n
+  const done = game.finished || []
+  let i = from
+  for (let k = 0; k < steps; k++) {
+    for (let tries = 0; tries < n; tries++) {
+      i = (((i + game.direction) % n) + n) % n
+      if (!done.includes(game.order[i])) break
+    }
+  }
+  return i
 }
 
 // Tira `count` cartas do baralho, reciclando a pilha de descarte se preciso.
@@ -76,7 +90,9 @@ export function startGame(playerIds, rand = Math.random) {
     turn: 0,
     direction: 1,
     drawnThisTurn: null, // id da carta comprada nesta vez (só essa pode ser jogada)
-    pending: 0, // cartas a comprar por +2 acumulados
+    pending: 0, // cartas a comprar por +2/+4 acumulados
+    finished: [], // quem já ficou sem cartas, por ordem (1.º, 2.º, ...)
+    places: null, // classificação final, quando acaba
     winner: null,
     lastAction: null,
     round: 1,
@@ -106,7 +122,7 @@ export function playCard(game, playerId, cardId, chosenColor, extraIds = []) {
   if (game.drawnThisTurn != null && card.id !== game.drawnThisTurn) throw new Error('Depois de comprar só podes jogar a carta comprada.')
   const top = game.discard[game.discard.length - 1]
   const pending = game.pending || 0
-  if (pending > 0 && card.value !== '+2') throw new Error(`Responde com um +2 ou compra ${pending} cartas.`)
+  if (pending > 0 && !isDraw(card)) throw new Error(`Responde com um +2 ou +4, ou compra ${pending} cartas.`)
   if (!canPlay(card, top, game.color, pending)) throw new Error('Essa carta não serve.')
   if (isWild(card) && !COLORS.includes(chosenColor)) throw new Error('Escolhe uma cor.')
   const extras = []
@@ -130,11 +146,18 @@ export function playCard(game, playerId, cardId, chosenColor, extraIds = []) {
     pending: 0,
     lastAction: { by: playerId, type: 'jogou', card: last, count: played.length },
   }
+  // Ficou sem cartas: ganha o lugar seguinte e os outros continuam até sobrar um.
   if (next.hands[playerId].length === 0) {
-    return { ...next, winner: playerId, score: { ...game.score, [playerId]: (game.score[playerId] || 0) + 1 } }
+    const finished = [...(game.finished || []), playerId]
+    next = { ...next, finished, lastAction: { ...next.lastAction, place: finished.length } }
+    const left = activePlayers(next)
+    if (left.length <= 1) {
+      const places = [...finished, ...left]
+      return { ...next, pending: 0, places, winner: places[0], score: { ...game.score, [places[0]]: (game.score[places[0]] || 0) + 1 } }
+    }
   }
 
-  const twoPlayers = game.order.length === 2
+  const twoPlayers = activePlayers(next).length === 2
   const n = played.length
   let skip = 0
   if (card.value === 'inverter') {
@@ -143,17 +166,10 @@ export function playCard(game, playerId, cardId, chosenColor, extraIds = []) {
     else if (n % 2 === 1) next.direction = -game.direction
   }
   if (card.value === 'saltar') skip = n
-  if (card.value === '+2') {
-    // Não compra logo: o seguinte pode responder com outro +2 (acumula) ou compra tudo.
-    next.pending = pending + 2 * n
+  if (isDraw(card)) {
+    // Não compra logo: o seguinte pode responder com +2/+4 (acumula) ou compra tudo.
+    next.pending = pending + (card.value === '+2' ? 2 : 4) * n
     next.lastAction = { ...next.lastAction, pending: next.pending }
-  }
-  if (card.value === '+4') {
-    const victimIdx = nextIndex(next, game.turn)
-    const victim = next.order[victimIdx]
-    const d = draw(next, 4 * n)
-    next = { ...next, drawPile: d.drawPile, discard: d.discard, hands: { ...next.hands, [victim]: [...next.hands[victim], ...d.cards] } }
-    skip = 1
   }
   return { ...next, turn: nextIndex(next, game.turn, 1 + skip) }
 }

@@ -4873,3 +4873,69 @@ body:has(.modal-overlay:not([hidden])) .room-chat-btn, body:has(.modal-overlay:n
 .bo-ref-list .invite-st { margin-left: auto; }
 .cards-pile { position: relative; }
 .cards-pending { position: absolute; top: -10px; right: -12px; padding: 3px 9px; border-radius: 999px; background: #E5243B; color: #fff; font: 900 1rem var(--font-display); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); animation: room-chat-pulse 1.2s ease-in-out infinite; }
+a.profile-game { text-decoration: none; color: inherit; transition: border-color 0.12s; }
+a.profile-game:hover { border-color: var(--stone); }
+.profile-empty { color: var(--stone); margin: 0; }
+.cards-seat { position: relative; }
+.cards-seat--done { opacity: 0.6; }
+.cards-place { position: absolute; top: -10px; left: -10px; min-width: 30px; height: 30px; padding: 0 6px; border-radius: 15px; display: flex; align-items: center; justify-content: center; font: 900 0.85rem var(--font-display); color: #1A1A22; background: #8A8A99; box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4); z-index: 2; }
+.cards-place--1 { background: linear-gradient(135deg, #FFE08A, #D9A400); }
+.cards-place--2 { background: linear-gradient(135deg, #F2F2F5, #A9AEB8); }
+.cards-place--3 { background: linear-gradient(135deg, #F0B27A, #A85F1E); }
+.cards-standings { list-style: none; margin: 4px auto 0; padding: 0; display: flex; flex-direction: column; gap: 4px; min-width: 220px; max-width: 320px; }
+.cards-standings__row { padding: 6px 12px; border-radius: 10px; background: rgba(255, 255, 255, 0.06); }
+.cards-standings__row--1 { background: rgba(217, 164, 0, 0.22); }
+.cards-standings__row--me { box-shadow: inset 0 0 0 2px #2F80ED; }
+
+/* Publicidade da casa: imagens e 2 verticais ao mesmo tempo */
+.house-ads { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.house-ad--own { background: linear-gradient(120deg, #141622 0%, #23263A 60%, #34395A 120%); }
+.house-ad--own .house-ad__cta { background: var(--azulejo); color: #fff; }
+.house-ad__img { grid-area: emoji; width: 64px; height: 64px; object-fit: cover; border-radius: 10px; background: rgba(255, 255, 255, 0.06); }
+.house-ads--vertical .house-ad--rail { min-height: 290px; }
+.house-ad--rail .house-ad__img { width: 136px; height: 136px; }
+.house-ads--vertical:has(.house-ad + .house-ad) .house-ad--rail .house-ad__img { width: 120px; height: 100px; }
+@media (max-width: 760px) { .house-ad__img { width: 48px; height: 48px; } }
+.house-ads--vertical .house-ad--rail:only-child { min-height: 600px; }
+
+/* Backoffice > Publicidade */
+.ads-new { align-self: flex-start; width: auto; padding: 0 18px; }
+.ads-group { display: flex; flex-direction: column; gap: 8px; }
+.ads-group__count { font: 600 0.8rem var(--font-body); color: var(--stone); text-transform: none; letter-spacing: 0; margin-left: 6px; }
+.ads-list { display: grid; gap: 12px; }
+.ads-list--horizontal { grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); }
+.ads-list--vertical { grid-template-columns: repeat(auto-fill, 180px); }
+.ads-item { display: flex; flex-direction: column; gap: 6px; padding: 8px; border-radius: 12px; border: 1px solid var(--stone-light); background: var(--cream-deep); }
+.ads-item--off .house-ad { opacity: 0.4; filter: grayscale(0.7); }
+.ads-item .house-ad--rail { width: 100%; min-height: 0; }
+.ads-item__bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ads-check { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--ink); cursor: pointer; }
+.ads-check input { width: 16px; height: 16px; accent-color: #2FBF71; }
+.ads-form { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 12px; border: 1px solid var(--stone-light); background: rgba(255, 255, 255, 0.02); }
+.ads-form__grid { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 16px; align-items: start; }
+.ads-form__fields { display: flex; flex-direction: column; gap: 10px; }
+.ads-form__row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+.ads-form__row .ads-field { flex: 1 1 200px; }
+.ads-field { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; font-weight: 600; color: var(--stone); }
+.ads-field--small { flex: 0 0 90px !important; }
+.ads-field input, .ads-field textarea { padding: 9px 11px; border-radius: 8px; border: 1px solid var(--stone-light); background: var(--cream-deep); color: var(--ink); font: 500 0.92rem var(--font-body); }
+.ads-format { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border: 0; padding: 0; margin: 0; }
+.ads-format legend { font-size: 0.8rem; font-weight: 600; color: var(--stone); margin-bottom: 4px; }
+.ads-format__opt { display: flex; gap: 10px; align-items: center; padding: 10px; border-radius: 10px; border: 2px solid var(--stone-light); cursor: pointer; }
+.ads-format__opt--on { border-color: #FFC93C; background: rgba(255, 201, 60, 0.07); }
+.ads-format__opt input { position: absolute; opacity: 0; pointer-events: none; }
+.ads-format__opt b { display: block; color: var(--ink); }
+.ads-format__opt small { display: block; font-size: 0.75rem; color: var(--stone); line-height: 1.3; }
+.ads-format__shape { flex: none; border-radius: 4px; background: repeating-linear-gradient(45deg, #FFC93C55, #FFC93C55 4px, transparent 4px, transparent 8px); border: 2px solid #FFC93C; }
+.ads-format__shape--vertical { width: 18px; height: 48px; }
+.ads-format__shape--horizontal { width: 52px; height: 16px; }
+.ads-image { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ads-image img { width: 72px; height: 72px; object-fit: cover; border-radius: 10px; }
+.ads-image__none { font-weight: 400; color: var(--stone); }
+.ads-image__btns { display: flex; flex-direction: column; gap: 4px; }
+.ads-form__preview { display: flex; flex-direction: column; gap: 6px; position: sticky; top: 16px; }
+.ads-preview--vertical { width: 180px; }
+.ads-preview--vertical .house-ad--rail { width: 100%; min-height: 360px; }
+.ads-form__actions { display: flex; gap: 12px; align-items: center; }
+.ads-form__actions .share-btn { width: auto; padding: 0 18px; }
+@media (max-width: 800px) { .ads-form__grid { grid-template-columns: 1fr; } .ads-format { grid-template-columns: 1fr; } .ads-form__preview { position: static; } }

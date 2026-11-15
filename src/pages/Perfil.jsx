@@ -117,6 +117,10 @@ export default function Perfil() {
   const statByGame = Object.fromEntries(stats.map((x) => [x.game, x]))
   const totalWins = stats.reduce((a, x) => a + x.wins, 0)
   const totalPlays = stats.reduce((a, x) => a + x.plays, 0)
+  // Só os jogos que jogou mesmo, do mais jogado para o menos jogado.
+  const played = GAMES.filter((g) => statByGame[g.key]?.plays > 0)
+    .map((g) => ({ g, st: statByGame[g.key] }))
+    .sort((a, b) => b.st.plays - a.st.plays || b.st.wins - a.st.wins)
   const links = SOCIAL_NETWORKS.map((n) => ({ ...n, value: profile.links?.[n.key], url: socialUrl(n.key, profile.links?.[n.key]) })).filter((n) => n.value)
   const since = new Date(profile.created_at).toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' })
 
@@ -175,19 +179,20 @@ export default function Perfil() {
       </section>
 
       <section>
-        <h2 className="profile-section-title">Jogos</h2>
-        <div className="profile-games">
-          {GAMES.filter((g) => !g.beta || statByGame[g.key]).map((g) => {
-            const st = statByGame[g.key]
-            return (
-              <div key={g.key} className="profile-game">
+        <h2 className="profile-section-title">Jogos que jogou <span>{played.length}</span></h2>
+        {played.length === 0 ? (
+          <p className="profile-empty" data-testid="profile-no-games">Ainda não jogou nenhum jogo com a conta.</p>
+        ) : (
+          <div className="profile-games" data-testid="profile-games">
+            {played.map(({ g, st }) => (
+              <Link key={g.key} to={g.to} className="profile-game">
                 <GameIcon game={g.key} size={36} />
                 <span className="profile-game__name">{g.title}</span>
-                <span className="profile-game__num">{st ? `${st.wins} vitórias · ${st.plays} partidas` : 'Ainda não jogou'}</span>
-              </div>
-            )
-          })}
-        </div>
+                <span className="profile-game__num">{st.wins} {st.wins === 1 ? 'vitória' : 'vitórias'} · {st.plays} {st.plays === 1 ? 'partida' : 'partidas'}</span>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
     </main>
   )

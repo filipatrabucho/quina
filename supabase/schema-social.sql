@@ -979,6 +979,65 @@ end;
 $$;
 grant execute on function public.admin_set_reward_status(bigint, text, text) to authenticated;
 
+-- ---------- Publicidade da casa (até o AdSense estar ativo) ----------
+-- Anúncios geridos no Backoffice > Publicidade.
+--   vertical: coluna à direita no PC (até 2 ao mesmo tempo, um por baixo do outro)
+--   horizontal: faixas por baixo dos jogos e na página inicial (PC e telemóvel)
+create table if not exists public.house_ads (
+  id bigint generated always as identity primary key,
+  format text not null check (format in ('vertical', 'horizontal')),
+  brand text not null default '' check (char_length(brand) <= 40),
+  title text not null check (char_length(title) between 1 and 80),
+  body text not null default '' check (char_length(body) <= 200),
+  cta text not null default 'Ver mais' check (char_length(cta) between 1 and 30),
+  url text not null check (url ~ '^https?://'),
+  image_url text check (image_url is null or image_url ~ '^https?://'),
+  emoji text check (emoji is null or char_length(emoji) <= 8),
+  active boolean not null default true,
+  sort int not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.house_ads enable row level security;
+drop policy if exists "anuncios: ver os ativos" on public.house_ads;
+create policy "anuncios: ver os ativos" on public.house_ads for select
+  using (active or exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin'));
+drop policy if exists "anuncios: admin cria" on public.house_ads;
+create policy "anuncios: admin cria" on public.house_ads for insert to authenticated
+  with check (exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin'));
+drop policy if exists "anuncios: admin muda" on public.house_ads;
+create policy "anuncios: admin muda" on public.house_ads for update to authenticated
+  using (exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin'));
+drop policy if exists "anuncios: admin apaga" on public.house_ads;
+create policy "anuncios: admin apaga" on public.house_ads for delete to authenticated
+  using (exists (select 1 from staff s where s.user_id = auth.uid() and s.role = 'admin'));
+
+-- Os anúncios que já estavam no site (só na primeira vez, com a tabela vazia).
+insert into public.house_ads (format, brand, title, body, cta, url, emoji, sort)
+select * from (values
+  ('horizontal', 'Instant Gaming', 'Jogos para PC e consolas mais baratos', 'Chaves digitais com descontos todos os dias. Compra e joga logo.', 'Ver promoções', 'https://www.instant-gaming.com/?igr=gamer-c404e5c', '🎮', 1),
+  ('horizontal', 'Amazon', 'Ofertas de gaming na Amazon', 'Teclados, ratos, auscultadores, jogos e muito mais, em português.', 'Ver na Amazon', 'https://www.amazon.es/-/pt?linkCode=sl2&tag=clubparty-21&linkId=bdc2928ee2e03270511eaed8925b11b2&language=pt_PT&ref_=as_li_ss_tl', '🛒', 2),
+  ('vertical', 'Amazon · Logitech G', 'Teclado gaming Logitech G515 TKL', 'Com cabo, de baixo perfil e sem teclado numérico: mais espaço para o rato.', 'Ver preço', 'https://www.amazon.es/-/pt/dp/B0D3HK4R9R?th=1&linkCode=sl2&tag=clubparty0b-21&linkId=e7bc442e56b706a19ae1bfa59b5f614e&ref_=as_li_ss_tl', '⌨️', 1),
+  ('vertical', 'Instant Gaming', 'Jogos para PC e consolas mais baratos', 'Chaves digitais com descontos todos os dias.', 'Ver promoções', 'https://www.instant-gaming.com/?igr=gamer-c404e5c', '🎮', 2)
+) as v(format, brand, title, body, cta, url, emoji, sort)
+where not exists (select 1 from public.house_ads);
+
+-- Imagens dos anúncios: toda a gente vê, só o admin carrega.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('ads', 'ads', true, 3145728, array['image/png', 'image/jpeg', 'image/webp', 'image/gif'])
+on conflict (id) do update
+  set public = excluded.public,
+      file_size_limit = excluded.file_size_limit,
+      allowed_mime_types = excluded.allowed_mime_types;
+drop policy if exists "anuncios: ler imagens" on storage.objects;
+create policy "anuncios: ler imagens" on storage.objects for select using (bucket_id = 'ads');
+drop policy if exists "anuncios: admin carrega imagens" on storage.objects;
+create policy "anuncios: admin carrega imagens" on storage.objects for insert to authenticated
+  with check (bucket_id = 'ads' and exists (select 1 from public.staff s where s.user_id = auth.uid() and s.role = 'admin'));
+drop policy if exists "anuncios: admin apaga imagens" on storage.objects;
+create policy "anuncios: admin apaga imagens" on storage.objects for delete to authenticated
+  using (bucket_id = 'ads' and exists (select 1 from public.staff s where s.user_id = auth.uid() and s.role = 'admin'));
+
 -- ---------- Ranking geral do site (página /ranking) ----------
 -- p_days: 0 = desde sempre; senão os últimos N dias. Para cada categoria
 -- devolve o top (nome público e avatar) e a posição de quem está a ver.

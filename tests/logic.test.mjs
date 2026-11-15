@@ -308,10 +308,19 @@ test('cartas coloridas: baralho, jogar, +2, inverter, comprar e ganhar', () => {
   g = cartas.playCard(g, 'b', inv.id)
   assert.equal(g.direction, -1)
   assert.equal(cartas.currentPlayer(g), 'a')
-  // ganhar
+  // a fica sem cartas: 1.º lugar, mas os outros continuam (são 3)
   g = { ...g, hands: { ...g.hands, a: [{ id: 950, color: null, value: 'cor' }] } }
   g = cartas.playCard(g, 'a', 950, 'b')
+  assert.deepEqual(g.finished, ['a'])
+  assert.ok(!g.winner, 'ainda não acabou')
+  assert.equal(g.lastAction.place, 1)
+  const next = cartas.currentPlayer(g)
+  assert.notEqual(next, 'a', 'quem acabou já não joga')
+  // o seguinte também acaba: só sobra um, acaba a partida com a classificação toda
+  g = { ...g, hands: { ...g.hands, [next]: [{ id: 951, color: null, value: 'cor' }] } }
+  g = cartas.playCard(g, next, 951, 'g')
   assert.equal(g.winner, 'a')
+  assert.deepEqual(g.places, ['a', next, ['b', 'c'].find((x) => x !== next)])
   assert.equal(g.score.a, 1)
   // bots conseguem jogar uma partida inteira até ao fim
   for (let n = 0; n < 20; n++) {
@@ -409,11 +418,14 @@ test('cartas coloridas: +2 acumula e cartas especiais iguais juntas', () => {
   r = cartas.playCard(r, 'a', 1, undefined, [2])
   assert.equal(r.direction, 1)
   assert.equal(cartas.currentPlayer(r), 'b')
-  // +4 x2: o seguinte compra 8 e perde a vez
+  // +4 x2: acumula 8 para o seguinte (que pode responder ou comprar)
   let w = base({ a: [{ id: 1, color: null, value: '+4' }, { id: 2, color: null, value: '+4' }, filler(11)], b: [filler(12)] })
   w = cartas.playCard(w, 'a', 1, 'g', [2])
-  assert.equal(w.hands.b.length, 9)
+  assert.equal(w.pending, 8)
   assert.equal(w.color, 'g')
+  assert.equal(cartas.currentPlayer(w), 'b')
+  w = cartas.drawCard(w, 'b')
+  assert.equal(w.hands.b.length, 9)
   assert.equal(cartas.currentPlayer(w), 'c')
   // o bot responde a um +2 com os +2 que tiver; sem +2, compra
   let bt = base({ a: [{ id: 1, color: 'r', value: '+2' }, filler(11)], b: [{ id: 2, color: 'b', value: '+2' }, { id: 3, color: 'y', value: '+2' }, filler(12)] })
@@ -422,4 +434,48 @@ test('cartas coloridas: +2 acumula e cartas especiais iguais juntas', () => {
   bt = cartas.applyMove(bt, 'b', mv)
   assert.equal(bt.pending, 6, 'o bot juntou os dois +2')
   assert.deepEqual(cartas.botMove(bt, 'c'), { type: 'draw' })
+})
+
+test('cartas coloridas: +2 e +4 acumulam entre si; classificação até ao último', () => {
+  const base = (hands, top = { id: 900, color: 'r', value: '5' }, order = ['a', 'b', 'c']) => {
+    const g = cartas.startGame(order)
+    return { ...g, order, discard: [top], color: top.color, turn: 0, direction: 1, drawnThisTurn: null, pending: 0, finished: [], hands: { a: [], b: [], c: [], d: [], ...hands } }
+  }
+  const f = (id, color = 'y') => ({ id, color, value: '9' })
+  // +4 (escolhe azul) -> +2 azul por cima -> +4 por cima: 10 acumulados
+  let g = base({ a: [{ id: 1, color: null, value: '+4' }, f(10)], b: [{ id: 2, color: 'b', value: '+2' }, { id: 3, color: 'r', value: '+2' }, f(11)], c: [{ id: 4, color: null, value: '+4' }, f(12)] })
+  g = cartas.playCard(g, 'a', 1, 'b')
+  assert.equal(g.pending, 4)
+  assert.throws(() => cartas.playCard(g, 'b', 3), /não serve/, '+2 de outra cor não serve por cima do +4 azul')
+  g = cartas.playCard(g, 'b', 2)
+  assert.equal(g.pending, 6)
+  g = cartas.playCard(g, 'c', 4, 'g')
+  assert.equal(g.pending, 10)
+  assert.throws(() => cartas.playCard(g, 'a', 10), /\+2 ou \+4/)
+  g = cartas.drawCard(g, 'a')
+  assert.equal(g.hands.a.length, 11)
+  // 4 jogadores: joga-se até sobrar um; quem acaba deixa de ter vez
+  let h = base({ a: [f(1, 'r')], b: [f(2, 'r'), f(20)], c: [f(3, 'r'), f(30)], d: [f(4, 'r'), f(40)] }, undefined, ['a', 'b', 'c', 'd'])
+  h = cartas.playCard(h, 'a', 1) // a: 1.º
+  assert.deepEqual(h.finished, ['a'])
+  assert.equal(cartas.currentPlayer(h), 'b')
+  h = { ...h, hands: { ...h.hands, b: [f(2, 'r')] } }
+  h = cartas.playCard(h, 'b', 2) // b: 2.º
+  assert.deepEqual(h.finished, ['a', 'b'])
+  assert.equal(cartas.currentPlayer(h), 'c')
+  h = { ...h, hands: { ...h.hands, c: [f(3, 'r')] } }
+  h = cartas.playCard(h, 'c', 3) // c: 3.º e d fica em último
+  assert.deepEqual(h.places, ['a', 'b', 'c', 'd'])
+  assert.equal(h.winner, 'a')
+  // com quem já acabou fora, o Saltar salta só quem ainda joga
+  let s = base({ a: [f(1, 'r')], b: [{ id: 5, color: 'r', value: 'saltar' }, f(50)], c: [f(60)], d: [f(70)] }, undefined, ['a', 'b', 'c', 'd'])
+  s = cartas.playCard(s, 'a', 1)
+  s = cartas.playCard(s, 'b', 5)
+  assert.equal(cartas.currentPlayer(s), 'd', 'saltou o c, e o a já não conta')
+  // bots jogam partidas inteiras até ao último lugar
+  for (let k = 0; k < 15; k++) {
+    let x = cartas.startGame(['p', 'q', 'r', 's'])
+    for (let t = 0; t < 4000 && !x.winner; t++) { const p = cartas.currentPlayer(x); x = cartas.applyMove(x, p, cartas.botMove(x, p)) }
+    assert.ok(x.winner && x.places.length === 4 && new Set(x.places).size === 4, 'classificação completa')
+  }
 })

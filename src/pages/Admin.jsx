@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSocial } from '../social/SocialContext.jsx'
 import { adminListUsers, adminSetRole, adminStats, adminPlayStats, adminRecentPlays, adminSetGameBeta, adminSetGamePromoted, adminRetention, adminListFeedback, adminSetFeedbackStatus } from '../lib/social.js'
+import AdminAds from './AdminAds.jsx'
 import { adminReferrals, adminSetRewardStatus, adminReferrerDetail, REF_RULES } from '../lib/referral.js'
 import { FEEDBACK_KINDS } from '../components/Feedback.jsx'
 import { GAMES, gameByKey, defaultBeta } from '../data/games.js'
@@ -847,7 +848,7 @@ export default function Admin() {
     <main className="bo" data-testid="backoffice">
       <div className="bo-head">
         <h1>Backoffice</h1>
-        <p>Gere quem pode testar os jogos em beta ({betaGames.map((g) => gameByKey(g.key).title).join(', ')}).</p>
+        <p>{betaGames.length ? `Gere quem pode testar os jogos em beta (${betaGames.map((g) => gameByKey(g.key).title).join(', ')}).` : 'Gere o site: jogadores, jogos, convites, publicidade e testers.'}</p>
       </div>
       <div className="bo-stats">
         <Stat label="Utilizadores" value={stats?.users} hint={stats ? `+${stats.users_7d} nos últimos 7 dias` : null} />
@@ -860,6 +861,7 @@ export default function Admin() {
         <button type="button" role="tab" aria-selected={tab === 'ranking'} className={`bo-tab${tab === 'ranking' ? ' bo-tab--on' : ''}`} onClick={() => setTab('ranking')} data-testid="bo-tab-ranking">Ranking</button>
         <button type="button" role="tab" aria-selected={tab === 'activity'} className={`bo-tab${tab === 'activity' ? ' bo-tab--on' : ''}`} onClick={() => setTab('activity')} data-testid="bo-tab-activity">Atividade</button>
         <button type="button" role="tab" aria-selected={tab === 'convites'} className={`bo-tab${tab === 'convites' ? ' bo-tab--on' : ''}`} onClick={() => setTab('convites')} data-testid="bo-tab-convites">Convites</button>
+        <button type="button" role="tab" aria-selected={tab === 'ads'} className={`bo-tab${tab === 'ads' ? ' bo-tab--on' : ''}`} onClick={() => setTab('ads')} data-testid="bo-tab-ads">Publicidade</button>
         <button type="button" role="tab" aria-selected={tab === 'feedback'} className={`bo-tab${tab === 'feedback' ? ' bo-tab--on' : ''}`} onClick={() => setTab('feedback')} data-testid="bo-tab-feedback">Feedback</button>
         <button type="button" role="tab" aria-selected={tab === 'users'} className={`bo-tab${tab === 'users' ? ' bo-tab--on' : ''}`} onClick={() => setTab('users')}>Utilizadores e testers</button>
         <button type="button" role="tab" aria-selected={tab === 'games'} className={`bo-tab${tab === 'games' ? ' bo-tab--on' : ''}`} onClick={() => setTab('games')}>Jogos</button>
@@ -869,6 +871,7 @@ export default function Admin() {
       {tab === 'activity' && <Activity />}
       {tab === 'feedback' && <FeedbackList />}
       {tab === 'convites' && <Referrals />}
+      {tab === 'ads' && <AdminAds />}
       {tab === 'users' && <Users myId={s.myId} onChanged={loadStats} />}
       {tab === 'games' && <Games stats={stats} social={s} />}
     </main>
